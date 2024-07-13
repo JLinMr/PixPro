@@ -1,0 +1,513 @@
+/* 禁用用户选择 */
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+/* 设置全局鼠标样式 */
+html {
+    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/alternate.png) 16 16, auto;
+}
+
+/* 设置特定元素的鼠标样式 */
+a, button, input, #imageUploadBox {
+    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/link.png) 16 16, pointer;
+}
+
+p, span, h2, label, #pasteOrUrlInput {
+    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/text.png) 16 16, text;
+}
+
+/* 输入框占位符颜色 */
+::-webkit-input-placeholder {
+    color: #555;
+}
+
+/* 隐藏默认的 range 样式 */
+input[type="range"] {
+    -webkit-appearance: none;
+    width: 100%;
+    height: 10px;
+    background: rgb(255 255 255 / 20%);
+    outline: none;
+    opacity: 0.7;
+    transition: all 0.3s;
+    border-radius: 5px;
+}
+
+/* 滑块样式 */
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: #4CAF50;
+    border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: #4CAF50;
+    border-radius: 50%;
+}
+
+/* 滑块悬停样式 */
+input[type="range"]:hover {
+    background: rgb(255 255 255 / 40%);
+}
+
+/* 隐藏滚动条 */
+::-webkit-scrollbar {
+    width: 0;
+}
+
+/* 鼠标指针样式 */
+#cursor {
+    position: fixed;
+    width: 16px;
+    height: 16px;
+    background: #fff;
+    border-radius: 25px;
+    opacity: .25;
+    z-index: 10086;
+    pointer-events: none;
+    transition: .2s ease-in-out;
+    transition-property: background, opacity, transform;
+}
+
+#cursor.hidden {
+    opacity: 0;
+}
+
+#cursor.active {
+    opacity: .5;
+    transform: scale(.5);
+}
+
+@media (max-width: 768px) {
+    #cursor {
+        display: none;
+    }
+}
+
+/* 主体样式 */
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    margin: 0;
+    color: #000;
+    padding: 20px 30px 0 30px;
+    background: url(/static/bg.webp) no-repeat 100% 100% / cover fixed;
+    -webkit-tap-highlight-color: transparent;
+}
+
+/* 通用背景和阴影样式 */
+nav, #urlOutput, #imageInfo, #imageUploadBox, #pasteOrUrlInput, .logotitle, .uploadForm, .tab-buttons, .copy-indicator {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgb(255 255 255 / 20%);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    background: linear-gradient(120deg, rgb(255 255 255 / 20%) 0, rgb(170 170 170 / 20%) 100%);
+    -webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
+    animation: fadeInshowt 0.5s ease-in-out forwards;
+}
+
+/* 导航栏样式 */
+nav {
+    border-radius: 8px;
+    margin-bottom: 20px;
+}
+
+nav a {
+    float: left;
+    padding: 15px;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+nav a:hover {
+    background-color: rgb(208 208 208 / .2);
+}
+
+/* 上传表单样式 */
+.uploadForm, #uploadForm {
+    padding: 20px;
+    border-radius: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+}
+
+#uploadForm {
+    padding: 0;
+}
+
+/* 删除图片按钮样式 */
+#deleteImageButton {
+    display: none;
+    position: absolute;
+    top: 0;
+    right: 0;
+    background-color: #a21e1e;
+    border: none;
+    border-radius: 20px;
+    padding: 5px 5px 1px 5px;
+    font-size: 16px;
+    margin: 5px;
+    z-index: 99;
+}
+
+#deleteImageButton img:hover {
+    transition: transform .4s ease-in-out;
+    transform: rotate(180deg);
+}
+
+/* 图片输入框样式 */
+#imageInput {
+    opacity: 0;
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+/* 图片预览样式 */
+#imagePreview {
+    max-width: 100%;
+    max-height: 100%;
+    z-index: 10;
+    border-radius: 8px;
+}
+
+/* 参数区域样式 */
+#parameters {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 10px;
+}
+
+/* 输入框样式 */
+#pasteOrUrlInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 8px;
+    outline: 0;
+    border: 1px solid #aaa;
+    transition: all 0.3s;
+    box-sizing: border-box;
+}
+
+#pasteOrUrlInputBox {
+    width: 100%;
+    margin-bottom: 10px;
+    text-align: center;
+}
+
+/* 进度条容器样式 */
+#progressContainer {
+    position: fixed;
+    width: 100%;
+    background: rgb(255 255 255 / 20%);
+    border-radius: 8px;
+    overflow: hidden;
+    display: none;
+    bottom: 0px;
+    font-size: 10px;
+}
+
+/* 进度条样式 */
+#progressBar {
+    height: 12px;
+    background: linear-gradient(90deg, rgb(244 128 246 / 40%) 0, rgb(115 255 241 / 60%) 50%, rgb(115 255 241 / 80%) 100%);
+    width: 0;
+    text-align: center;
+    color: white;
+    font-weight: bold;
+    transition: width 0.3s;
+    line-height: 12px;
+    border-radius: 8px;
+}
+
+/* URL输出区域样式 */
+#urlOutput {
+    width: 100%;
+    max-width: 500px;
+    margin-top: 20px;
+    padding: 20px;
+    border-radius: 8px;
+    word-wrap: break-word;
+}
+
+/* 复URL列表样式 */
+.input-container {
+    height: 105px;
+    overflow-y: scroll;
+    box-sizing: border-box;
+    background: url(/static/svg/wheel.svg) no-repeat right;
+}
+
+.tab-buttons {
+    display: flex;
+    border-radius: 8px;
+    margin: 5px 0 5px 0;
+}
+
+.tab-button {
+    flex: 1;
+    padding: 7.5px;
+    border-radius: 8px;
+    background-color: transparent;
+    border: none;
+    outline: none;
+    transition: background-color 0.3s, transform 0.3s;
+}
+
+.tab-button:hover {
+    background-color: rgb(208 208 208 / .2);
+}
+
+.tab-content {
+    animation: fadeInshowt 0.3s ease-in-out forwards;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+.copy-indicator {
+    padding: 10px;
+    width: 100%;
+    border-radius: 8px;
+    box-sizing: border-box;
+    font-size: 16px;
+    margin: 5px auto;
+    overflow: hidden;
+    outline: 0;
+    transition: all 0.3s;
+    -webkit-appearance: none;
+}
+
+/* 图片上传框样式 */
+#imageUploadBox {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ccc;
+    border-radius: 8px;
+    margin-bottom: 10px;
+    position: relative;
+    transition: all 0.3s;
+}
+
+#imageUploadBox:hover {
+    border: 2px dashed #777;
+}
+
+/* 参数标签样式 */
+#parameters label {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+}
+
+/* 图片信息区域样式 */
+#imageInfo {
+    width: 100%;
+    max-width: 500px;
+    padding: 20px;
+    border-radius: 8px;
+    margin-top: 20px;
+}
+
+/* 图片信息标题样式 */
+#imageInfo h2 {
+    text-align: center;
+    margin-top: 0;
+}
+
+/* URL列表悬停样式 */
+.copy-indicator:hover,
+#pasteOrUrlInput:hover {
+    border-color: #76c7c0;
+}
+
+/* 双列布局样式 */
+.double-column-layout {
+    display: flex;
+    justify-content: space-between;
+}
+
+.double-column-layout > div {
+    flex-basis: 50%;
+    box-sizing: border-box;
+}
+
+/* 移动端适配 */
+@media (max-width: 767px) {
+    .double-column-layout > div {
+        flex-basis: 100%;
+    }
+}
+
+/* 页脚导航样式 */
+.footer-nav {
+    margin-top: 20px;
+    text-align: center;
+}
+
+/* 页脚链接样式 */
+footer a {
+    margin: 0 6px;
+    color: #ccc;
+    font-size: 12px;
+    transition: all .4s;
+    text-decoration: none;
+    -webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
+    animation: fadeInshowt 0.5s ease-in-out forwards;
+}
+
+footer a:hover {
+    color: pink;
+}
+
+/* ICP备案信息样式 */
+.icp {
+    margin: 10px 0 10px;
+    color: #ccc;
+    font-size: 12px;
+}
+
+.icp a {
+    font-weight: 800;
+    color: #54a2c2;
+}
+
+.icp span {
+    -webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
+    animation: fadeInshowt 0.5s ease-in-out forwards;
+}
+
+/* 按钮样式 */
+.logo-btn {
+    margin: 0 12px;
+    color: #f45873;
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0;
+    outline: 0;
+    border: none;
+    background: 0 0;
+    -webkit-appearance: none;
+    -webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
+    animation: fadeInshowt 0.5s ease-in-out forwards;
+}
+
+/* 声明样式 */
+.logotitle {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 15px;
+    margin: 15px;
+    transition: all .5s;
+    color: #eee;
+    border-radius: 15px;
+}
+
+.logo-btn:focus ~ em {
+    right: 0;
+}
+
+/* 消息弹窗样式 */
+.green-success, .red-success {
+    position: fixed;
+    top: 0;
+    right: 0px;
+    font-size: 14px;
+    padding: 15px;
+    margin: 15px;
+    transition: all .4s;
+    border-radius: 10px;
+    color: #fff;
+    border: 1px solid rgb(255 255 255 / 20%);
+    -webkit-animation: fadeInshowt .8s forwards;
+    animation: fadeInshowt .8s forwards;
+}
+
+.green-success {
+    background-color: #008000;
+}
+
+.red-success {
+    background-color: #a61313;
+}
+
+/* 动画效果 */
+@-webkit-keyframes fadeInshowt {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes fadeInshowt {
+    0% {
+        opacity: 0;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+.success-right {
+    -webkit-animation: fadeOutRight .8s forwards;
+    animation: fadeOutRight .8s forwards;
+}
+
+@-webkit-keyframes fadeOutRight {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
+
+@keyframes fadeOutRight {
+    0% {
+        opacity: 1;
+        transform: translateX(0);
+    }
+    100% {
+        opacity: 0;
+        transform: translateX(100%);
+    }
+}
