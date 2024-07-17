@@ -6,11 +6,17 @@ use OSS\Core\OssException;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
-function handleUploadedFile($file, $token) {
-    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix;
+function handleUploadedFile($file, $token, $referer) {
+    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix, $frontendDomain;
 
-    if (!isValidToken($token)) {
-        respondAndExit(['result' => 'error', 'code' => 403, 'message' => 'Token错误']);
+    // 判断是否需要验证token
+    if (!empty($referer) && strpos($referer, $frontendDomain) !== false) {
+        // 前端上传，不验证token
+    } else {
+        // 第三方软件上传，验证token
+        if (!isValidToken($token)) {
+            respondAndExit(['result' => 'error', 'code' => 403, 'message' => 'Token错误']);
+        }
     }
 
     $uploadDir = 'i/';
