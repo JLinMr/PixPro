@@ -6,21 +6,21 @@
 }
 
 html {
-	cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/alternate.png) 16 16, auto;
+    cursor: url(/static/images/alternate.png) 16 16, auto;
 }
 
 a,
 button,
 input,
 img {
-	cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/link.png) 16 16, pointer;
+    cursor: url(/static/images/link.png) 16 16, pointer;
 }
 
 p,
 span,
 h2,
 label {
-	cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/text.png) 16 16, text;
+    cursor: url(/static/images/text.png) 16 16, text;
 }
 
 body {
@@ -28,7 +28,7 @@ body {
 	padding: 0;
 	display: flex;
 	justify-content: center;
-	background: url(/static/bg.webp) no-repeat 100% 100%;
+	background: url(/static/images/bg.webp) no-repeat 100% 100%;
 	background-size: cover;
 	background-attachment: fixed;
 	-webkit-tap-highlight-color: transparent;
@@ -88,6 +88,7 @@ body {
 	margin: 20px 10px 40px 10px;
 	border-radius: 10px;
 	z-index: 20;
+	animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .gallery-item {
@@ -95,8 +96,6 @@ body {
 	     break-inside: avoid;
 	margin-bottom: 10px;
 	position: relative;
-	-webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
-	        animation: fadeInshowt 0.5s ease-in-out forwards;
 }
 
 .gallery-item img {
@@ -114,7 +113,7 @@ body {
     height: 100%;
     max-width: 230px;
     max-height: 135px;
-    background: url(/static/svg/replace.svg) center;
+    background: url(/static/images/svg/replace.svg) center;
     z-index: 1;
 }
 
@@ -167,43 +166,15 @@ body {
 	transform: rotate(180deg);
 }
 .copy-btn img:hover {
-    -webkit-animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+	animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
     transform: translate3d(0, 0, 0);
 }
-@-webkit-keyframes shake {
-    10%, 90% {
-        transform: translate3d(-1px, 0, 0);
-    }
-
-    20%, 80% {
-        transform: translate3d(2px, 0, 0);
-    }
-
-    30%, 50%, 70% {
-        transform: translate3d(-2px, 0, 0);
-    }
-
-    40%, 60% {
-        transform: translate3d(2px, 0, 0);
-    }
-}
+/*复制按钮动画*/
 @keyframes shake {
-    10%, 90% {
-        transform: translate3d(-1px, 0, 0);
-    }
-
-    20%, 80% {
-        transform: translate3d(2px, 0, 0);
-    }
-
-    30%, 50%, 70% {
-        transform: translate3d(-2px, 0, 0);
-    }
-
-    40%, 60% {
-        transform: translate3d(2px, 0, 0);
-    }
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+    40%, 60% { transform: translate3d(2px, 0, 0); }
 }
 
 /*分页按钮*/
@@ -213,6 +184,7 @@ body {
 	bottom: 0;
 	transform: translateX(-50%);
 	z-index: 10;
+	animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .page-link {
@@ -265,7 +237,7 @@ a.ellipsis {
 }
 
 .top-link {
-	transform: translateX(60px) translateY(-50px);
+	transform: translateX(70px) translateY(-50px);
 	transition: transform 0.4s ease-in-out, background-color 0.4s ease-in-out, color 0.4s ease-in-out;
 }
 
@@ -276,7 +248,12 @@ a.ellipsis {
 .rightside.shifted .floating-link, .rightside.shifted .logout-link {
     transform: translateY(-50px);
 }
-
+.rightside a img{
+    transition: transform 0.3s ease;
+}
+.rightside a:hover img{
+    transform: scale(1.1);
+}
 #current-total-pages {
 	margin-top: 10px;
 }
@@ -286,85 +263,49 @@ a.ellipsis {
 .rightside a:hover,
 .page-link:hover {
 	background-color: rgb(0 0 0 / 20%);
+	color: #fff;
 }
 
-/*消息通知弹窗*/
-.green-success,
-.red-success {
-	position: fixed;
-	top: 0;
-	right: 0px;
-	font-size: 14px;
-	padding: 15px;
-	margin: 15px;
-	transition: all .4s;
-	border-radius: 10px;
-	color: #eee;
-	z-index: 99;
-	border: 1px solid rgb(255 255 255 / 20%);
-	-webkit-animation: fadeInshowt .8s forwards;
-	        animation: fadeInshowt .8s forwards;
+/* 消息弹窗样式 */
+.msg {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    backdrop-filter: blur(5px);
+    z-index: 9999;
+    border: 1px solid rgb(255 255 255 / 20%);
+    animation: fadeInTop .6s forwards;
 }
 
-.green-success {
-	background-color: #008000;
+/* 背景颜色样式 */
+.msg-green { background-color: rgba(0, 126, 0, 0.7); }
+.msg-red { background-color: rgba(166, 19, 19, 0.7); }
+
+/* 向右侧淡出 */
+.msg-right { animation: fadeOutRight .8s forwards; }
+
+/* 顶部淡入动画 */
+@keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
 }
-
-.red-success {
-	background-color: #a61313;
-}
-
-@-webkit-keyframes fadeInshowt {
-	0% {
-		opacity: 0;
-		transform: translateX(0%);
-	}
-
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes fadeInshowt {
-	0% {
-		opacity: 0;
-		transform: translateX(0%);
-	}
-
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-.success-right {
-	-webkit-animation: fadeOutRight .8s forwards;
-	        animation: fadeOutRight .8s forwards;
-}
-
-@-webkit-keyframes fadeOutRight {
-	0% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-
-	100% {
-		opacity: 0;
-		transform: translateX(100%);
-	}
-}
-
+/* 向右淡出动画 */
 @keyframes fadeOutRight {
-	0% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-
-	100% {
-		opacity: 0;
-		transform: translateX(100%);
-	}
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+/*	淡入动画 */
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
+/* 淡出动画 */
+@keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
 }
 
 /*删除确认弹窗*/
@@ -375,53 +316,11 @@ a.ellipsis {
 	border-radius: 10px;
 	z-index: 30;
 	border: 1px solid rgb(255 255 255 / 20%);
-	-webkit-animation: fadeshowt .4s forwards;
-	        animation: fadeshowt .4s forwards;
+	animation: fadeIn 0.3s ease-in-out forwards;
 }
 
 .fade-out {
-	-webkit-animation: fadeOut 0.4s ease-out forwards;
-	        animation: fadeOut 0.4s ease-out forwards;
-}
-
-@-webkit-keyframes fadeshowt {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
-@keyframes fadeshowt {
-	from {
-		opacity: 0;
-	}
-
-	to {
-		opacity: 1;
-	}
-}
-
-@-webkit-keyframes fadeOut {
-	from {
-		opacity: 1;
-	}
-
-	to {
-		opacity: 0;
-	}
-}
-
-@keyframes fadeOut {
-	from {
-		opacity: 1;
-	}
-
-	to {
-		opacity: 0;
-	}
+	animation: fadeOut 0.3s ease-out forwards;
 }
 
 .confirm-message {
@@ -465,8 +364,7 @@ a.ellipsis {
 	border-top: 4px solid #0099ff;
 	border-radius: 50%;
 	margin: auto;
-	-webkit-animation: spin 1s linear infinite;
-	        animation: spin 1s linear infinite;
+	animation: spin 1s linear infinite;
 }
 
 .loading-text {
@@ -475,37 +373,22 @@ a.ellipsis {
 	color: #222;
 }
 
-@-webkit-keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
-}
-
+/* 旋转动画 */
 @keyframes spin {
-	0% {
-		transform: rotate(0deg);
-	}
-
-	100% {
-		transform: rotate(360deg);
-	}
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
 }
-
 /*总页*/
 #current-total-pages {
-	position: fixed;
-	border-radius: 8px;
-	bottom: 30px;
-	width: 40px;
-	color: #eee;
-	text-align: center;
-	padding: 0px !important;
-	line-height: 40px;
-	font-size: 12px;
+    position: fixed;
+    border-radius: 8px;
+    bottom: 30px;
+    width: 40px;
+    height: 40px;
+    color: #eee;
+    display: grid !important;
+    place-items: center;
+    font-size: 12px;
 }
 
 /*输入页数跳转*/
@@ -520,18 +403,16 @@ a.ellipsis {
 	border-radius: 8px;
 	bottom: 30px;
 	width: 40px;
-	color: #eee;
-	text-align: center;
+	height: 40px;
+	color: #eee;;
 	padding: 0;
-	line-height: 40px;
 	font-size: 16px;
 	outline: none;
+	text-align: center;
 	border: 1px solid rgb(255 255 255 / 20%);
-	-webkit-animation-fill-mode: forwards;
-	        animation-fill-mode: forwards;
+	animation-fill-mode: forwards;
 	-moz-appearance: textfield;
-	-webkit-appearance: textfield;
-	        appearance: textfield;
+	appearance: textfield;
 }
 
 /*全局滚动条*/

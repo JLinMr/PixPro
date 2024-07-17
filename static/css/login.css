@@ -1,18 +1,18 @@
 html {
-    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/alternate.png) 16 16, auto;
+    cursor: url(/static/images/alternate.png) 16 16, auto;
 }
 
 a,
 button,
 input {
-    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/link.png) 16 16, pointer;
+    cursor: url(/static/images/link.png) 16 16, pointer;
 }
 
 p,
 span,
 h2,
 label {
-    cursor: url(https://oss-cdn.bsgun.cn/Hexo-static/text.png) 16 16, text;
+    cursor: url(/static/images/text.png) 16 16, text;
 }
 
 body {
@@ -23,7 +23,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: url(/static/bg.webp) no-repeat 100% 100%;
+    background: url(/static/images/bg.webp) no-repeat 100% 100%;
     background-size: cover;
     background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
@@ -39,8 +39,8 @@ body {
     border: 1px solid rgb(255 255 255 / 20%);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
     background: linear-gradient(120deg, rgb(255 255 255 / 20%) 0, rgb(170 170 170 / 20%) 100%);
-    -webkit-animation: fadeInshowt 0.5s ease-in-out forwards;
-    animation: fadeInshowt 0.5s ease-in-out forwards;
+    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
+    animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .form-group {
@@ -93,84 +93,38 @@ button:hover {
 .reset-password a:hover {
     color: #f95a5a;
 }
-/*消息通知弹窗*/
-.green-success,
-.red-success {
-	position: fixed;
-	top: 0;
-	right: 0px;
-	font-size: 14px;
-	padding: 15px;
-	margin: 15px;
-	transition: all .4s;
-	border-radius: 10px;
-	color: #eee;
-	z-index: 99;
+/* 消息弹窗样式 */
+.msg {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    backdrop-filter: blur(5px);
+    z-index: 9999;
     border: 1px solid rgb(255 255 255 / 20%);
-	-webkit-animation: fadeInshowt .8s forwards;
-	        animation: fadeInshowt .8s forwards;
+    animation: fadeInTop .6s forwards;
 }
 
-.green-success {
-	background-color: #008000;
-}
+/* 背景颜色样式 */
+.msg-red { background-color: rgba(166, 19, 19, 0.7); }
+.msg-green { background-color: rgba(0, 126, 0, 0.7); }
+/* 淡出动画样式 */
+.msg-right { animation: fadeOutRight .8s forwards; }
 
-.red-success {
-	background-color: #a61313;
-}
-
-@-webkit-keyframes fadeInshowt {
-	0% {
-		opacity: 0;
-		transform: translateX(0%);
-	}
-
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-@keyframes fadeInshowt {
-	0% {
-		opacity: 0;
-		transform: translateX(0%);
-	}
-
-	100% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-}
-
-.success-right {
-	-webkit-animation: fadeOutRight .8s forwards;
-	        animation: fadeOutRight .8s forwards;
-}
-
-@-webkit-keyframes fadeOutRight {
-	0% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-
-	100% {
-		opacity: 0;
-		transform: translateX(100%);
-	}
+/* 动画效果 */
+@keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes fadeOutRight {
-	0% {
-		opacity: 1;
-		transform: translateX(0);
-	}
-
-	100% {
-		opacity: 0;
-		transform: translateX(100%);
-	}
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
 }
-::-webkit-scrollbar {
-    width: 0;
+
+@keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
