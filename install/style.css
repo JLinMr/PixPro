@@ -9,7 +9,7 @@ body {
     margin: 0;
     color: #000;
     padding: 0px 15px 0 15px;
-    background: url(/static/bg.webp) no-repeat 100% 100%;
+    background: url(/static/images/bg.webp) no-repeat 100% 100%;
     background-size: cover;
     background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
