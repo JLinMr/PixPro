@@ -8,6 +8,8 @@ document.addEventListener('DOMContentLoaded', () => {
  * 设置复制和删除按钮的事件处理程序
  */
 function setupCopyAndDeleteHandlers() {
+    let currentConfirmBox = null;
+
     document.addEventListener('click', event => {
         const btn = event.target.closest('.copy-btn, .delete-btn');
         if (!btn) return;
@@ -20,20 +22,29 @@ function setupCopyAndDeleteHandlers() {
     });
 
     function deleteImage(id, path) {
-        const confirmBox = createCustomConfirm();
-        document.body.appendChild(confirmBox);
+        if (currentConfirmBox) {
+            currentConfirmBox.classList.remove('fade-out');
+            currentConfirmBox.querySelector('.confirm-message').textContent = '确定删除这张图片吗？';
+        } else {
+            currentConfirmBox = createCustomConfirm();
+            document.body.appendChild(currentConfirmBox);
+        }
 
-        confirmBox.querySelector('#confirm-delete').addEventListener('click', () => {
-            confirmBox.classList.add('fade-out');
+        currentConfirmBox.querySelector('#confirm-delete').addEventListener('click', () => {
+            currentConfirmBox.classList.add('fade-out');
             setTimeout(() => {
-                confirmBox.remove();
+                currentConfirmBox.remove();
+                currentConfirmBox = null;
                 sendDeleteRequest(id, path);
             }, 500);
         });
 
-        confirmBox.querySelector('#cancel-delete').addEventListener('click', () => {
-            confirmBox.classList.add('fade-out');
-            setTimeout(() => confirmBox.remove(), 500);
+        currentConfirmBox.querySelector('#cancel-delete').addEventListener('click', () => {
+            currentConfirmBox.classList.add('fade-out');
+            setTimeout(() => {
+                currentConfirmBox.remove();
+                currentConfirmBox = null;
+            }, 500);
         });
     }
 
@@ -56,22 +67,21 @@ function setupCopyAndDeleteHandlers() {
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.onload = () => {
             const response = JSON.parse(xhr.responseText);
-            showNotification(response.result === 'success' ? response.message : '错误：' + xhr.status, 'red-success');
+            showNotification(response.result === 'success' ? response.message : '错误：' + xhr.status, 'msg-red');
             if (response.result === 'success') document.getElementById('image-' + id)?.remove();
         };
-        xhr.onerror = () => showNotification('请求失败。', 'red-success');
+        xhr.onerror = () => showNotification('请求失败。', 'msg-red');
         xhr.send('id=' + encodeURIComponent(id) + '&path=' + encodeURIComponent(path));
     }
 }
 
 /**
  * 处理复制操作
- * @param {string} url - 要复制的 URL
  */
 async function handleCopy(url) {
     try {
         await navigator.clipboard.writeText(url);
-        showNotification('已复制到剪贴板', 'green-success');
+        showNotification('已复制到剪贴板');
     } catch (err) {
         console.error('复制到剪贴板失败: ', err);
         try {
@@ -82,10 +92,10 @@ async function handleCopy(url) {
             tempInput.select();
             document.execCommand('copy');
             document.body.removeChild(tempInput);
-            showNotification('已复制到剪贴板', 'green-success');
+            showNotification('已复制到剪贴板');
         } catch (err) {
             console.error('备用方法复制到剪贴板失败: ', err);
-            showNotification('复制到剪贴板失败', 'red-success');
+            showNotification('复制到剪贴板失败', 'msg-red');
         }
     }
 }
@@ -113,37 +123,29 @@ function setupScrollToTop() {
 
 /**
  * 显示通知
- * @param {string} message - 通知消息
- * @param {string} [className='green-success'] - 通知样式类名
  */
-function showNotification(message, className = 'green-success') {
-    const existingNotification = document.querySelector('.green-success, .red-success');
-    if (existingNotification) {
-        existingNotification.parentNode.removeChild(existingNotification);
-    }
+function showNotification(message, className = 'msg-green') {
     const notification = document.createElement('div');
-    notification.classList.add(className);
+    notification.className = `msg ${className}`;
     notification.textContent = message;
     document.body.appendChild(notification);
     setTimeout(() => {
-        notification.classList.add('success-right');
-        setTimeout(() => notification.parentNode.removeChild(notification), 1000);
+        notification.classList.add('msg-right');
+        setTimeout(() => notification.remove(), 800);
     }, 1500);
 }
 
 /**
  * 检查页码是否超过最大页数
- * @param {number} page - 当前页码
- * @param {number} totalPages - 总页数
  */
 function checkPageLimit(page, totalPages) {
     const input = document.querySelector('.page-input');
     if (totalPages === 0) {
         input.value = '';
-        showNotification('你还没有上传图片呢', 'red-success');
+        showNotification('你还没有上传图片呢', 'msg-red');
     } else if (page > totalPages) {
         input.value = '';
-        showNotification('输入的页数超过最大页数，请重新输入', 'red-success');
+        showNotification('输入的页数超过最大页数，请重新输入', 'msg-red');
         loadPage(1);
     }
 }
@@ -165,7 +167,7 @@ function lazyLoadImages() {
                 };
                 lazyImage.onload = handleLoad;
                 lazyImage.onerror = () => {
-                    lazyImage.src = '/static/svg/404.svg';
+                    lazyImage.src = '/static/images/svg/404.svg';
                     handleLoad();
                 };
                 observer.unobserve(lazyImage);
