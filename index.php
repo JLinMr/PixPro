@@ -21,23 +21,23 @@ if (!file_exists('install/install.lock')) {
 </head>
 <body>
     <nav>
-        <a href="https://www.bsgun.cn/" target="_blank" title="主页"><img src="static/svg/home.svg" alt="主页"/></a>
-        <a href="https://blog.bsgun.cn/" target="_blank" title="博客"><img src="static/svg/Blog.svg" alt="博客"/></a>
-        <a href="https://github.com/JLinMr/PixPro/" target="_blank" title="Github"><img src="static/svg/Github.svg" alt="Github"/></a>
-        <a href="/admin/" target="_blank" title="后台" ><img src="static/svg/Setting.svg" alt="后台"/></a>
+        <a href="https://www.bsgun.cn/" target="_blank" title="主页"><img src="static/images/svg/home.svg" alt="主页"/></a>
+        <a href="https://blog.bsgun.cn/" target="_blank" title="博客"><img src="static/images/svg/Blog.svg" alt="博客"/></a>
+        <a href="https://github.com/JLinMr/PixPro/" target="_blank" title="Github"><img src="static/images/svg/Github.svg" alt="Github"/></a>
+        <a href="/admin/" target="_blank" title="后台" ><img src="static/images/svg/Setting.svg" alt="后台"/></a>
     </nav>
     <div class="uploadForm">
-        <button id="deleteImageButton"><img src="static/svg/xmark.svg" alt="x"></button>
+        <button id="deleteImageButton"><img src="static/images/svg/xmark.svg" alt="x"></button>
         <form id="uploadForm" enctype="multipart/form-data">
             <div id="imageUploadBox" onclick="document.getElementById('imageInput').click();">
                 <input type="file" id="imageInput" name="image[]" accept="image/*" multiple required style="display: none;">
-                <img id="imagePreview" src="static/svg/up.svg" alt="预览图片">
+                <img id="imagePreview" src="static/images/svg/up.svg" alt="预览图片">
             </div>
             <div id="pasteOrUrlInputBox">
                 <input type="text" id="pasteOrUrlInput" placeholder="此处可粘贴图像URL或使用Ctrl+V粘贴图片">
             </div>
             <div id="parameters">
-                <label for="qualityInput">图片清晰度（60-100）：<output id="qualityOutput">60</output></label>
+                <label for="qualityInput">图片清晰度 60-100<output id="qualityOutput">60</output></label>
                 <input type="range" id="qualityInput" name="quality" min="60" max="100" value="60" step="5">
             </div>
             <div id="progressContainer">
@@ -47,10 +47,10 @@ if (!file_exists('install/install.lock')) {
     </div>
     <div class="urlOutput" id="urlOutput">
         <div class="tab-buttons">
-            <button class="tab-button active" data-target="tab1" title="图片链接"><img src="static/svg/imageUrl.svg" alt="图片链接"/></button>
-            <button class="tab-button" data-target="tab2" title="Markdown代码"><img src="static/svg/markdownUrl.svg" alt="Markdown代码"/></button>
-            <button class="tab-button" data-target="tab3" title="Markdown链接"><img src="static/svg/markdownLinkUrl.svg" alt="Markdown链接"/></button>
-            <button class="tab-button" data-target="tab4" title="HTML代码"><img src="static/svg/htmlUrl.svg" alt="HTML代码"/></button>
+            <button class="tab-button active" data-target="tab1" title="图片链接"><img src="static/images/svg/imageUrl.svg" alt="图片链接"/></button>
+            <button class="tab-button" data-target="tab2" title="Markdown代码"><img src="static/images/svg/markdownUrl.svg" alt="Markdown代码"/></button>
+            <button class="tab-button" data-target="tab3" title="Markdown链接"><img src="static/images/svg/markdownLinkUrl.svg" alt="Markdown链接"/></button>
+            <button class="tab-button" data-target="tab4" title="HTML代码"><img src="static/images/svg/htmlUrl.svg" alt="HTML代码"/></button>
         </div>
         <div class="tab-content">
             <div class="tab-pane active" id="tab1">
