@@ -24,6 +24,9 @@ $s3AccessKeyId = $config['s3AccessKeyId'];
 $s3AccessKeySecret = $config['s3AccessKeySecret'];
 $customUrlPrefix = $config['customUrlPrefix'];
 
+// 获取当前请求的域名
+$frontendDomain = $_SERVER['HTTP_HOST'];
+
 // 获取数据库连接
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
@@ -61,7 +64,8 @@ try {
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
         $file = $_FILES['image'];
         $token = isset($_POST['token']) ? $_POST['token'] : '';
-        handleUploadedFile($file, $token);
+        $referer = isset($_SERVER['HTTP_REFERER']) ? $_SERVER['HTTP_REFERER'] : '';
+        handleUploadedFile($file, $token, $referer);
     } else {
         respondAndExit(['result' => 'error', 'code' => 204, 'message' => '无文件上传']);
     }
