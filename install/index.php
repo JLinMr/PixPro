@@ -11,7 +11,7 @@ if (file_exists('install.lock')) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>系统已安装</title>
         <link rel="shortcut icon" href="../static/favicon.ico">
-	    <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="style.css">
     </head>
     <body>
         <div class="message-box">
@@ -94,26 +94,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         }
     } elseif ($step === 2) {
         $storage = $_POST['storage'];
-        $resetToken = $_POST['reset_token'];
+        $validToken = $_POST['validToken'];
         $protocol = $_POST['protocol'];
-        $token = [
-            'reset_token' => $resetToken,
-            'validToken' => '1c17b11693cb5ec63859b091c5b9c1b2',
-        ];
 
         $configContent = file_get_contents('../config/config.ini');
         $configContent .= "\n[Token]\n";
-        foreach ($token as $key => $value) {
-            $configContent .= "$key = $value\n";
-        }
-        $configContent .= "; // 为了站点安全，不建议你暴漏你的reset_token\n";
-        $configContent .= "; // 修改 validToken 需要同步修改 script.js 内的 token\n";
+        $configContent .= "validToken = $validToken\n";
+        $configContent .= "; // 为了站点安全，不建议你暴漏你的token\n";
 
         $configContent .= "\n[Other]\n";
         $configContent .= "storage = $storage\n";
         $configContent .= "protocol = $protocol\n";
+        $configContent .= "per_page = 45\n";
         $configContent .= "; // storage = local 本地存储  //  oss  阿里云对象存储  //  s3  AWS S3 兼容三方\n";
         $configContent .= "; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3 无需配置\n";
+        $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
         $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
         function addOSSConfig(&$configContent) {
@@ -288,8 +283,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="reset_token">重置密码 Token<botton id="generateToken" style="margin-left: 15px;color: #ff0000;">点我生成</botton></label>
-                    <input type="text" id="reset_token" name="reset_token" required>
+                    <label for="validToken">API接口Token<botton id="generateToken" style="margin-left: 15px;color: #ff0000;cursor: pointer;">点我生成</botton></label>
+                    <input type="text" id="validToken" name="validToken" required>
                 </div>
                 <div class="form-group">
                     <input type="submit" value="下一步">
@@ -345,7 +340,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 </div>
                 <div class="form-group">
                     <label for="s3_customUrlPrefix">S3 自定义前缀<span style="margin-left: 15px;color: #ccc;">兼容第三方添加的配置</span></label>
-                    <input type="text" id="s3_customUrlPrefix" name="s3_customUrlPrefix"  placeholder="非必填">
+                    <input type="text" id="s3_customUrlPrefix" name="s3_customUrlPrefix" placeholder="非必填">
                 </div>
                 <div class="form-group">
                     <input type="submit" value="完成安装">
