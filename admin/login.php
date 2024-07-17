@@ -23,7 +23,7 @@ if (isset($_POST['login'])) {
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     } else {
-        $error = "用户名或密码无效。";
+        $error = "用户名或密码无效";
     }
 }
 ?>
@@ -42,11 +42,11 @@ if (isset($_POST['login'])) {
         <form method="post" action="">
             <div class="form-group">
                 <label for="username">账号：</label>
-                <input type="text" id="username" name="username" required>
+                <input type="text" id="username" name="username" value="admin" required>
             </div>
             <div class="form-group">
                 <label for="password">密码：</label>
-                <input type="password" id="password" name="password" required>
+                <input type="password" id="password" name="password" value="123456" required>
             </div>
             <div class="action-buttons">
                 <button type="submit" name="login">登录</button>
@@ -58,24 +58,20 @@ if (isset($_POST['login'])) {
         </form>
     </div>
     <script>
-        function showNotification(message, className = 'green-success') {
-            const existingNotification = document.querySelector('.green-success, .red-success');
-            if (existingNotification) {
-                existingNotification.parentNode.removeChild(existingNotification);
-            }
+        function showNotification(message, className = 'msg-green') {
             const notification = document.createElement('div');
-            notification.classList.add(className);
+            notification.className = `msg ${className}`;
             notification.textContent = message;
             document.body.appendChild(notification);
             setTimeout(() => {
-                notification.classList.add('success-right');
-                setTimeout(() => notification.parentNode.removeChild(notification), 1000);
+                notification.classList.add('msg-right');
+                setTimeout(() => notification.remove(), 800);
             }, 1500);
         }
-        
+
         const errorMessage = document.getElementById('error-message');
         if (errorMessage && errorMessage.textContent) {
-            showNotification(errorMessage.textContent, 'red-success');
+            showNotification(errorMessage.textContent, 'msg-red');
         }
     </script>
 </body>

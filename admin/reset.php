@@ -5,13 +5,13 @@ require_once '../config/Database.php';
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $config = parse_ini_file('../config/config.ini', true);
 
-    if (!isset($config['Token']['reset_token'])) {
-        $_SESSION['error'] = "配置文件中缺少 reset_token 配置项！";
+    if (!isset($config['Token']['validToken'])) {
+        $_SESSION['error'] = "配置文件中缺少 validToken 配置项";
     } else {
-        $reset_token = $config['Token']['reset_token'];
+        $validToken = $config['Token']['validToken'];
 
-        if ($_POST['token'] !== $reset_token) {
-            $_SESSION['error'] = "无效的 token！";
+        if ($_POST['validToken'] !== $validToken) {
+            $_SESSION['error'] = "无效的 validToken";
         } else {
             $db = Database::getInstance();
             $mysqli = $db->getConnection();
@@ -21,7 +21,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
             $confirm_password = $_POST['confirm_password'];
 
             if ($new_password !== $confirm_password) {
-                $_SESSION['error'] = "两次输入的密码不一致！";
+                $_SESSION['error'] = "两次输入的密码不一致";
             } else {
                 $hashed_password = password_hash($new_password, PASSWORD_DEFAULT);
 
@@ -31,9 +31,9 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 $stmt->execute();
 
                 if ($stmt->affected_rows > 0) {
-                    $_SESSION['success'] = "密码重置成功！";
+                    $_SESSION['success'] = "密码重置成功";
                 } else {
-                    $_SESSION['error'] = "密码重置失败，请重试！";
+                    $_SESSION['error'] = "密码重置失败，请重试";
                 }
             }
         }
@@ -53,7 +53,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 </head>
 <body>
     <div class="login-container">
-        <p>查看config中的reset_token</p>
+        <p>查看配置文件中的validToken</p>
         <p style="color: #ff0000">为了站点安全，请勿告知他人 </p>
         <form method="POST" action="">
             <div class="form-group">
@@ -69,8 +69,8 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
                 <input type="password" id="confirm_password" name="confirm_password" required>
             </div>
             <div class="form-group">
-                <label for="token">Token</label>
-                <input type="text" id="token" name="token" required>
+                <label for="validToken">Valid Token</label>
+                <input type="text" id="validToken" name="validToken" required>
             </div>
             <button type="submit">重置密码</button>
             <div class="reset-password">
@@ -87,29 +87,25 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
         </form>
     </div>
     <script>
-        function showNotification(message, className = 'green-success') {
-            const existingNotification = document.querySelector('.green-success, .red-success');
-            if (existingNotification) {
-                existingNotification.parentNode.removeChild(existingNotification);
-            }
+        function showNotification(message, className = 'msg-green') {
             const notification = document.createElement('div');
-            notification.classList.add(className);
+            notification.className = `msg ${className}`;
             notification.textContent = message;
             document.body.appendChild(notification);
             setTimeout(() => {
-                notification.classList.add('success-right');
-                setTimeout(() => notification.parentNode.removeChild(notification), 1000);
+                notification.classList.add('msg-right');
+                setTimeout(() => notification.remove(), 800);
             }, 1500);
         }
-        
+
         const errorMessage = document.getElementById('error-message');
         if (errorMessage && errorMessage.textContent) {
-            showNotification(errorMessage.textContent, 'red-success');
+            showNotification(errorMessage.textContent, 'msg-red');
         }
-        
+
         const successMessage = document.getElementById('success-message');
         if (successMessage && successMessage.textContent) {
-            showNotification(successMessage.textContent, 'green-success');
+            showNotification(successMessage.textContent);
         }
     </script>
 </body>
