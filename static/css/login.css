@@ -101,27 +101,43 @@ button:hover {
     padding: 15px;
     border-radius: 8px;
     color: #fff;
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
     z-index: 9999;
     border: 1px solid rgb(255 255 255 / 20%);
-    animation: fadeInTop .6s forwards;
+    -webkit-animation: fadeInTop .6s forwards;
+            animation: fadeInTop .6s forwards;
 }
 
 /* 背景颜色样式 */
 .msg-red { background-color: rgba(166, 19, 19, 0.7); }
 .msg-green { background-color: rgba(0, 126, 0, 0.7); }
 /* 淡出动画样式 */
-.msg-right { animation: fadeOutRight .8s forwards; }
+.msg-right { -webkit-animation: fadeOutRight .8s forwards; animation: fadeOutRight .8s forwards; }
 
 /* 动画效果 */
+@-webkit-keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes fadeInTop {
     0% { opacity: 0; transform: translateY(-100%); }
     100% { opacity: 1; transform: translateY(0); }
 }
 
+@-webkit-keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+
 @keyframes fadeOutRight {
     0% { opacity: 1; transform: translateX(0); }
     100% { opacity: 0; transform: translateX(100%); }
+}
+
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
 }
 
 @keyframes fadeIn {

@@ -20,6 +20,7 @@ if (isset($_POST['login'])) {
     if ($user && password_verify($password, $user['password'])) {
         $_SESSION['loggedin'] = true;
         $_SESSION['username'] = $username;
+        $_SESSION['user_id'] = $user['id']; // 设置用户ID会话变量
         header("Location: " . $_SERVER['REQUEST_URI']);
         exit;
     } else {
@@ -34,7 +35,7 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/css/login.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/login.css?v=1.6">
 </head>
 <body>
     <div class="login-container">

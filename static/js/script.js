@@ -28,7 +28,7 @@ function setupEventListeners() {
     elements.imageInput.addEventListener('change', handleFiles);
     elements.pasteOrUrlInput.addEventListener('paste', handlePaste);
     elements.pasteOrUrlInput.addEventListener('input', handleUrlInput);
-    elements.deleteImageButton.addEventListener('click', handleDeleteImage);
+    elements.deleteImageButton.addEventListener('click', clearImageInfo);
     elements.imageUploadBox.addEventListener('dragover', handleDragOver);
     elements.imageUploadBox.addEventListener('dragleave', handleDragLeave);
     elements.imageUploadBox.addEventListener('drop', handleDrop);
@@ -47,41 +47,65 @@ function handleFiles() {
 // 处理粘贴事件
 function handlePaste(event) {
     const items = event.clipboardData.items;
+    const files = [];
     for (const item of items) {
         if (item.kind === 'file') {
-            processFile(item.getAsFile());
+            files.push(item.getAsFile());
         }
+    }
+    if (files.length > maxFilesPerUpload) {
+        showNotification(`单次最多粘贴 ${maxFilesPerUpload} 张图片`, 'msg-red');
+        return;
+    }
+    for (const file of files) {
+        processFile(file);
     }
 }
 
 // 处理URL输入
 function handleUrlInput() {
-    loadImageFromUrl(elements.pasteOrUrlInput.value);
+    const url = elements.pasteOrUrlInput.value;
+    if (url.trim() !== '') {
+        if (!isValidUrl(url)) {
+            showNotification("请输入有效的图片URL", 'msg-red');
+            return;
+        }
+        loadImageFromUrl(url);
+    }
+}
+
+// URL格式检查
+function isValidUrl(string) {
+    try {
+        new URL(string);
+        return true;
+    } catch (_) {
+        return false;
+    }
 }
 
 // 处理文件输入
 function handleFileInput(files) {
     if (files.length > 0) {
         if (files.length > maxFilesPerUpload) {
-            showNotification(`一次最多上传 ${maxFilesPerUpload} 张图片`, 'msg-red');
-            clearPreview();
+            showNotification(`单次最多上传 ${maxFilesPerUpload} 张图片`, 'msg-red');
             return;
         }
         for (const file of files) {
-            if (file.size > maxFileSize) {
-                showNotification(`文件大小超过限制，最大允许 ${maxFileSize / 1024 / 1024}MB`, 'msg-red');
-            } else {
-                processFile(file);
-            }
+            processFile(file);
         }
         elements.imageInput.value = '';
     } else {
-        clearPreview();
+        clearImageInfo();
     }
 }
 
 // 处理文件
 function processFile(file) {
+    if (file.size > maxFileSize) {
+        showNotification(`文件大小超过限制，最大允许 ${maxFileSize / 1024 / 1024}MB`, 'msg-red');
+        return;
+    }
     previewImage(file);
     elements.originalSize.textContent = (file.size / 1024).toFixed(2);
     const img = new Image();
@@ -98,33 +122,53 @@ function previewImage(file) {
     const reader = new FileReader();
     reader.onload = () => {
         elements.imagePreview.src = reader.result;
-        elements.imagePreview.style.display = 'block';
         elements.deleteImageButton.style.display = 'block';
     };
     reader.readAsDataURL(file);
 }
 
-// 清除预览
-function clearPreview() {
+// 清除图片信息
+function clearImageInfo() {
     elements.imagePreview.src = 'static/images/svg/up.svg';
     elements.deleteImageButton.style.display = 'none';
+    elements.originalWidth.textContent = '';
+    elements.originalHeight.textContent = '';
+    elements.originalSize.textContent = '';
+    elements.compressedWidth.textContent = '';
+    elements.compressedHeight.textContent = '';
+    elements.compressedSize.textContent = '';
+    const containers = ['imageUrlContainer', 'markdownUrlContainer', 'markdownLinkUrlContainer', 'htmlUrlContainer'];
+    containers.forEach(containerId => {
+        const container = document.getElementById(containerId);
+        while (container.firstChild) {
+            container.removeChild(container.firstChild);
+        }
+    });
+    elements.pasteOrUrlInput.value = '';
+    showNotification('图片信息清理成功');
 }
 
 // 从URL加载图片
 function loadImageFromUrl(url) {
     const img = new Image();
-    img.crossOrigin = "Anonymous";
+    img.crossOrigin = "Anonymous"; // 尝试处理跨域请求
     img.onload = () => {
         elements.imagePreview.src = url;
-        elements.imagePreview.style.display = 'block';
         elements.originalWidth.textContent = img.width;
         elements.originalHeight.textContent = img.height;
         fetch(url, { mode: 'cors' }).then(response => response.blob()).then(blob => {
             elements.originalSize.textContent = (blob.size / 1024).toFixed(2);
             uploadImage(blob);
+            elements.deleteImageButton.style.display = 'block';
+        }).catch(error => {
+            console.error('Fetch error:', error);
+            showNotification("无法加载图片，请检查URL是否正确", 'msg-red');
         });
     };
-    img.onerror = () => showNotification("无法加载图片，请检查URL是否正确", 'msg-red');
+    img.onerror = () => {
+        console.error('Image load error:', url);
+        showNotification("无法加载图片，请检查URL是否正确", 'msg-red');
+    };
     img.src = url;
 }
 
@@ -180,32 +224,6 @@ function handleDrop(event) {
     handleFileInput(event.dataTransfer.files);
 }
 
-// 处理删除图片
-function handleDeleteImage() {
-    clearImageInfo();
-}
-
-// 清除图片信息
-function clearImageInfo() {
-    clearPreview();
-    const inputsToClear = document.querySelectorAll('#urlOutput input');
-    inputsToClear.forEach(input => input.value = '');
-    elements.originalWidth.textContent = '';
-    elements.originalHeight.textContent = '';
-    elements.originalSize.textContent = '';
-    elements.compressedWidth.textContent = '';
-    elements.compressedHeight.textContent = '';
-    elements.compressedSize.textContent = '';
-    const containers = ['imageUrlContainer', 'markdownUrlContainer', 'markdownLinkUrlContainer', 'htmlUrlContainer'];
-    containers.forEach(containerId => {
-        const container = document.getElementById(containerId);
-        while (container.firstChild) {
-            container.removeChild(container.firstChild);
-        }
-    });
-    showNotification('图片信息清理成功');
-}
-
 // 处理上传响应
 function handleUploadResponse(xhr) {
     if (xhr.status === 200) {
@@ -246,7 +264,7 @@ function handleUploadResponse(xhr) {
 function createInput(value, clickHandler) {
     const input = document.createElement('input');
     input.type = 'text';
-    input.className = 'copy-indicator';
+    input.className = 'copy-indicator blur';
     input.value = value;
     input.readOnly = true;
     input.addEventListener('click', clickHandler);

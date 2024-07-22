@@ -1,4 +1,6 @@
 <?php
+session_start();
+
 require_once 'image_processing.php';
 
 use OSS\OssClient;
@@ -8,6 +10,8 @@ use Aws\S3\Exception\S3Exception;
 
 function handleUploadedFile($file, $token, $referer) {
     global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix, $frontendDomain;
+
+    $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
 
     // 判断是否需要验证token
     if (!empty($referer) && strpos($referer, $frontendDomain) !== false) {
@@ -106,6 +110,25 @@ function handleUploadedFile($file, $token, $referer) {
         }
         $compressedSize = filesize($finalFilePath);
 
+        // 获取客户端IP地址
+        function getClientIp() {
+            $ip = $_SERVER['REMOTE_ADDR'];
+
+            if (isset($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+                $ip = $_SERVER['HTTP_X_FORWARDED_FOR'];
+            } elseif (isset($_SERVER['HTTP_CLIENT_IP'])) {
+                $ip = $_SERVER['HTTP_CLIENT_IP'];
+            }
+
+            // 如果 IP 地址包含多个，取第一个
+            $ipList = explode(',', $ip);
+            $ip = trim($ipList[0]);
+
+            return $ip;
+        }
+
+        $upload_ip = getClientIp();
+
         if ($storage === 'oss') {
             try {
                 $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
@@ -123,10 +146,10 @@ function handleUploadedFile($file, $token, $referer) {
                 }
 
                 logMessage("文件上传到OSS成功: $ossFilePath");
-                $fileUrl = $protocol . '://' . $cdndomain . '/' . $ossFilePath;
-                $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage) VALUES (?, ?, ?)");
+                $fileUrl = $protocol . $cdndomain . '/' . $ossFilePath;
+                $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage, size, upload_ip, user_id) VALUES (?, ?, ?, ?, ?, ?)");
                 $storageType = 'oss';
-                $stmt->bind_param("sss", $fileUrl, $ossFilePath, $storageType);
+                $stmt->bind_param("sssdsd", $fileUrl, $ossFilePath, $storageType, $compressedSize, $upload_ip, $user_id);
                 $stmt->execute();
                 $stmt->close();
 
@@ -147,10 +170,10 @@ function handleUploadedFile($file, $token, $referer) {
             }
         } else if ($storage === 'local') {
             logMessage("文件存储在本地: $finalFilePath");
-            $fileUrl = $protocol . '://' . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
-            $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage) VALUES (?, ?, ?)");
+            $fileUrl = $protocol . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
+            $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage, size, upload_ip, user_id) VALUES (?, ?, ?, ?, ?, ?)");
             $storageType = 'local';
-            $stmt->bind_param("sss", $fileUrl, $finalFilePath, $storageType);
+            $stmt->bind_param("sssdsd", $fileUrl, $finalFilePath, $storageType, $compressedSize, $upload_ip, $user_id);
             $stmt->execute();
             $stmt->close();
 
@@ -203,9 +226,9 @@ function handleUploadedFile($file, $token, $referer) {
                     $fileUrl = $customUrlPrefix . '/' . $s3FilePath;
                 }
 
-                $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage) VALUES (?, ?, ?)");
+                $stmt = $mysqli->prepare("INSERT INTO images (url, path, storage, size, upload_ip, user_id) VALUES (?, ?, ?, ?, ?, ?)");
                 $storageType = 's3';
-                $stmt->bind_param("sss", $fileUrl, $s3FilePath, $storageType);
+                $stmt->bind_param("sssdsd", $fileUrl, $s3FilePath, $storageType, $compressedSize, $upload_ip, $user_id);
                 $stmt->execute();
                 $stmt->close();
 

@@ -59,7 +59,9 @@ body {
 }
 
 .radio-group input[type="radio"] {
-    appearance: none;
+    -webkit-appearance: none;
+        -moz-appearance: none;
+            appearance: none;
     width: 20px;
     height: 20px;
     border: 2px solid #ccc;
@@ -120,7 +122,12 @@ body {
     background-color: #4cae4c;
 }
 
-.error {
+.message-box .success {
+    color: #4caf50;
+    text-align: center;
+    margin-bottom: 15px;
+}
+.message-box .error {
     color: red;
     text-align: center;
     margin-bottom: 15px;
@@ -135,7 +142,7 @@ div p {
 div form .form-group input[type="submit"] {
     margin-top: 10px;
 }
-a, .message-box {
+a, .message-box{
     background-color: rgba(255, 255, 255, 0.2);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);

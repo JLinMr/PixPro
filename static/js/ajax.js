@@ -1,9 +1,17 @@
 document.addEventListener('DOMContentLoaded', function() {
+    initialize();
+});
+
+/**
+ * 初始化函数，调用所有必要的设置和加载函数
+ */
+function initialize() {
     loadPage(1);
+    lazyLoadImages();
     setupPagination();
     setupPageInput();
     setupDocumentClickHandler();
-});
+}
 
 /**
  * 设置分页点击事件
@@ -12,6 +20,9 @@ function setupPagination() {
     document.getElementById('pagination').addEventListener('click', handlePaginationClick);
 }
 
+/**
+ * 处理分页点击事件
+ */
 function handlePaginationClick(e) {
     e.preventDefault();
     if (e.target.classList.contains('page-link')) {
@@ -26,7 +37,6 @@ function handlePaginationClick(e) {
 function setupPageInput() {
     const currentTotalPages = document.getElementById('current-total-pages');
     const input = createPageInput();
-
     currentTotalPages.parentNode.appendChild(input);
 
     currentTotalPages.addEventListener('click', () => togglePageInputVisibility(currentTotalPages, input));
@@ -62,17 +72,21 @@ function handlePageInputKeypress(e, input) {
         const page = input.value;
         if (page) {
             loadPage(page);
+            hidePageInput(input, document.getElementById('current-total-pages'));
         }
     }
 }
 
 /**
- * 设置文档点击事件处理程序
+ * 设置点击事件处理程序
  */
 function setupDocumentClickHandler() {
     document.addEventListener('click', handleDocumentClick);
 }
 
+/**
+ * 处理点击事件
+ */
 function handleDocumentClick(e) {
     const input = document.querySelector('.page-input');
     const currentTotalPages = document.getElementById('current-total-pages');
@@ -87,7 +101,6 @@ function handleDocumentClick(e) {
 function hidePageInput(input, currentTotalPages) {
     currentTotalPages.style.display = 'inline-block';
     input.style.display = 'none';
-    input.style.animation = '';
     input.value = '';
 }
 
@@ -100,7 +113,6 @@ function loadPage(page) {
     const loadingIndicator = document.getElementById('loading-indicator');
     const currentTotalPages = document.getElementById('current-total-pages');
 
-    // 显示加载指示器并隐藏画廊和页码
     toggleLoadingIndicator(loadingIndicator, true);
     setElementDisplay([gallery, pagination], 'none');
 
@@ -117,9 +129,12 @@ function loadPage(page) {
         checkPageLimit(page, data.total_pages);
         lazyLoadImages();
 
-        // 延迟200毫秒显示画廊和页码并隐藏加载指示器
         setTimeout(() => {
-            setElementDisplay([gallery, pagination], 'block');
+            if (data.images.length > 0) {
+                setElementDisplay([gallery, pagination], 'block');
+            } else {
+                setElementDisplay([gallery, pagination], 'none');
+            }
             toggleLoadingIndicator(loadingIndicator, false);
         }, 200);
     })
@@ -130,10 +145,31 @@ function loadPage(page) {
 }
 
 /**
- * 显示或隐藏加载指示器
+ * 懒加载图片
  */
-function toggleLoadingIndicator(loadingIndicator, show) {
-    loadingIndicator.style.display = show ? 'block' : 'none';
+function lazyLoadImages() {
+    const lazyImages = document.querySelectorAll('.lazy-image');
+    const observer = new IntersectionObserver(entries => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                const lazyImage = entry.target;
+                const placeholder = lazyImage.previousElementSibling;
+                lazyImage.src = lazyImage.dataset.src;
+                const handleLoad = () => {
+                    lazyImage.classList.add('loaded');
+                    setTimeout(() => placeholder.style.opacity = 0, 50);
+                };
+                lazyImage.onload = handleLoad;
+                lazyImage.onerror = () => {
+                    lazyImage.src = '/static/images/svg/404.svg';
+                    handleLoad();
+                };
+                observer.unobserve(lazyImage);
+            }
+        });
+    }, { threshold: 0.8 });
+
+    lazyImages.forEach(lazyImage => observer.observe(lazyImage));
 }
 
 /**
@@ -148,15 +184,30 @@ function updateGallery(gallery, images) {
                 <button class="copy-btn" data-url="${image.url}"><img src="/static/images/svg/link.svg" alt="Copy" /></button>
                 <button class="delete-btn" data-id="${image.id}" data-path="${image.path}"><img src="/static/images/svg/xmark.svg" alt="X" /></button>
             </div>
+            <div class="image-info">
+                <p class="info-p">大小: <span>${formatFileSize(image.size)}</span></p>
+                <p class="info-p">IP: <span>${image.upload_ip}</span></p>
+                <p class="info-p">时间: <span>${image.created_at}</span></p>
+            </div>
         </div>
     `).join('');
 
-    document.querySelectorAll('.gallery-item').forEach(item => {
-        item.classList.add('visible');
-    });
-
-    // 重新初始化懒加载
     lazyLoadImages();
+}
+
+/**
+ * 显示或隐藏加载指示器
+ */
+function toggleLoadingIndicator(loadingIndicator, show) {
+    loadingIndicator.style.display = show ? 'block' : 'none';
+}
+
+/**
+ * 格式化文件大小
+ */
+function formatFileSize(sizeInBytes) {
+    const sizeInKB = sizeInBytes / 1024;
+    return `${sizeInKB.toFixed(2)} KB`;
 }
 
 /**
@@ -182,7 +233,25 @@ function setElementDisplay(elements, display) {
     });
 }
 
-// 在页面加载完成后调用 loadPage 函数
-window.onload = function() {
-    loadPage(1);
-};
+/**
+ * 检查页码是否超过最大页数
+ */
+function checkPageLimit(page, totalPages) {
+    const input = document.querySelector('.page-input');
+    if (totalPages === 0) {
+        if (!notificationShown) {
+            input.value = '';
+            showNotification('你还没有上传图片呢', 'msg-red');
+            notificationShown = true;
+        }
+    } else if (page > totalPages) {
+        if (!notificationShown) {
+            input.value = '';
+            showNotification('输入的页数超过最大页数，请重新输入', 'msg-red');
+            notificationShown = true;
+            loadPage(1);
+        }
+    } else {
+        notificationShown = false;
+    }
+}

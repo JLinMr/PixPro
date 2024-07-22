@@ -1,7 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     setupCopyAndDeleteHandlers();
     setupScrollToTop();
-    lazyLoadImages();
 });
 
 /**
@@ -23,29 +22,45 @@ function setupCopyAndDeleteHandlers() {
 
     function deleteImage(id, path) {
         if (currentConfirmBox) {
-            currentConfirmBox.classList.remove('fade-out');
-            currentConfirmBox.querySelector('.confirm-message').textContent = '确定删除这张图片吗？';
-        } else {
-            currentConfirmBox = createCustomConfirm();
-            document.body.appendChild(currentConfirmBox);
+            currentConfirmBox.remove();
+            currentConfirmBox = null;
         }
 
-        currentConfirmBox.querySelector('#confirm-delete').addEventListener('click', () => {
+        currentConfirmBox = createCustomConfirm();
+        document.body.appendChild(currentConfirmBox);
+
+        const confirmButton = currentConfirmBox.querySelector('#confirm-delete');
+        const cancelButton = currentConfirmBox.querySelector('#cancel-delete');
+
+        const handleConfirm = () => {
+            confirmButton.blur();
             currentConfirmBox.classList.add('fade-out');
             setTimeout(() => {
                 currentConfirmBox.remove();
                 currentConfirmBox = null;
                 sendDeleteRequest(id, path);
-            }, 500);
-        });
+            });
+        };
 
-        currentConfirmBox.querySelector('#cancel-delete').addEventListener('click', () => {
+        const handleCancel = () => {
+            cancelButton.blur();
             currentConfirmBox.classList.add('fade-out');
             setTimeout(() => {
                 currentConfirmBox.remove();
                 currentConfirmBox = null;
-            }, 500);
-        });
+            });
+        };
+
+        confirmButton.addEventListener('click', handleConfirm);
+        cancelButton.addEventListener('click', handleCancel);
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                handleConfirm();
+            } else if (event.key === 'Escape') {
+                handleCancel();
+            }
+        }, { once: true });
     }
 
     function createCustomConfirm() {
@@ -67,7 +82,7 @@ function setupCopyAndDeleteHandlers() {
         xhr.setRequestHeader('Content-type', 'application/x-www-form-urlencoded');
         xhr.onload = () => {
             const response = JSON.parse(xhr.responseText);
-            showNotification(response.result === 'success' ? response.message : '错误：' + xhr.status, 'msg-red');
+            showNotification(response.result === 'success' ? response.message : '错误信息：' + xhr.status, 'msg-red');
             if (response.result === 'success') document.getElementById('image-' + id)?.remove();
         };
         xhr.onerror = () => showNotification('请求失败。', 'msg-red');
@@ -135,45 +150,4 @@ function showNotification(message, className = 'msg-green') {
     }, 1500);
 }
 
-/**
- * 检查页码是否超过最大页数
- */
-function checkPageLimit(page, totalPages) {
-    const input = document.querySelector('.page-input');
-    if (totalPages === 0) {
-        input.value = '';
-        showNotification('你还没有上传图片呢', 'msg-red');
-    } else if (page > totalPages) {
-        input.value = '';
-        showNotification('输入的页数超过最大页数，请重新输入', 'msg-red');
-        loadPage(1);
-    }
-}
-
-/**
- * 懒加载图片
- */
-function lazyLoadImages() {
-    const lazyImages = document.querySelectorAll('.lazy-image');
-    const observer = new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                const lazyImage = entry.target;
-                const placeholder = lazyImage.previousElementSibling;
-                lazyImage.src = lazyImage.dataset.src;
-                const handleLoad = () => {
-                    lazyImage.classList.add('loaded');
-                    setTimeout(() => placeholder.style.opacity = 0, 50);
-                };
-                lazyImage.onload = handleLoad;
-                lazyImage.onerror = () => {
-                    lazyImage.src = '/static/images/svg/404.svg';
-                    handleLoad();
-                };
-                observer.unobserve(lazyImage);
-            }
-        });
-    }, { threshold: 0.8 });
-
-    lazyImages.forEach(lazyImage => observer.observe(lazyImage));
-}
+let notificationShown = false;

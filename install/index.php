@@ -5,13 +5,13 @@ ini_set('display_errors', 1);
 if (file_exists('install.lock')) {
     echo '
     <!DOCTYPE html>
-    <html lang="en">
+    <html lang="zh-CN">
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>系统已安装</title>
         <link rel="shortcut icon" href="../static/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css">
+        <link rel="stylesheet" type="text/css" href="style.css?v=1.6">
     </head>
     <body>
         <div class="message-box">
@@ -47,49 +47,34 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($mysqli->connect_error) {
             $error = '数据库连接失败: ' . $mysqli->connect_error;
         } else {
-            $checkTableSQL = "SHOW TABLES LIKE 'images'";
-            $result = $mysqli->query($checkTableSQL);
-            if ($result && $result->num_rows === 0) {
-                $createTableSQL = "
-                CREATE TABLE IF NOT EXISTS images (
-                    id INT AUTO_INCREMENT PRIMARY KEY,
-                    url VARCHAR(255) NOT NULL,
-                    path VARCHAR(255) NOT NULL,
-                    storage ENUM('oss', 'local', 's3') NOT NULL,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                ";
-                if ($mysqli->query($createTableSQL) === FALSE) {
-                    $error = '创建数据表失败: ' . $mysqli->error;
-                } else {
-                    // 创建 users 表
-                    $createUsersTableSQL = "
-                    CREATE TABLE IF NOT EXISTS users (
-                        id INT AUTO_INCREMENT PRIMARY KEY,
-                        username VARCHAR(255) NOT NULL UNIQUE,
-                        password VARCHAR(255) NOT NULL
-                    ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-                    ";
-                    if ($mysqli->query($createUsersTableSQL) === FALSE) {
-                        $error = '创建 users 表失败: ' . $mysqli->error;
-                    } else {
-                        // 插入管理员用户
-                        $username = $_POST['mysql_adminUser'];
-                        $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
-                        $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
-                        $stmt = $mysqli->prepare($insertAdminSQL);
-                        $stmt->bind_param("ss", $username, $password);
-                        if ($stmt->execute()) {
-                            header('Location: ?step=2');
-                            exit;
-                        } else {
-                            $error = '插入管理员用户失败: ' . $stmt->error;
-                        }
-                    }
-                }
-            } else {
+            // 检查并创建或更新表结构
+            updateTableStructure($mysqli);
+
+            // 插入管理员用户之前，检查用户是否已存在
+            $username = $_POST['mysql_adminUser'];
+            $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
+
+            $checkUserSQL = "SELECT id FROM users WHERE username = ?";
+            $stmt = $mysqli->prepare($checkUserSQL);
+            $stmt->bind_param("s", $username);
+            $stmt->execute();
+            $result = $stmt->get_result();
+
+            if ($result->num_rows > 0) {
+                // 用户已存在，跳过插入操作
                 header('Location: ?step=2');
                 exit;
+            } else {
+                // 用户不存在，插入新用户
+                $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
+                $stmt = $mysqli->prepare($insertAdminSQL);
+                $stmt->bind_param("ss", $username, $password);
+                if ($stmt->execute()) {
+                    header('Location: ?step=2');
+                    exit;
+                } else {
+                    $error = '插入管理员用户失败: ' . $stmt->error;
+                }
             }
         }
     } elseif ($step === 2) {
@@ -202,6 +187,69 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         exit;
     }
 }
+function updateTableStructure($mysqli) {
+    // 检查并创建或更新 images 表
+    $checkImagesTableSQL = "SHOW TABLES LIKE 'images'";
+    $result = $mysqli->query($checkImagesTableSQL);
+
+    if ($result && $result->num_rows > 0) {
+        // 表已存在，进行结构升级
+        $alterImagesTableSQL = "
+            ALTER TABLE images
+                ADD COLUMN user_id INT UNSIGNED NULL COMMENT '用户ID' AFTER id,
+                MODIFY COLUMN storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
+                ADD COLUMN size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)' AFTER storage,
+                ADD COLUMN upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址' AFTER size;
+        ";
+        if ($mysqli->query($alterImagesTableSQL) === FALSE) {
+            echo '修改 images 表失败: ' . $mysqli->error;
+        }
+    } else {
+        // 表不存在，创建新表
+        $createImagesTableSQL = "
+            CREATE TABLE IF NOT EXISTS images (
+                id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+                user_id INT UNSIGNED NULL COMMENT '用户ID',
+                url VARCHAR(255) NOT NULL COMMENT '图片URL',
+                path VARCHAR(255) NOT NULL COMMENT '图片存储路径',
+                storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
+                size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)',
+                upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址',
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片信息表';
+        ";
+        if ($mysqli->query($createImagesTableSQL) === FALSE) {
+            echo '创建 images 表失败: ' . $mysqli->error;
+        }
+    }
+
+    // 检查并创建或更新 users 表
+    $checkUsersTableSQL = "SHOW TABLES LIKE 'users'";
+    $result = $mysqli->query($checkUsersTableSQL);
+
+    if ($result && $result->num_rows > 0) {
+        // 表已存在，进行结构升级
+        $alterUsersTableSQL = "
+            ALTER TABLE users
+            COMMENT='用户表';
+        ";
+        if ($mysqli->query($alterUsersTableSQL) === FALSE) {
+            echo '修改 users 表失败: ' . $mysqli->error;
+        }
+    } else {
+        // 表不存在，创建新表
+        $createUsersTableSQL = "
+            CREATE TABLE IF NOT EXISTS users (
+                id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户 ID',
+                username VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
+                password VARCHAR(255) NOT NULL COMMENT '密码'
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+        ";
+        if ($mysqli->query($createUsersTableSQL) === FALSE) {
+            echo '创建 users 表失败: ' . $mysqli->error;
+        }
+    }
+}
 ?>
 
 <!DOCTYPE html>
@@ -211,8 +259,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="style.css">
-    <script type="text/javascript" src="script.js" defer></script>
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.6">
+    <script type="text/javascript" src="script.js?v=1.6" defer></script>
 </head>
 <body>
     <div class="container">
@@ -273,11 +321,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                     <label for="protocol">协议头<span style="margin-left: 15px;color: #ff0000;">URL协议头，本地存储和OSS需要配置</span></label>
                     <div class="radio-group">
                         <label>
-                            <input type="radio" id="protocol_https" name="protocol" value="https" required>
+                            <input type="radio" id="protocol_https" name="protocol" value="https://" required>
                             <span>HTTPS</span>
                         </label>
                         <label>
-                            <input type="radio" id="protocol_http" name="protocol" value="http" required>
+                            <input type="radio" id="protocol_http" name="protocol" value="http://" required>
                             <span>HTTP</span>
                         </label>
                     </div>

@@ -1,6 +1,7 @@
 <?php
 session_start();
-
+// 设置缓存控制头部
+header("Cache-Control: max-age=10800");
 // 检查用户是否已登录
 if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
     require_once '../config/Database.php';
@@ -55,8 +56,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/css/admin.css">
-    <link rel="stylesheet" type="text/css" href="/static/css/zoom.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/admin.css?v=1.6">
+    <link rel="stylesheet" type="text/css" href="/static/css/zoom.css?v=1.6">
 </head>
 <body>
     <div id="gallery" class="gallery"></div>
@@ -77,9 +78,9 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
         <img class="zoom-img" id="zoomed-img">
         <button id="next-img" class="nav-btn" onclick="nextImage(event)">&#10095;</button>
     </div>
-    <script src="/static/js/zoom.js" defer></script>
-    <script src="/static/js/admin.js" defer></script>
-    <script src="/static/js/ajax.js" defer></script>
+    <script src="/static/js/zoom.js?v=1.6" defer></script>
+    <script src="/static/js/admin.js?v=1.6" defer></script>
+    <script src="/static/js/ajax.js?v=1.6" defer></script>
 </body>
 </html>
 <?php

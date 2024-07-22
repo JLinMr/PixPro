@@ -1,7 +1,6 @@
 <?php
 session_start();
 require_once '../config/Database.php';
-
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $config = parse_ini_file('../config/config.ini', true);
 
@@ -49,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>重置密码</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/css/login.css">
+    <link rel="stylesheet" type="text/css" href="/static/css/login.css?v=1.6">
 </head>
 <body>
     <div class="login-container">

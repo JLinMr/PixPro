@@ -1,4 +1,4 @@
-/* 禁用用户选择 */
+/* 禁止用户选择文本和元素 */
 * {
     -webkit-user-select: none;
     -moz-user-select: none;
@@ -16,16 +16,22 @@ a, button, input, #imageUploadBox {
     cursor: url(/static/images/link.png) 16 16, pointer;
 }
 
+/* 设置文本元素的鼠标样式 */
 p, span, h2, label, #pasteOrUrlInput {
     cursor: url(/static/images/text.png) 16 16, text;
 }
 
-/* 输入框占位符颜色 */
+/* 移除链接的下划线 */
+a {
+    text-decoration: none;
+}
+
+/* 设置输入框占位符的颜色 */
 ::-webkit-input-placeholder {
     color: #555;
 }
 
-/* 隐藏默认的 range 样式 */
+/* 隐藏默认的 range 控件样式 */
 input[type="range"] {
     -webkit-appearance: none;
     width: 100%;
@@ -37,7 +43,7 @@ input[type="range"] {
     border-radius: 5px;
 }
 
-/* 滑块样式 */
+/* 自定义 range 控件滑块的样式 */
 input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
@@ -46,15 +52,13 @@ input[type="range"]::-webkit-slider-thumb {
     background: #4CAF50;
     border-radius: 50%;
 }
-
 input[type="range"]::-moz-range-thumb {
     width: 20px;
     height: 20px;
     background: #4CAF50;
     border-radius: 50%;
 }
-
-/* 滑块悬停样式 */
+/* range 控件滑块悬停时的样式 */
 input[type="range"]:hover {
     background: rgb(255 255 255 / 40%);
 }
@@ -64,7 +68,7 @@ input[type="range"]:hover {
     width: 0;
 }
 
-/* 鼠标指针样式 */
+/* 定义自定义鼠标指针样式 */
 #cursor {
     position: fixed;
     width: 16px;
@@ -78,112 +82,147 @@ input[type="range"]:hover {
     transition-property: background, opacity, transform;
 }
 
+/* 当鼠标指针不活动时的样式 */
 #cursor.hidden {
     opacity: 0;
 }
 
+/* 当鼠标指针活动时的样式 */
 #cursor.active {
     opacity: .5;
     transform: scale(.5);
 }
-
 @media (max-width: 768px) {
     #cursor {
         display: none;
     }
 }
-
 /* 主体样式 */
 body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    margin: 0;
-    color: #000;
-    padding: 20px 30px 0 30px;
+    padding: 20px 0 0 0;
     background: url(/static/images/bg.webp) no-repeat 100% 100% / cover fixed;
     -webkit-tap-highlight-color: transparent;
 }
 
-/* 通用背景和阴影样式 */
-nav, #urlOutput, #imageInfo, #imageUploadBox, #pasteOrUrlInput, .logotitle, .uploadForm, .tab-buttons, .copy-indicator {
+/* 模糊背景效果 */
+.blur {
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     border: 1px solid rgb(255 255 255 / 20%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
     background: linear-gradient(120deg, rgb(255 255 255 / 20%) 0, rgb(170 170 170 / 20%) 100%);
-    animation: fadeIn 0.5s ease-in-out forwards;
+    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
+            animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 /* 导航栏样式 */
-nav {
-    border-radius: 8px;
+header {
+    border-radius: 10px;
     margin-bottom: 20px;
 }
 
-nav a {
+/* 导航链接样式 */
+header a.header-link {
     float: left;
     padding: 15px;
     text-decoration: none;
-    border-radius: 8px;
+    border-radius: 10px;
     transition: background-color 0.3s, color 0.3s;
 }
 
-/* 上传表单样式 */
-.uploadForm, #uploadForm {
-    padding: 20px;
-    border-radius: 8px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    width: 100%;
-    max-width: 500px;
+/* 鼠标悬停效果 */
+header a.header-link:hover {
+    background: rgb(255 255 255 / 20%);
 }
 
-#uploadForm {
-    padding: 0;
+/* 主要内容区域 */
+main {
+    width: 100%;
+    max-width: 540px;
+}
+
+/* 上传表单样式 */
+.uploadForm {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
 }
 
 /* 删除图片按钮样式 */
-#deleteImageButton {
+.deleteImageButton {
     display: none;
     position: absolute;
     top: 0;
     right: 0;
-    background-color: #a21e1e;
+    background-color: rgba(204, 0, 0, 0.7);
     border: none;
+    outline: none;
     border-radius: 20px;
     padding: 5px 5px 1px 5px;
-    font-size: 16px;
-    margin: 5px;
+    margin: 7px;
     z-index: 99;
+    box-shadow: 0px 0px 9px rgba(204, 0, 0, 0.7);
+    -webkit-backdrop-filter: blur(10px);
+            backdrop-filter: blur(10px);
 }
 
-#deleteImageButton img:hover {
+/* 删除按钮鼠标悬停旋转效果 */
+.deleteImageButton:hover img {
     transition: transform .4s ease-in-out;
     transform: rotate(180deg);
 }
 
-/* 图片输入框样式 */
+/* 图片上传区域样式 */
+.imageUploadBox {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed #ccc;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    box-sizing: border-box;
+    transition: all 0.3s;
+}
+
+/* 图片上传区域鼠标悬停效果 */
+.imageUploadBox:hover {
+    border: 2px dashed #777;
+}
+
+/* 隐藏的文件输入框 */
 #imageInput {
     opacity: 0;
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    top: 0;
-    left: 0;
+    display: none;
 }
 
 /* 图片预览样式 */
-#imagePreview {
+.imagePreview {
     max-width: 100%;
     max-height: 100%;
+    border-radius: 10px;
     z-index: 10;
-    border-radius: 8px;
 }
 
-/* 参数区域样式 */
-#parameters {
+/* 粘贴或URL输入框样式 */
+.pasteOrUrlInput {
+    width: 100%;
+    padding: 10px;
+    font-size: 16px;
+    border-radius: 10px;
+    outline: 0;
+    border: 1px solid #aaa;
+    transition: all 0.3s;
+    box-sizing: border-box;
+    margin-bottom: 10px;
+}
+
+/* 参数输入组 */
+.parameters {
     display: flex;
     flex-direction: column;
     gap: 10px;
@@ -191,59 +230,46 @@ nav a {
     margin-bottom: 10px;
 }
 
-/* 输入框样式 */
-#pasteOrUrlInput {
+/* 参数标签样式 */
+.parameters label {
+    display: flex;
+    justify-content: space-between;
     width: 100%;
-    padding: 10px;
-    font-size: 16px;
-    border-radius: 8px;
-    outline: 0;
-    border: 1px solid #aaa;
-    transition: all 0.3s;
-    box-sizing: border-box;
 }
 
-#pasteOrUrlInputBox {
-    width: 100%;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-/* 进度条容器样式 */
-#progressContainer {
+/* 进度条容器 */
+.progressContainer {
     position: fixed;
     width: 100%;
     background: rgb(255 255 255 / 20%);
-    border-radius: 8px;
+    border-radius: 10px;
     overflow: hidden;
     display: none;
-    bottom: 0px;
+    right: 0;
+    bottom: 0;
     font-size: 10px;
 }
 
 /* 进度条样式 */
-#progressBar {
+.progressBar {
     height: 12px;
     background: linear-gradient(90deg, rgb(244 128 246 / 40%) 0, rgb(115 255 241 / 60%) 50%, rgb(115 255 241 / 80%) 100%);
-    width: 0;
     text-align: center;
     color: white;
     font-weight: bold;
     transition: width 0.3s;
     line-height: 12px;
-    border-radius: 8px;
+    border-radius: 10px;
 }
 
-/* URL输出区域样式 */
-#urlOutput {
-    width: 100%;
-    max-width: 500px;
-    margin-top: 20px;
+/* URL输出样式 */
+.urlOutput {
+    border-radius: 10px;
     padding: 20px;
-    border-radius: 8px;
-    word-wrap: break-word;
+    margin-bottom: 20px;
 }
 
+/* 输入滚动容器 */
 .input-container {
     height: 105px;
     overflow-y: scroll;
@@ -251,12 +277,14 @@ nav a {
     background: url(/static/images/svg/wheel.svg) no-repeat right;
 }
 
+/* 标签按钮容器 */
 .tab-buttons {
     display: flex;
     border-radius: 8px;
     margin: 5px 0;
 }
 
+/* 单个标签按钮 */
 .tab-button {
     flex: 1;
     padding: 7.5px;
@@ -269,25 +297,25 @@ nav a {
     z-index: 1;
 }
 
-.tab-button.active,
-nav a:hover {
-    background-color: rgb(208 208 208 / .2);
-}
-
-nav a img,
+/* 标签按钮中的图片 */
+header a img,
 .tab-button img {
     transition: transform 0.3s ease;
 }
 
-nav a:hover img,
+/* 标签按钮鼠标悬停效果 */
+header a:hover img,
 .tab-button:hover img {
     transform: scale(1.2);
 }
 
+/* 标签页内容 */
 .tab-content {
-    animation: fadeIn 0.3s ease-in-out forwards;
+    -webkit-animation: fadeIn 0.3s ease-in-out forwards;
+            animation: fadeIn 0.3s ease-in-out forwards;
 }
 
+/* 标签按钮伪元素 */
 .tab-button::before {
     content: '';
     position: absolute;
@@ -303,18 +331,22 @@ nav a:hover img,
     z-index: -1;
 }
 
+/* 激活状态的标签按钮伪元素 */
 .tab-button.active::before {
     transform: scaleX(1);
 }
 
+/* 默认隐藏的标签页 */
 .tab-pane {
     display: none;
 }
 
+/* 显示的标签页 */
 .tab-pane.active {
     display: block;
 }
 
+/* 复制指示器样式 */
 .copy-indicator {
     padding: 10px;
     width: 100%;
@@ -328,106 +360,59 @@ nav a:hover img,
     -webkit-appearance: none;
 }
 
-/* 图片上传框样式 */
-#imageUploadBox {
-    width: 100%;
-    height: 200px;
+/* 图片信息展示样式 */
+.imageInfo {
     display: flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px dashed #ccc;
-    border-radius: 8px;
-    margin-bottom: 10px;
-    position: relative;
-    transition: all 0.3s;
+    border-radius: 10px;
+    margin-bottom: 20px;
 }
 
-#imageUploadBox:hover {
-    border: 2px dashed #777;
-}
-
-/* 参数标签样式 */
-#parameters label {
-    display: flex;
-    justify-content: space-between;
-    width: 100%;
-}
-
-/* 图片信息区域样式 */
-#imageInfo {
-    width: 100%;
-    max-width: 500px;
-    padding: 20px;
-    border-radius: 8px;
-    margin-top: 20px;
-}
-
-/* 图片信息标题样式 */
-#imageInfo h2 {
-    text-align: center;
-    margin-top: 0;
-}
-
-/* URL列表悬停样式 */
+/* 鼠标悬停时的复制按钮和粘贴/URL输入框样式 */
 .copy-indicator:hover,
-#pasteOrUrlInput:hover {
+.pasteOrUrlInput:hover {
     border-color: #76c7c0;
 }
 
-/* 双列布局样式 */
-.double-column-layout {
-    display: flex;
-    justify-content: space-between;
-}
-
-.double-column-layout > div {
+/* 图片信息块样式 */
+.image-info-block {
     flex-basis: 50%;
+    text-align: center;
     box-sizing: border-box;
 }
 
-/* 移动端适配 */
-@media (max-width: 767px) {
-    .double-column-layout > div {
-        flex-basis: 100%;
-    }
-}
-
-/* 页脚导航样式 */
-.footer-nav {
-    margin-top: 20px;
+/* 页脚样式 */
+footer {
+    color: #ccc;
     text-align: center;
-}
-
-/* 页脚链接样式 */
-footer a {
-    margin: 0 6px;
-    color: #ccc;
     font-size: 12px;
-    transition: all .4s;
-    text-decoration: none;
 }
 
-footer a:hover {
-    color: pink;
+/* 页脚文本动画 */
+footer span {
+    margin: 0 5px;
+    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
+            animation: fadeIn 0.5s ease-in-out forwards;
 }
 
-/* ICP备案信息样式 */
+/* ICP备案样式 */
 .icp {
-    margin: 10px 0 10px;
-    color: #ccc;
-    font-size: 12px;
+    margin-top: 10px;
 }
 
+/* ICP备案链接样式 */
 .icp a {
     font-weight: 800;
     color: #54a2c2;
+    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
+            animation: fadeIn 0.5s ease-in-out forwards;
 }
 
-footer a,.icp span,.logo-btn {
-    animation: fadeIn 0.5s ease-in-out forwards;
+/* 链接鼠标悬停颜色变化 */
+.icp a:hover {
+    color: pink;
 }
 
-/* 按钮样式 */
+/* Logo按钮样式 */
 .logo-btn {
     margin: 0 12px;
     color: #f45873;
@@ -438,9 +423,11 @@ footer a,.icp span,.logo-btn {
     border: none;
     background: 0 0;
     -webkit-appearance: none;
+    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
+            animation: fadeIn 0.5s ease-in-out forwards;
 }
 
-/* 声明样式 */
+/* Logo标题样式 */
 .logotitle {
     position: fixed;
     top: 0;
@@ -455,6 +442,7 @@ footer a,.icp span,.logo-btn {
     border-radius: 15px;
 }
 
+/* 当logo按钮获得焦点时，显示logotitle */
 .logo-btn:focus ~ em {
     right: 0;
 }
@@ -467,10 +455,12 @@ footer a,.icp span,.logo-btn {
     padding: 15px;
     border-radius: 8px;
     color: #fff;
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
     z-index: 9999;
     border: 1px solid rgb(255 255 255 / 20%);
-    animation: fadeInTop .6s forwards;
+    -webkit-animation: fadeInTop .6s forwards;
+            animation: fadeInTop .6s forwards;
 }
 
 /* 背景颜色样式 */
@@ -478,24 +468,40 @@ footer a,.icp span,.logo-btn {
 .msg-red { background-color: rgba(166, 19, 19, 0.7); }
 
 /* 向右侧淡出 */
-.msg-right { animation: fadeOutRight .8s forwards; }
+.msg-right { -webkit-animation: fadeOutRight .8s forwards; animation: fadeOutRight .8s forwards; }
 
 /* 顶部淡入动画 */
+@-webkit-keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes fadeInTop {
     0% { opacity: 0; transform: translateY(-100%); }
     100% { opacity: 1; transform: translateY(0); }
 }
 /* 向右淡出动画 */
+@-webkit-keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
 @keyframes fadeOutRight {
     0% { opacity: 1; transform: translateX(0); }
     100% { opacity: 0; transform: translateX(100%); }
 }
 /*	淡入动画 */
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
 @keyframes fadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
 }
 /* 淡出动画 */
+@-webkit-keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
 @keyframes fadeOut {
     0% { opacity: 1; }
     100% { opacity: 0; }

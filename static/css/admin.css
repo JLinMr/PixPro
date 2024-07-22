@@ -48,7 +48,7 @@ body {
 	}
 }
 
-@media screen and (max-width: 500px) {
+@media screen and (max-width: 560px) {
 	.gallery {
 		-moz-column-count: 2 !important;
 		     column-count: 2 !important;
@@ -88,7 +88,8 @@ body {
 	margin: 20px 10px 40px 10px;
 	border-radius: 10px;
 	z-index: 20;
-	animation: fadeIn 0.5s ease-in-out forwards;
+	-webkit-animation: fadeIn 0.5s ease-in-out forwards;
+	        animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .gallery-item {
@@ -96,6 +97,10 @@ body {
 	     break-inside: avoid;
 	margin-bottom: 10px;
 	position: relative;
+	/*min-height: 135px;*/
+ /*   display: flex;*/
+ /*   justify-content: center;*/
+ /*   align-items: center;*/
 }
 
 .gallery-item img {
@@ -111,10 +116,37 @@ body {
     left: 0;
     width: 100%;
     height: 100%;
-    max-width: 230px;
-    max-height: 135px;
-    background: url(/static/images/svg/replace.svg) center;
+    background: url(/static/images/svg/replace.svg)no-repeat center;
     z-index: 1;
+}
+.image-info {
+    position: absolute;
+    bottom: 10px;
+    left: 5%;
+    z-index: 30;
+    width: 90%;
+    opacity: 0;
+    color: #fff;
+    padding: 10px;
+    border-radius: 8px;
+    pointer-events: none;
+    transition: opacity .6s, transform .6s; 
+    backdrop-filter: blur(5px);
+    background: rgba(0, 0, 0, .3);
+    box-sizing: border-box;
+    transform: translateY(10px) scale(0.9);
+}
+
+.gallery-item:hover .image-info {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.info-p {
+    font-size: 12px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
 }
 
 .lazy-image {
@@ -144,11 +176,12 @@ body {
 .delete-btn,
 .copy-btn {
 	border-radius: 8px;
-	padding: 5px 5px 0 5px;
+	padding: 5px 5px 1px 5px;
 	border: 1px solid rgb(255 255 255 / 20%);
 	background-color: rgb(0 0 0 / 20%);
 	backdrop-filter: blur(5px);
 	-webkit-backdrop-filter: blur(5px);
+	outline: none;
 	transition: background-color 0.3s, color 0.3s;
 }
 
@@ -157,19 +190,26 @@ body {
 }
 
 .copy-btn:hover {
-	background-color: rgb(10 141 16 / 70%);
+	background-color: rgb(10 141 16 / .7);
 }
 .delete-btn img, .copy-btn img {
 	transition: transform .4s ease-in-out;
 }
-.delete-btn img:hover {
+.delete-btn:hover img {
 	transform: rotate(180deg);
 }
-.copy-btn img:hover {
-	animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+.copy-btn:hover img {
+	-webkit-animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
+	        animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
     transform: translate3d(0, 0, 0);
 }
 /*复制按钮动画*/
+@-webkit-keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+    40%, 60% { transform: translate3d(2px, 0, 0); }
+}
 @keyframes shake {
     10%, 90% { transform: translate3d(-1px, 0, 0); }
     20%, 80% { transform: translate3d(2px, 0, 0); }
@@ -184,7 +224,8 @@ body {
 	bottom: 0;
 	transform: translateX(-50%);
 	z-index: 10;
-	animation: fadeIn 0.5s ease-in-out forwards;
+	-webkit-animation: fadeIn 0.5s ease-in-out forwards;
+	        animation: fadeIn 0.5s ease-in-out forwards;
 }
 
 .page-link {
@@ -219,7 +260,7 @@ a.ellipsis {
 .rightside {
 	position: fixed;
 	right: 20px;
-	bottom: 20px;
+	bottom: 40px;
 	display: flex;
 	flex-direction: column;
 	align-items: flex-end;
@@ -262,7 +303,7 @@ a.ellipsis {
 #confirm-delete:hover,
 .rightside a:hover,
 .page-link:hover {
-	background-color: rgb(0 0 0 / 20%);
+	background-color: rgb(0 0 0 / .3);
 	color: #fff;
 }
 
@@ -274,10 +315,12 @@ a.ellipsis {
     padding: 15px;
     border-radius: 8px;
     color: #fff;
-    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
     z-index: 9999;
     border: 1px solid rgb(255 255 255 / 20%);
-    animation: fadeInTop .6s forwards;
+    -webkit-animation: fadeInTop .6s forwards;
+            animation: fadeInTop .6s forwards;
 }
 
 /* 背景颜色样式 */
@@ -285,24 +328,40 @@ a.ellipsis {
 .msg-red { background-color: rgba(166, 19, 19, 0.7); }
 
 /* 向右侧淡出 */
-.msg-right { animation: fadeOutRight .8s forwards; }
+.msg-right { -webkit-animation: fadeOutRight .8s forwards; animation: fadeOutRight .8s forwards; }
 
 /* 顶部淡入动画 */
+@-webkit-keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
 @keyframes fadeInTop {
     0% { opacity: 0; transform: translateY(-100%); }
     100% { opacity: 1; transform: translateY(0); }
 }
 /* 向右淡出动画 */
+@-webkit-keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
 @keyframes fadeOutRight {
     0% { opacity: 1; transform: translateX(0); }
     100% { opacity: 0; transform: translateX(100%); }
 }
 /*	淡入动画 */
+@-webkit-keyframes fadeIn {
+    0% { opacity: 0; }
+    100% { opacity: 1; }
+}
 @keyframes fadeIn {
     0% { opacity: 0; }
     100% { opacity: 1; }
 }
 /* 淡出动画 */
+@-webkit-keyframes fadeOut {
+    0% { opacity: 1; }
+    100% { opacity: 0; }
+}
 @keyframes fadeOut {
     0% { opacity: 1; }
     100% { opacity: 0; }
@@ -316,11 +375,13 @@ a.ellipsis {
 	border-radius: 10px;
 	z-index: 30;
 	border: 1px solid rgb(255 255 255 / 20%);
-	animation: fadeIn 0.3s ease-in-out forwards;
+	-webkit-animation: fadeIn 0.3s ease-in-out forwards;
+	        animation: fadeIn 0.3s ease-in-out forwards;
 }
 
 .fade-out {
-	animation: fadeOut 0.3s ease-out forwards;
+	-webkit-animation: fadeOut 0.3s ease-out forwards;
+	        animation: fadeOut 0.3s ease-out forwards;
 }
 
 .confirm-message {
@@ -364,7 +425,8 @@ a.ellipsis {
 	border-top: 4px solid #0099ff;
 	border-radius: 50%;
 	margin: auto;
-	animation: spin 1s linear infinite;
+	-webkit-animation: spin 1s linear infinite;
+	        animation: spin 1s linear infinite;
 }
 
 .loading-text {
@@ -374,6 +436,10 @@ a.ellipsis {
 }
 
 /* 旋转动画 */
+@-webkit-keyframes spin {
+	0% { transform: rotate(0deg); }
+	100% { transform: rotate(360deg); }
+}
 @keyframes spin {
 	0% { transform: rotate(0deg); }
 	100% { transform: rotate(360deg); }
@@ -382,7 +448,7 @@ a.ellipsis {
 #current-total-pages {
     position: fixed;
     border-radius: 8px;
-    bottom: 30px;
+    bottom: 50px;
     width: 40px;
     height: 40px;
     color: #eee;
@@ -401,7 +467,7 @@ a.ellipsis {
 .page-input {
 	position: fixed;
 	border-radius: 8px;
-	bottom: 30px;
+	bottom: 50px;
 	width: 40px;
 	height: 40px;
 	color: #eee;;
@@ -410,9 +476,11 @@ a.ellipsis {
 	outline: none;
 	text-align: center;
 	border: 1px solid rgb(255 255 255 / 20%);
-	animation-fill-mode: forwards;
+	-webkit-animation-fill-mode: forwards;
+	        animation-fill-mode: forwards;
 	-moz-appearance: textfield;
-	appearance: textfield;
+	-webkit-appearance: textfield;
+	        appearance: textfield;
 }
 
 /*全局滚动条*/
