@@ -47,34 +47,41 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($mysqli->connect_error) {
             $error = '数据库连接失败: ' . $mysqli->connect_error;
         } else {
-            // 检查并创建或更新表结构
-            updateTableStructure($mysqli);
+            $mysqli->begin_transaction();
+            try {
+                // 检查并创建或更新表结构
+                updateTableStructure($mysqli);
 
-            // 插入管理员用户之前，检查用户是否已存在
-            $username = $_POST['mysql_adminUser'];
-            $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
+                // 插入管理员用户之前，检查用户是否已存在
+                $username = $_POST['mysql_adminUser'];
+                $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
 
-            $checkUserSQL = "SELECT id FROM users WHERE username = ?";
-            $stmt = $mysqli->prepare($checkUserSQL);
-            $stmt->bind_param("s", $username);
-            $stmt->execute();
-            $result = $stmt->get_result();
+                $checkUserSQL = "SELECT id FROM users WHERE username = ?";
+                $stmt = $mysqli->prepare($checkUserSQL);
+                $stmt->bind_param("s", $username);
+                $stmt->execute();
+                $result = $stmt->get_result();
 
-            if ($result->num_rows > 0) {
-                // 用户已存在，跳过插入操作
-                header('Location: ?step=2');
-                exit;
-            } else {
-                // 用户不存在，插入新用户
-                $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
-                $stmt = $mysqli->prepare($insertAdminSQL);
-                $stmt->bind_param("ss", $username, $password);
-                if ($stmt->execute()) {
+                if ($result->num_rows > 0) {
+                    // 用户已存在，跳过插入操作
                     header('Location: ?step=2');
                     exit;
                 } else {
-                    $error = '插入管理员用户失败: ' . $stmt->error;
+                    // 用户不存在，插入新用户
+                    $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
+                    $stmt = $mysqli->prepare($insertAdminSQL);
+                    $stmt->bind_param("ss", $username, $password);
+                    if ($stmt->execute()) {
+                        $mysqli->commit();
+                        header('Location: ?step=2');
+                        exit;
+                    } else {
+                        throw new Exception('插入管理员用户失败: ' . $stmt->error);
+                    }
                 }
+            } catch (Exception $e) {
+                $mysqli->rollback();
+                $error = $e->getMessage();
             }
         }
     } elseif ($step === 2) {
@@ -194,15 +201,30 @@ function updateTableStructure($mysqli) {
 
     if ($result && $result->num_rows > 0) {
         // 表已存在，进行结构升级
-        $alterImagesTableSQL = "
-            ALTER TABLE images
-                ADD COLUMN user_id INT UNSIGNED NULL COMMENT '用户ID' AFTER id,
-                MODIFY COLUMN storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
-                ADD COLUMN size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)' AFTER storage,
-                ADD COLUMN upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址' AFTER size;
-        ";
-        if ($mysqli->query($alterImagesTableSQL) === FALSE) {
-            echo '修改 images 表失败: ' . $mysqli->error;
+        $columnsToCheck = ['user_id', 'storage', 'size', 'upload_ip'];
+        $alterNeeded = false;
+
+        foreach ($columnsToCheck as $column) {
+            $checkColumnSQL = "SHOW COLUMNS FROM images LIKE '$column'";
+            $columnResult = $mysqli->query($checkColumnSQL);
+
+            if ($columnResult->num_rows == 0) {
+                $alterNeeded = true;
+                break;
+            }
+        }
+
+        if ($alterNeeded) {
+            $alterImagesTableSQL = "
+                ALTER TABLE images
+                    ADD COLUMN user_id INT UNSIGNED NULL COMMENT '用户ID' AFTER id,
+                    MODIFY COLUMN storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
+                    ADD COLUMN size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)' AFTER storage,
+                    ADD COLUMN upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址' AFTER size;
+            ";
+            if ($mysqli->query($alterImagesTableSQL) === FALSE) {
+                throw new Exception('修改 images 表失败: ' . $mysqli->error);
+            }
         }
     } else {
         // 表不存在，创建新表
@@ -219,7 +241,7 @@ function updateTableStructure($mysqli) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片信息表';
         ";
         if ($mysqli->query($createImagesTableSQL) === FALSE) {
-            echo '创建 images 表失败: ' . $mysqli->error;
+            throw new Exception('创建 images 表失败: ' . $mysqli->error);
         }
     }
 
@@ -234,7 +256,7 @@ function updateTableStructure($mysqli) {
             COMMENT='用户表';
         ";
         if ($mysqli->query($alterUsersTableSQL) === FALSE) {
-            echo '修改 users 表失败: ' . $mysqli->error;
+            throw new Exception('修改 users 表失败: ' . $mysqli->error);
         }
     } else {
         // 表不存在，创建新表
@@ -246,7 +268,7 @@ function updateTableStructure($mysqli) {
             ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
         ";
         if ($mysqli->query($createUsersTableSQL) === FALSE) {
-            echo '创建 users 表失败: ' . $mysqli->error;
+            throw new Exception('创建 users 表失败: ' . $mysqli->error);
         }
     }
 }
