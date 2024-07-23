@@ -72,7 +72,7 @@ const maxFilesPerUpload = 5; // 最多上传5张图片
 
 ### 下载upgit
 
-前往下载 [Upgit](https://alist.ruom.top/开源-项目/PixPro--拥有强大压缩率的开源图床/Upgit)
+前往下载 [Upgit](https://alist.ruom.top/%E5%BC%80%E6%BA%90-%E9%A1%B9%E7%9B%AE/PixPro--%E6%8B%A5%E6%9C%89%E5%BC%BA%E5%A4%A7%E5%8E%8B%E7%BC%A9%E7%8E%87%E7%9A%84%E5%BC%80%E6%BA%90%E5%9B%BE%E5%BA%8A/Upgit)
 
 ### 如何配置
 
