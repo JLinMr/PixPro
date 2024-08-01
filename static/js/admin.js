@@ -12,16 +12,17 @@ function initializeFancyBox() {
         // 默认配置选项
         Toolbar: {
             display: {
-                left: ["infobar"],
+                left: [],
                 middle: [
                     "rotateCCW",
                     "rotateCW",
                     "flipX",
                     "flipY",
                 ],
-                right: ["thumbs", "close"],
+                right: ["close"],
             },
         },
+        Thumbs: false,
     });
 }
 
