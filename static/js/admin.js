@@ -1,7 +1,29 @@
 document.addEventListener('DOMContentLoaded', () => {
     setupCopyAndDeleteHandlers();
     setupScrollToTop();
+    initializeFancyBox();
 });
+
+/**
+ * 初始化 FancyBox
+ */
+function initializeFancyBox() {
+    Fancybox.bind('[data-fancybox="gallery"]', {
+        // 默认配置选项
+        Toolbar: {
+            display: {
+                left: ["infobar"],
+                middle: [
+                    "rotateCCW",
+                    "rotateCW",
+                    "flipX",
+                    "flipY",
+                ],
+                right: ["thumbs", "close"],
+            },
+        },
+    });
+}
 
 /**
  * 设置复制和删除按钮的事件处理程序

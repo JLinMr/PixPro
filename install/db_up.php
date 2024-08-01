@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据库表升级</title>
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.6">
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.7">
 </head>
 <body>
     <div class="message-box">
@@ -14,17 +14,14 @@
         $db = Database::getInstance();
         $mysqli = $db->getConnection();
 
-        // 检查并升级 images 表
         $checkImagesTableSQL = "SHOW TABLES LIKE 'images'";
         $result = $mysqli->query($checkImagesTableSQL);
 
         if ($result && $result->num_rows > 0) {
-            // 检查 user_id 列是否存在
             $checkUserIdColumnSQL = "SHOW COLUMNS FROM images LIKE 'user_id'";
             $userIdColumnResult = $mysqli->query($checkUserIdColumnSQL);
 
             if ($userIdColumnResult->num_rows == 0) {
-                // user_id 列不存在，添加新列
                 $alterUserIdColumnSQL = "
                     ALTER TABLE images
                     ADD COLUMN user_id INT UNSIGNED NULL COMMENT '用户ID' AFTER id;
@@ -38,12 +35,10 @@
                 echo '<p class="info">images 表中已存在 user_id 列，跳过添加。</p>';
             }
 
-            // 检查 size 列是否存在
             $checkSizeColumnSQL = "SHOW COLUMNS FROM images LIKE 'size'";
             $sizeColumnResult = $mysqli->query($checkSizeColumnSQL);
 
             if ($sizeColumnResult->num_rows == 0) {
-                // size 列不存在，添加新列
                 $alterSizeColumnSQL = "
                     ALTER TABLE images
                     ADD COLUMN size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)' AFTER storage;
@@ -57,12 +52,10 @@
                 echo '<p class="info">images 表中已存在 size 列，跳过添加。</p>';
             }
 
-            // 检查 upload_ip 列是否存在
             $checkUploadIpColumnSQL = "SHOW COLUMNS FROM images LIKE 'upload_ip'";
             $uploadIpColumnResult = $mysqli->query($checkUploadIpColumnSQL);
 
             if ($uploadIpColumnResult->num_rows == 0) {
-                // upload_ip 列不存在，添加新列
                 $alterUploadIpColumnSQL = "
                     ALTER TABLE images
                     ADD COLUMN upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址' AFTER size;
@@ -76,7 +69,6 @@
                 echo '<p class="info">images 表中已存在 upload_ip 列，跳过添加。</p>';
             }
 
-            // 修改 storage 列
             $alterStorageColumnSQL = "
                 ALTER TABLE images
                 MODIFY COLUMN storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式';
@@ -90,12 +82,10 @@
             echo '<p class="error">images 表不存在，无法升级。</p>';
         }
 
-        // 检查并升级 users 表
         $checkUsersTableSQL = "SHOW TABLES LIKE 'users'";
         $result = $mysqli->query($checkUsersTableSQL);
 
         if ($result && $result->num_rows > 0) {
-            // 表已存在，进行结构升级
             $alterUsersTableSQL = "
                 ALTER TABLE users
                 COMMENT='用户表';
@@ -108,10 +98,39 @@
         } else {
             echo '<p class="error">users 表不存在，无法升级。</p>';
         }
-
-        // 关闭数据库连接
         $mysqli->close();
+
+        $configFilePath = '../config/config.ini';
+        if (file_exists($configFilePath)) {
+            $configContent = file_get_contents($configFilePath);
+            $configContent = preg_replace_callback('/^\s*protocol\s*=\s*(\w+)\s*$/m', function($matches) {
+                $protocol = $matches[1];
+                if ($protocol === 'http') {
+                    return "protocol = http://";
+                } elseif ($protocol === 'https') {
+                    return "protocol = https://";
+                }
+                return $matches[0];
+            }, $configContent);
+
+            if (file_put_contents($configFilePath, $configContent) !== FALSE) {
+                echo '<p class="success">config.ini 文件中的 protocol 配置项已更新！</p>';
+                chmod($configFilePath, 0600);
+            } else {
+                echo '<p class="error">无法写入 config.ini 文件。</p>';
+            }
+        } else {
+            echo '<p class="error">config.ini 文件不存在。</p>';
+        }
+
+        $currentFilePath = __FILE__;
+        if (unlink($currentFilePath)) {
+            echo '<p class="success">升级完成，当前文件已删除。</p>';
+        } else {
+            echo '<p class="error">无法删除当前文件。</p>';
+        }
         ?>
+    <a href="/">回到首页</a>
     </div>
 </body>
 </html>

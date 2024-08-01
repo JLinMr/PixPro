@@ -15,40 +15,47 @@ function renderImages($mysqli, $items_per_page, $offset) {
     return $images;
 }
 
-function renderPagination($current_page, $total_pages, $max_display_pages = 3) {
+function renderPagination($current_page, $total_pages) {
+    // 如果总页码大于1，则显示分页链接
     if ($total_pages > 1) {
         $pagination = '<div class="pagination">';
 
+        // 如果当前页码大于1，则显示上一页链接
         if ($current_page > 1) {
             $pagination .= '<a class="page-link prev-page" data-page="' . ($current_page - 1) . '" href="">&laquo;</a> ';
         }
 
-        // 显示首页
-        $pagination .= '<a class="page-link' . ($current_page == 1 ? ' active' : '') . '" data-page="1" href="">1</a> ';
-
-        // 如果当前页码大于5，显示省略号
-        if ($current_page > 5) {
+        // 如果当前页码小于等于4，显示1-4页的链接
+        if ($current_page <= 4) {
+            for ($i = 1; $i <= min(4, $total_pages); $i++) {
+                $pagination .= '<a class="page-link' . ($i == $current_page ? ' active' : '') . '" data-page="' . $i . '" href="">' . $i . '</a> ';
+            }
+            // 如果总页码大于4，显示省略号和末页链接
+            if ($total_pages > 4) {
+                $pagination .= '<a class="ellipsis page-link">...</a> ';
+                $pagination .= '<a class="page-link" data-page="' . $total_pages . '" href="">' . $total_pages . '</a>';
+            }
+        } else {
+            // 如果当前页码大于4，显示首页链接、省略号、当前页码和末页链接
+            $pagination .= '<a class="page-link" data-page="1" href="">1</a> ';
             $pagination .= '<a class="ellipsis page-link">...</a> ';
+
+            // 如果总页码减去当前页码小于4，显示末尾4页的链接
+            if ($total_pages - $current_page < 4) {
+                for ($i = $total_pages - 3; $i <= $total_pages; $i++) {
+                    if ($i > 0) {
+                        $pagination .= '<a class="page-link' . ($i == $current_page ? ' active' : '') . '" data-page="' . $i . '" href="">' . $i . '</a> ';
+                    }
+                }
+            } else {
+                // 如果总页码减去当前页码大于等于4，显示当前页码、省略号和末页链接
+                $pagination .= '<a class="page-link active" data-page="' . $current_page . '" href="">' . $current_page . '</a> ';
+                $pagination .= '<a class="ellipsis page-link">...</a> ';
+                $pagination .= '<a class="page-link" data-page="' . $total_pages . '" href="">' . $total_pages . '</a>';
+            }
         }
 
-        // 计算中间页码的开始和结束
-        $start_page = max(2, $current_page - intval($max_display_pages / 2));
-        $end_page = min($total_pages - 1, $start_page + $max_display_pages - 1);
-        $start_page = max(2, $end_page - $max_display_pages + 1);
-
-        // 显示中间页码
-        for ($i = $start_page; $i <= $end_page; $i++) {
-            $pagination .= '<a class="page-link' . ($i == $current_page ? ' active' : '') . '" data-page="' . $i . '" href="">' . $i . '</a> ';
-        }
-
-        // 如果总页码超过五，并且当前页码小于倒数第二页，显示省略号
-        if ($total_pages > 5 && $current_page < $total_pages - 1) {
-            $pagination .= '<a class="ellipsis page-link">...</a> ';
-        }
-
-        // 显示末页
-        $pagination .= '<a class="page-link' . ($current_page == $total_pages ? ' active' : '') . '" data-page="' . $total_pages . '" href="">' . $total_pages . '</a>';
-
+        // 如果当前页码小于总页码，显示下一页链接
         if ($current_page < $total_pages) {
             $pagination .= '<a class="page-link next-page" data-page="' . ($current_page + 1) . '" href="">&raquo;</a>';
         }

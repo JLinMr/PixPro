@@ -170,3 +170,44 @@ a {
     font-size: 18px;
     margin-bottom: 20px;
 }
+/* 消息弹窗样式 */
+.msg {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+    z-index: 9999;
+    border: 1px solid rgb(255 255 255 / 20%);
+    -webkit-animation: fadeInTop .6s forwards;
+            animation: fadeInTop .6s forwards;
+}
+
+/* 背景颜色样式 */
+.msg-green { background-color: rgba(0, 126, 0, 0.7); }
+.msg-red { background-color: rgba(166, 19, 19, 0.7); }
+
+/* 向右侧淡出 */
+.msg-right { -webkit-animation: fadeOutRight .8s forwards; animation: fadeOutRight .8s forwards; }
+
+/* 顶部淡入动画 */
+@-webkit-keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+/* 向右淡出动画 */
+@-webkit-keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+@keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}

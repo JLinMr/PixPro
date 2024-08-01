@@ -179,7 +179,7 @@ function updateGallery(gallery, images) {
     gallery.innerHTML = images.map(image => `
         <div class="gallery-item" id="image-${image.id}">
             <div class="placeholder-image"></div>
-            <img src="" data-src="${image.url}" alt="Image" class="lazy-image" onerror="this.onerror=null;this.src='/static/images/svg/404.svg';" onclick="zoomImage(this)">
+            <img src="" data-src="${image.url}" alt="Image" class="lazy-image" onerror="this.onerror=null;this.src='/static/images/svg/404.svg';" data-fancybox="gallery">
             <div class="action-buttons">
                 <button class="copy-btn" data-url="${image.url}"><img src="/static/images/svg/link.svg" alt="Copy" /></button>
                 <button class="delete-btn" data-id="${image.id}" data-path="${image.path}"><img src="/static/images/svg/xmark.svg" alt="X" /></button>

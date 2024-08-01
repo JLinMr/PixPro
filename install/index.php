@@ -11,7 +11,7 @@ if (file_exists('install.lock')) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>系统已安装</title>
         <link rel="shortcut icon" href="../static/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css?v=1.6">
+        <link rel="stylesheet" type="text/css" href="style.css?v=1.7">
     </head>
     <body>
         <div class="message-box">
@@ -27,8 +27,16 @@ if (file_exists('install.lock')) {
 
 $step = isset($_GET['step']) ? intval($_GET['step']) : 1;
 $error = '';
+$adminUserExists = false;
+$adminUsername = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    handlePostRequest($step);
+}
+
+function handlePostRequest($step) {
+    global $error, $adminUserExists, $adminUsername;
+
     if ($step === 1) {
         $mysql = [
             'dbHost' => $_POST['mysql_dbHost'],
@@ -36,52 +44,31 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             'dbUser' => $_POST['mysql_dbUser'],
             'dbPass' => $_POST['mysql_dbPass'],
         ];
-        $configContent = "[MySQL]\n";
-        foreach ($mysql as $key => $value) {
-            $configContent .= "$key = $value\n";
-        }
-        file_put_contents('../config/config.ini', $configContent);
-        chmod('../config/config.ini', 0777);
+        saveConfig($mysql);
 
-        $mysqli = new mysqli($mysql['dbHost'], $mysql['dbUser'], $mysql['dbPass'], $mysql['dbName']);
-        if ($mysqli->connect_error) {
-            $error = '数据库连接失败: ' . $mysqli->connect_error;
-        } else {
+        try {
+            $mysqli = new mysqli($mysql['dbHost'], $mysql['dbUser'], $mysql['dbPass'], $mysql['dbName']);
+            if ($mysqli->connect_error) {
+                throw new Exception('数据库连接失败: ' . $mysqli->connect_error);
+            }
+
             $mysqli->begin_transaction();
             try {
-                // 检查并创建或更新表结构
-                updateTableStructure($mysqli);
-
-                // 插入管理员用户之前，检查用户是否已存在
-                $username = $_POST['mysql_adminUser'];
-                $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
-
-                $checkUserSQL = "SELECT id FROM users WHERE username = ?";
-                $stmt = $mysqli->prepare($checkUserSQL);
-                $stmt->bind_param("s", $username);
-                $stmt->execute();
-                $result = $stmt->get_result();
-
-                if ($result->num_rows > 0) {
-                    // 用户已存在，跳过插入操作
-                    header('Location: ?step=2');
-                    exit;
-                } else {
-                    // 用户不存在，插入新用户
-                    $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
-                    $stmt = $mysqli->prepare($insertAdminSQL);
-                    $stmt->bind_param("ss", $username, $password);
-                    if ($stmt->execute()) {
-                        $mysqli->commit();
-                        header('Location: ?step=2');
-                        exit;
-                    } else {
-                        throw new Exception('插入管理员用户失败: ' . $stmt->error);
-                    }
-                }
+                createOrUpdateTableStructure($mysqli);
+                handleAdminUser($mysqli);
+                $mysqli->commit();
+                header('Location: ?step=2');
+                exit;
             } catch (Exception $e) {
                 $mysqli->rollback();
-                $error = $e->getMessage();
+                throw $e;
+            }
+        } catch (Exception $e) {
+            $error = $e->getMessage();
+            if (strpos($error, 'Access denied') !== false) {
+                $error = '数据库用户名或密码错误';
+            } elseif (strpos($error, 'Unknown database') !== false) {
+                $error = '数据库名错误';
             }
         }
     } elseif ($step === 2) {
@@ -103,37 +90,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
         $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
-        function addOSSConfig(&$configContent) {
-            $configContent .= "\n[OSS]\n";
-            $configContent .= "accessKeyId = \n";
-            $configContent .= "accessKeySecret = \n";
-            $configContent .= "endpoint = \n";
-            $configContent .= "bucket = \n";
-            $configContent .= "cdndomain = \n";
-        }
-
-        function addS3Config(&$configContent) {
-            $configContent .= "\n[S3]\n";
-            $configContent .= "s3Region = \n";
-            $configContent .= "s3Bucket = \n";
-            $configContent .= "s3Endpoint = \n";
-            $configContent .= "s3AccessKeyId = \n";
-            $configContent .= "s3AccessKeySecret = \n";
-            $configContent .= "customUrlPrefix = \n";
-        }
-
-        if ($storage === 'local') {
-            addOSSConfig($configContent);
-            addS3Config($configContent);
-        }
-
-        if ($storage === 'oss') {
-            addS3Config($configContent);
-        }
-
-        if ($storage === 's3') {
-            addOSSConfig($configContent);
-        }
+        addOSSConfig($configContent);
+        addS3Config($configContent);
 
         file_put_contents('../config/config.ini', $configContent);
         chmod('../config/config.ini', 0600);
@@ -150,127 +108,146 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             exit;
         }
     } elseif ($step === 3) {
-        $oss = [
-            'accessKeyId' => $_POST['oss_accessKeyId'],
-            'accessKeySecret' => $_POST['oss_accessKeySecret'],
-            'endpoint' => $_POST['oss_endpoint'],
-            'bucket' => $_POST['oss_bucket'],
-            'cdndomain' => $_POST['oss_cdndomain'],
-        ];
-
-        $configContent = file_get_contents('../config/config.ini');
-        $configContent .= "\n[OSS]\n";
-        foreach ($oss as $key => $value) {
-            $configContent .= "$key = $value\n";
-        }
-
-        file_put_contents('../config/config.ini', $configContent);
-        chmod('../config/config.ini', 0600);
-
-        file_put_contents('install.lock', '安装锁');
-        header('Location: ?step=5');
-        exit;
+        handleOSSConfig();
     } elseif ($step === 4) {
-        $s3 = [
-            's3Region' => $_POST['s3_region'],
-            's3Bucket' => $_POST['s3_bucket'],
-            's3Endpoint' => $_POST['s3_endpoint'],
-            's3AccessKeyId' => $_POST['s3_accessKeyId'],
-            's3AccessKeySecret' => $_POST['s3_accessKeySecret'],
-            'customUrlPrefix' => $_POST['s3_customUrlPrefix'],
-        ];
-
-        $configContent = file_get_contents('../config/config.ini');
-        $configContent .= "\n[S3]\n";
-        foreach ($s3 as $key => $value) {
-            $configContent .= "$key = $value\n";
-        }
-
-        file_put_contents('../config/config.ini', $configContent);
-        chmod('../config/config.ini', 0600);
-
-        file_put_contents('install.lock', '安装锁');
-        header('Location: ?step=5');
-        exit;
+        handleS3Config();
     }
 }
-function updateTableStructure($mysqli) {
-    // 检查并创建或更新 images 表
-    $checkImagesTableSQL = "SHOW TABLES LIKE 'images'";
-    $result = $mysqli->query($checkImagesTableSQL);
 
-    if ($result && $result->num_rows > 0) {
-        // 表已存在，进行结构升级
-        $columnsToCheck = ['user_id', 'storage', 'size', 'upload_ip'];
-        $alterNeeded = false;
+function saveConfig($mysql) {
+    $configContent = "[MySQL]\n";
+    foreach ($mysql as $key => $value) {
+        $configContent .= "$key = $value\n";
+    }
+    file_put_contents('../config/config.ini', $configContent);
+    chmod('../config/config.ini', 0777);
+}
 
-        foreach ($columnsToCheck as $column) {
-            $checkColumnSQL = "SHOW COLUMNS FROM images LIKE '$column'";
-            $columnResult = $mysqli->query($checkColumnSQL);
-
-            if ($columnResult->num_rows == 0) {
-                $alterNeeded = true;
-                break;
-            }
-        }
-
-        if ($alterNeeded) {
-            $alterImagesTableSQL = "
-                ALTER TABLE images
-                    ADD COLUMN user_id INT UNSIGNED NULL COMMENT '用户ID' AFTER id,
-                    MODIFY COLUMN storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
-                    ADD COLUMN size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)' AFTER storage,
-                    ADD COLUMN upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址' AFTER size;
-            ";
-            if ($mysqli->query($alterImagesTableSQL) === FALSE) {
-                throw new Exception('修改 images 表失败: ' . $mysqli->error);
-            }
-        }
-    } else {
-        // 表不存在，创建新表
-        $createImagesTableSQL = "
-            CREATE TABLE IF NOT EXISTS images (
-                id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-                user_id INT UNSIGNED NULL COMMENT '用户ID',
-                url VARCHAR(255) NOT NULL COMMENT '图片URL',
-                path VARCHAR(255) NOT NULL COMMENT '图片存储路径',
-                storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
-                size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)',
-                upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址',
-                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片信息表';
-        ";
-        if ($mysqli->query($createImagesTableSQL) === FALSE) {
-            throw new Exception('创建 images 表失败: ' . $mysqli->error);
-        }
+function createOrUpdateTableStructure($mysqli) {
+    $createImagesTableSQL = "
+        CREATE TABLE IF NOT EXISTS images (
+            id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
+            user_id INT UNSIGNED NULL COMMENT '用户ID',
+            url VARCHAR(255) NOT NULL COMMENT '图片URL',
+            path VARCHAR(255) NOT NULL COMMENT '图片存储路径',
+            storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
+            size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)',
+            upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址',
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片信息表';
+    ";
+    if ($mysqli->query($createImagesTableSQL) === FALSE) {
+        throw new Exception('创建 images 表失败: ' . $mysqli->error);
     }
 
-    // 检查并创建或更新 users 表
-    $checkUsersTableSQL = "SHOW TABLES LIKE 'users'";
-    $result = $mysqli->query($checkUsersTableSQL);
+    $createUsersTableSQL = "
+        CREATE TABLE IF NOT EXISTS users (
+            id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户 ID',
+            username VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
+            password VARCHAR(255) NOT NULL COMMENT '密码'
+        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
+    ";
+    if ($mysqli->query($createUsersTableSQL) === FALSE) {
+        throw new Exception('创建 users 表失败: ' . $mysqli->error);
+    }
+}
 
-    if ($result && $result->num_rows > 0) {
-        // 表已存在，进行结构升级
-        $alterUsersTableSQL = "
-            ALTER TABLE users
-            COMMENT='用户表';
-        ";
-        if ($mysqli->query($alterUsersTableSQL) === FALSE) {
-            throw new Exception('修改 users 表失败: ' . $mysqli->error);
+function handleAdminUser($mysqli) {
+    global $adminUserExists, $adminUsername;
+
+    $username = $_POST['mysql_adminUser'];
+    $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
+
+    $checkUserSQL = "SELECT id, username FROM users WHERE username = ?";
+    $stmt = $mysqli->prepare($checkUserSQL);
+    $stmt->bind_param("s", $username);
+    $stmt->execute();
+    $result = $stmt->get_result();
+
+    if ($result->num_rows > 0) {
+        $adminUserExists = true;
+        $adminUsername = $username;
+
+        $updateAdminSQL = "UPDATE users SET password = ? WHERE username = ?";
+        $stmt = $mysqli->prepare($updateAdminSQL);
+        $stmt->bind_param("ss", $password, $username);
+        if (!$stmt->execute()) {
+            throw new Exception('更新管理员用户失败: ' . $stmt->error);
         }
     } else {
-        // 表不存在，创建新表
-        $createUsersTableSQL = "
-            CREATE TABLE IF NOT EXISTS users (
-                id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户 ID',
-                username VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
-                password VARCHAR(255) NOT NULL COMMENT '密码'
-            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
-        ";
-        if ($mysqli->query($createUsersTableSQL) === FALSE) {
-            throw new Exception('创建 users 表失败: ' . $mysqli->error);
+        $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
+        $stmt = $mysqli->prepare($insertAdminSQL);
+        $stmt->bind_param("ss", $username, $password);
+        if (!$stmt->execute()) {
+            throw new Exception('插入管理员用户失败: ' . $stmt->error);
         }
     }
+}
+
+function addOSSConfig(&$configContent) {
+    $configContent .= "\n[OSS]\n";
+    $configContent .= "accessKeyId = \n";
+    $configContent .= "accessKeySecret = \n";
+    $configContent .= "endpoint = \n";
+    $configContent .= "bucket = \n";
+    $configContent .= "cdndomain = \n";
+}
+
+function addS3Config(&$configContent) {
+    $configContent .= "\n[S3]\n";
+    $configContent .= "s3Region = \n";
+    $configContent .= "s3Bucket = \n";
+    $configContent .= "s3Endpoint = \n";
+    $configContent .= "s3AccessKeyId = \n";
+    $configContent .= "s3AccessKeySecret = \n";
+    $configContent .= "customUrlPrefix = \n";
+}
+
+function handleOSSConfig() {
+    $oss = [
+        'accessKeyId' => $_POST['oss_accessKeyId'],
+        'accessKeySecret' => $_POST['oss_accessKeySecret'],
+        'endpoint' => $_POST['oss_endpoint'],
+        'bucket' => $_POST['oss_bucket'],
+        'cdndomain' => $_POST['oss_cdndomain'],
+    ];
+
+    $configContent = file_get_contents('../config/config.ini');
+    $configContent .= "\n[OSS]\n";
+    foreach ($oss as $key => $value) {
+        $configContent .= "$key = $value\n";
+    }
+
+    file_put_contents('../config/config.ini', $configContent);
+    chmod('../config/config.ini', 0600);
+
+    file_put_contents('install.lock', '安装锁');
+    header('Location: ?step=5');
+    exit;
+}
+
+function handleS3Config() {
+    $s3 = [
+        's3Region' => $_POST['s3_region'],
+        's3Bucket' => $_POST['s3_bucket'],
+        's3Endpoint' => $_POST['s3_endpoint'],
+        's3AccessKeyId' => $_POST['s3_accessKeyId'],
+        's3AccessKeySecret' => $_POST['s3_accessKeySecret'],
+        'customUrlPrefix' => $_POST['s3_customUrlPrefix'],
+    ];
+
+    $configContent = file_get_contents('../config/config.ini');
+    $configContent .= "\n[S3]\n";
+    foreach ($s3 as $key => $value) {
+        $configContent .= "$key = $value\n";
+    }
+
+    file_put_contents('../config/config.ini', $configContent);
+    chmod('../config/config.ini', 0600);
+
+    file_put_contents('install.lock', '安装锁');
+    header('Location: ?step=5');
+    exit;
 }
 ?>
 
@@ -281,8 +258,20 @@ function updateTableStructure($mysqli) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.6">
-    <script type="text/javascript" src="script.js?v=1.6" defer></script>
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.7">
+    <script type="text/javascript" src="script.js?v=1.7" defer></script>
+    <script>
+        function showNotification(message, className = 'msg-red') {
+            const notification = document.createElement('div');
+            notification.className = `msg ${className}`;
+            notification.textContent = message;
+            document.body.appendChild(notification);
+            setTimeout(() => {
+                notification.classList.add('msg-right');
+                setTimeout(() => notification.remove(), 800);
+            }, 1500);
+        }
+    </script>
 </head>
 <body>
     <div class="container">
@@ -290,7 +279,9 @@ function updateTableStructure($mysqli) {
         <?php if ($step === 1): ?>
             <form method="POST">
                 <?php if ($error): ?>
-                    <div class="error"><?= $error ?></div>
+                    <script>
+                        showNotification('<?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>', 'msg-red');
+                    </script>
                 <?php endif; ?>
                 <div class="form-group">
                     <label for="mysql_dbHost">主机地址</label>
@@ -310,7 +301,7 @@ function updateTableStructure($mysqli) {
                 </div>
                 <div class="form-group">
                     <label for="mysql_adminUser">管理员账号</label>
-                    <input type="text" id="mysql_adminUser" name="mysql_adminUser" required>
+                    <input type="text" id="mysql_adminUser" name="mysql_adminUser" value="<?= $adminUsername ?>" required>
                 </div>
                 <div class="form-group">
                     <label for="mysql_adminPass">管理员密码</label>
@@ -422,5 +413,14 @@ function updateTableStructure($mysqli) {
             </div>
         <?php endif; ?>
     </div>
+    <script>
+    // 生成随机 Token
+    document.getElementById('generateToken').addEventListener('click', e => {
+        e.preventDefault();
+        const token = Array.from({length: 32}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+        [Math.random() * 62 | 0]).join('');
+        document.getElementById('validToken').value = token;
+    });
+    </script>
 </body>
 </html>

@@ -5,22 +5,39 @@
 	user-select: none;
 }
 
-html {
-    cursor: url(/static/images/alternate.png) 16 16, auto;
+html,
+.fancybox__viewport.is-draggable {
+    cursor: url(/static/images/alternate.png) 16 16, auto!important;
 }
 
 a,
 button,
 input,
-img {
-    cursor: url(/static/images/link.png) 16 16, pointer;
+img,
+/* 兼容fancybox */
+.f-button,
+.is-modern .f-thumbs__track::before,
+.fancybox__viewport.is-dragging {
+    cursor: url(/static/images/link.png) 16 16, pointer!important;
 }
 
 p,
 span,
 h2,
 label {
-    cursor: url(/static/images/text.png) 16 16, text;
+    cursor: url(/static/images/text.png) 16 16, text!important;
+}
+/* fancybox样式优化 */
+img.fancybox-image {
+    border-radius: 8px;
+}
+.f-button {
+	backdrop-filter: blur(5px);
+}
+@media (hover: hover) {
+    .f-button:hover:not([disabled]) {
+        border-radius: 50%!important;
+    }
 }
 
 body {
@@ -130,7 +147,7 @@ body {
     padding: 10px;
     border-radius: 8px;
     pointer-events: none;
-    transition: opacity .6s, transform .6s; 
+    transition: opacity .6s, transform .6s;
     backdrop-filter: blur(5px);
     background: rgba(0, 0, 0, .3);
     box-sizing: border-box;
