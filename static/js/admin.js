@@ -13,16 +13,13 @@ function initializeFancyBox() {
         Toolbar: {
             display: {
                 left: [],
-                middle: [
-                    "rotateCCW",
-                    "rotateCW",
-                    "flipX",
-                    "flipY",
-                ],
-                right: ["close"],
+                middle: [],
+                right: ["thumbs","close"],
             },
         },
-        Thumbs: false,
+        Thumbs: {
+            showOnStart: false,
+        },
     });
 }
 
