@@ -38,6 +38,7 @@
 
 如果需要更换存储策略，需安装后修改`config.ini`文件
 
+
 ### 安全配置
 
 设置站点伪静态或修改nginx配置
@@ -45,6 +46,25 @@
 location ~* /config\.ini$ {
     deny all;
 }
+```
+### 登录上传
+
+跟目录下头部`php`内容修改为
+
+```PHP
+<?php
+session_start();
+
+if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+    header('Location: /admin');
+    exit();
+}
+
+if (!file_exists('install/install.lock')) {
+    header('Location: /install');
+    exit;
+}
+?>
 ```
 
 ### 上传限制
