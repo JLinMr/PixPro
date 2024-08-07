@@ -9,17 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
  */
 function initializeFancyBox() {
     Fancybox.bind('[data-fancybox="gallery"]', {
-        // 默认配置选项
         Toolbar: {
             display: {
                 left: [],
                 middle: [],
-                right: ["thumbs","close"],
+                right: ["close"],
             },
         },
-        Thumbs: {
-            showOnStart: false,
-        },
+        Thumbs: false,
     });
 }
 

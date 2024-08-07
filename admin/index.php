@@ -57,9 +57,12 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
     <title>管理后台</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
     <link rel="stylesheet" type="text/css" href="/static/css/admin.css?v=1.7">
-    <!-- 引入Fancybox 你可以使用第三方CDN进行加速 当前版本 Fancybox5.0.36 -->
+    <!-- 引入Fancybox 当前版本 Fancybox5.0.36 -->
     <link rel="stylesheet" href="/static/css/fancybox.min.css?v=5.0.36">
     <script src="/static/js/fancybox.umd.min.js?v=5.0.36" defer></script>
+    <!-- 你可以使用第三方CDN进行加速 当前版本 Fancybox5.0.36 -->
+    <!-- <link rel="stylesheet" href="https://cdn.cbd.int/pixpro@1.7.0/static/css/fancybox.min.css?v=5.0.36">
+    <script src="https://cdn.cbd.int/pixpro@1.7.0/static/js/fancybox.umd.min.js?v=5.0.36" defer></script> -->
 </head>
 <body>
     <div id="gallery" class="gallery"></div>
