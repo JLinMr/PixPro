@@ -49,7 +49,7 @@ location ~* /config\.ini$ {
 ```
 ### 登录上传
 
-跟目录下头部`php`内容修改为
+根目录下`index.php`头部`php`内容修改为
 
 ```PHP
 <?php
