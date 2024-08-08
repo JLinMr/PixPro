@@ -8,17 +8,17 @@
 
 /* 设置全局鼠标样式 */
 html {
-    cursor: url(/static/images/alternate.png) 16 16, auto;
+    cursor: url(../images/alternate.png) 16 16, auto;
 }
 
 /* 设置特定元素的鼠标样式 */
 a, button, input, #imageUploadBox {
-    cursor: url(/static/images/link.png) 16 16, pointer;
+    cursor: url(../images/link.png) 16 16, pointer;
 }
 
 /* 设置文本元素的鼠标样式 */
 p, span, h2, label, #pasteOrUrlInput {
-    cursor: url(/static/images/text.png) 16 16, text;
+    cursor: url(../images/text.png) 16 16, text;
 }
 
 /* 移除链接的下划线 */
@@ -103,7 +103,7 @@ body {
     flex-direction: column;
     align-items: center;
     padding: 20px 0 0 0;
-    background: url(/static/images/bg.webp) no-repeat 100% 100% / cover fixed;
+    background: url(../images/bg.webp) no-repeat 100% 100% / cover fixed;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -274,7 +274,7 @@ main {
     height: 105px;
     overflow-y: scroll;
     box-sizing: border-box;
-    background: url(/static/images/svg/wheel.svg) no-repeat right;
+    background: url(../images/svg/wheel.svg) no-repeat right;
 }
 
 /* 标签按钮容器 */

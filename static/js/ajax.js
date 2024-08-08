@@ -167,7 +167,7 @@ function lazyLoadImages() {
                 observer.unobserve(lazyImage);
             }
         });
-    }, { threshold: 0.8 });
+    }, { threshold: 0.4 });
 
     lazyImages.forEach(lazyImage => observer.observe(lazyImage));
 }
