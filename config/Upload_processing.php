@@ -24,7 +24,7 @@ function handleUploadedFile($file, $token, $referer) {
     }
 
     $uploadDir = 'i/';
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/octet-stream'];
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'image/svg', 'application/octet-stream'];
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $fileMimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -44,7 +44,7 @@ function handleUploadedFile($file, $token, $referer) {
     }
 
     $imageInfo = getimagesize($file['tmp_name']);
-    if ($imageInfo === false && $fileMimeType !== 'image/svg+xml') {
+    if ($imageInfo === false && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/svg') {
         logMessage('文件不是有效的图片');
         respondAndExit(['result' => 'error', 'code' => 406, 'message' => '文件不是有效的图片']);
     }
@@ -88,7 +88,7 @@ function handleUploadedFile($file, $token, $referer) {
                 $finalFilePath = $newFilePathWithoutExt . '.webp';
                 unlink($newFilePath);
             }
-        } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml') {
+        } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/svg') {
             $convertSuccess = convertToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
             if ($convertSuccess) {
                 $finalFilePath = $newFilePathWithoutExt . '.webp';
@@ -96,7 +96,7 @@ function handleUploadedFile($file, $token, $referer) {
             }
         }
 
-        if ($fileMimeType !== 'image/svg+xml') {
+        if ($fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/svg') {
             $compressedInfo = getimagesize($finalFilePath);
             if (!$compressedInfo) {
                 logMessage('无法获取压缩后图片信息');
