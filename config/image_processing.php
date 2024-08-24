@@ -1,40 +1,8 @@
 <?php
 /**
- * 将JPEG图片转换为WebP格式
+ * 将图片转换为WebP格式
  */
-function convertToWebp($source, $destination, $quality = 60) {
-    $info = getimagesize($source);
-
-    if ($info['mime'] == 'image/jpeg') {
-        $image = imagecreatefromjpeg($source);
-    } elseif ($info['mime'] == 'image/gif') {
-        return false;
-    } else {
-        return false;
-    }
-    $width = imagesx($image);
-    $height = imagesy($image);
-    $maxWidth = 2500;
-    $maxHeight = 1600;
-    if ($width > $maxWidth || $height > $maxHeight) {
-        $ratio = min($maxWidth / $width, $maxHeight / $height);
-        $newWidth = round($width * $ratio);
-        $newHeight = round($height * $ratio);
-        $newImage = imagecreatetruecolor($newWidth, $newHeight);
-        imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        imagedestroy($image);
-        $image = $newImage;
-    }
-    $result = imagewebp($image, $destination, $quality);
-    imagedestroy($image);
-    gc_collect_cycles();
-    return $result;
-}
-
-/**
- * 使用Imagick将PNG图片转换为WebP格式
- */
-function convertPngWithImagick($source, $destination, $quality = 60) {
+function ToWebp($source, $destination, $quality) {
     try {
         $image = new Imagick($source);
         $image->setImageFormat('webp');
@@ -49,22 +17,20 @@ function convertPngWithImagick($source, $destination, $quality = 60) {
             $ratio = min($maxWidth / $width, $maxHeight / $height);
             $newWidth = round($width * $ratio);
             $newHeight = round($height * $ratio);
-            $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+            $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_MITCHELL, 1);
         }
         $result = $image->writeImage($destination);
         $image->clear();
         $image->destroy();
+        gc_collect_cycles();
         return $result;
     } catch (Exception $e) {
-        logMessage('Imagick转换PNG失败: ' . $e->getMessage());
+        logMessage('Imagick转换失败: ' . $e->getMessage());
         return false;
     }
 }
 
-/**
- * 使用Imagick将GIF图片转换为WebP格式
- */
-function convertGifToWebp($source, $destination, $quality = 60) {
+function GifToWebp($source, $destination, $quality) {
     try {
         $image = new Imagick();
         $image->readImage($source);

@@ -24,7 +24,7 @@ function handleUploadedFile($file, $token, $referer) {
     }
 
     $uploadDir = 'i/';
-    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/octet-stream'];
+    $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/octet-stream', 'image/avif'];
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
     $fileMimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
@@ -44,7 +44,7 @@ function handleUploadedFile($file, $token, $referer) {
     }
 
     $imageInfo = getimagesize($file['tmp_name']);
-    if ($imageInfo === false && $fileMimeType !== 'image/svg+xml') {
+    if ($imageInfo === false && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/avif') {
         logMessage('文件不是有效的图片');
         respondAndExit(['result' => 'error', 'code' => 406, 'message' => '文件不是有效的图片']);
     }
@@ -62,53 +62,54 @@ function handleUploadedFile($file, $token, $referer) {
     $randomFileName = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
     $newFilePathWithoutExt = $uploadDirWithDatePath . $randomFileName;
     $extension = pathinfo($file['name'], PATHINFO_EXTENSION);
-    if (empty($extension)) {
-        $extension = 'webp';
-    }
     $newFilePath = $newFilePathWithoutExt . '.' . $extension;
-    $finalFilePath = $newFilePath;
 
-    if (move_uploaded_file($file['tmp_name'], $newFilePath)) {
-        logMessage("文件上传成功: $newFilePath");
-        ini_set('memory_limit', '1024M');
-        set_time_limit(300);
-        $quality = isset($_POST['quality']) ? intval($_POST['quality']) : 60;
-
+if (move_uploaded_file($file['tmp_name'], $newFilePath)) {
+    logMessage("接收文件成功: $newFilePath");
+    ini_set('memory_limit', '1024M');
+    set_time_limit(60);
+    $quality = isset($_POST['quality']) ? intval($_POST['quality']) : 70;
+    if ($quality === 100) {
+        $finalFilePath = $newFilePath;
+    } else {
         $convertSuccess = true;
-
-        if ($fileMimeType === 'image/png') {
-            $convertSuccess = convertPngWithImagick($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        if ($fileMimeType === 'image/gif') {
+            $convertSuccess = GifToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
             if ($convertSuccess) {
                 $finalFilePath = $newFilePathWithoutExt . '.webp';
                 unlink($newFilePath);
             }
-        } elseif ($fileMimeType === 'image/gif') {
-            $convertSuccess = convertGifToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/avif') {
+            $convertSuccess = ToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
             if ($convertSuccess) {
                 $finalFilePath = $newFilePathWithoutExt . '.webp';
                 unlink($newFilePath);
             }
-        } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml') {
-            $convertSuccess = convertToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-            if ($convertSuccess) {
-                $finalFilePath = $newFilePathWithoutExt . '.webp';
-                unlink($newFilePath);
-            }
-        }
-
-        if ($fileMimeType !== 'image/svg+xml') {
-            $compressedInfo = getimagesize($finalFilePath);
-            if (!$compressedInfo) {
-                logMessage('无法获取压缩后图片信息');
-                respondAndExit(['result' => 'error', 'code' => 500, 'message' => '无法获取压缩后图片信息']);
-            }
-            $compressedWidth = $compressedInfo[0];
-            $compressedHeight = $compressedInfo[1];
         } else {
-            $compressedWidth = 100;
-            $compressedHeight = 100;
+            $finalFilePath = $newFilePath;
         }
-        $compressedSize = filesize($finalFilePath);
+    }
+
+
+
+if ($fileMimeType !== 'image/svg+xml') {
+    if ($fileMimeType === 'image/avif') {
+        $image = new Imagick($finalFilePath);
+        $compressedWidth = $image->getImageWidth();
+        $compressedHeight = $image->getImageHeight();
+    } else {
+        $compressedInfo = getimagesize($finalFilePath);
+        if (!$compressedInfo) {
+            logMessage('无法获取压缩后图片信息');
+            respondAndExit(['result' => 'error', 'code' => 500, 'message' => '无法获取压缩后图片信息']);
+        }
+        $compressedWidth = $compressedInfo[0];
+        $compressedHeight = $compressedInfo[1];
+    }
+} else {
+    $compressedWidth = 100;
+    $compressedHeight = 100;
+}
 
         // 获取客户端IP地址
         function getClientIp() {
@@ -161,7 +162,6 @@ function handleUploadedFile($file, $token, $referer) {
                     'width' => $compressedWidth,
                     'height' => $compressedHeight,
                     'size' => $compressedSize,
-                    'thumb' => $fileUrl,
                     'path' => $ossFilePath
                 ]);
             } catch (OssException $e) {
@@ -185,7 +185,6 @@ function handleUploadedFile($file, $token, $referer) {
                 'width' => $compressedWidth,
                 'height' => $compressedHeight,
                 'size' => $compressedSize,
-                'thumb' => $fileUrl,
                 'path' => $finalFilePath
             ]);
         } else if ($storage === 's3') {
@@ -240,7 +239,6 @@ function handleUploadedFile($file, $token, $referer) {
                     'width' => $compressedWidth,
                     'height' => $compressedHeight,
                     'size' => $compressedSize,
-                    'thumb' => $fileUrl,
                     'path' => $s3FilePath
                 ]);
             } catch (S3Exception $e) {
