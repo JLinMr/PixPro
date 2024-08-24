@@ -83,4 +83,34 @@ function convertGifToWebp($source, $destination, $quality = 60) {
         return false;
     }
 }
+
+/**
+ * 处理图片压缩
+ */
+function processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality) {
+    $convertSuccess = true;
+    $finalFilePath = $newFilePath;
+
+    if ($fileMimeType === 'image/png') {
+        $convertSuccess = convertPngWithImagick($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        if ($convertSuccess) {
+            $finalFilePath = $newFilePathWithoutExt . '.webp';
+            unlink($newFilePath);
+        }
+    } elseif ($fileMimeType === 'image/gif') {
+        $convertSuccess = convertGifToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        if ($convertSuccess) {
+            $finalFilePath = $newFilePathWithoutExt . '.webp';
+            unlink($newFilePath);
+        }
+    } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml') {
+        $convertSuccess = convertToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        if ($convertSuccess) {
+            $finalFilePath = $newFilePathWithoutExt . '.webp';
+            unlink($newFilePath);
+        }
+    }
+
+    return [$convertSuccess, $finalFilePath];
+}
 ?>
