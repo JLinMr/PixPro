@@ -74,26 +74,11 @@ function handleUploadedFile($file, $token, $referer) {
         set_time_limit(300);
         $quality = isset($_POST['quality']) ? intval($_POST['quality']) : 60;
 
-        $convertSuccess = true;
-
-        if ($fileMimeType === 'image/png') {
-            $convertSuccess = convertPngWithImagick($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-            if ($convertSuccess) {
-                $finalFilePath = $newFilePathWithoutExt . '.webp';
-                unlink($newFilePath);
-            }
-        } elseif ($fileMimeType === 'image/gif') {
-            $convertSuccess = convertGifToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-            if ($convertSuccess) {
-                $finalFilePath = $newFilePathWithoutExt . '.webp';
-                unlink($newFilePath);
-            }
-        } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml') {
-            $convertSuccess = convertToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-            if ($convertSuccess) {
-                $finalFilePath = $newFilePathWithoutExt . '.webp';
-                unlink($newFilePath);
-            }
+        // 如果质量设置为100，直接跳过压缩和转换步骤
+        if ($quality == 100) {
+            $convertSuccess = true;
+        } else {
+            list($convertSuccess, $finalFilePath) = processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality);
         }
 
         if ($fileMimeType !== 'image/svg+xml') {
@@ -253,4 +238,3 @@ function handleUploadedFile($file, $token, $referer) {
         }
     }
 }
-?>
