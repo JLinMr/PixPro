@@ -109,10 +109,10 @@ if (!file_exists('install/install.lock')) {
         <span>自由</span>
         <span>平等</span>
         <span>公正</span>
-        <span>法制</span>
+        <span>法治</span>
         <span>爱国</span>
         <span>敬业</span>
-        <span>诚实</span>
+        <span>诚信</span>
         <span>友善</span>
         <div class="icp">
             <span>© 2024</span><a href="https://bsgun.cn" target="_blank">梦爱吃鱼</a>
