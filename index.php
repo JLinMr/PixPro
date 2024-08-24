@@ -41,7 +41,7 @@ if (!file_exists('install/install.lock')) {
                     <img src="static/images/svg/xmark.svg" alt="x">
                 </button>
                 <div id="imageUploadBox" class="imageUploadBox blur" onclick="document.getElementById('imageInput').click();">
-                    <input type="file" id="imageInput" name="image[]" accept="image/*" multiple required>
+                    <input type="file" id="imageInput" name="image[]" accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif" multiple required>
                     <img id="imagePreview" class="imagePreview" src="static/images/svg/up.svg" alt="预览图片">
                 </div>
                 <div id="pasteOrUrlInputBox">
