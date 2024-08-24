@@ -170,11 +170,12 @@ main {
 }
 
 /* 删除按钮鼠标悬停旋转效果 */
-.deleteImageButton:hover img {
+.deleteImageButton img {
     transition: transform .4s ease-in-out;
+}
+.deleteImageButton:hover img {
     transform: rotate(180deg);
 }
-
 /* 图片上传区域样式 */
 .imageUploadBox {
     width: 100%;
