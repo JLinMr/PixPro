@@ -45,11 +45,11 @@ if (!file_exists('install/install.lock')) {
                     <img id="imagePreview" class="imagePreview" src="static/images/svg/up.svg" alt="预览图片">
                 </div>
                 <div id="pasteOrUrlInputBox">
-                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput blur" placeholder="此处可粘贴图像URL或使用Ctrl+V粘贴图片">
+                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput blur" placeholder="本站支持：拖拽上传、粘贴上传、点击上传">
                 </div>
                 <div id="parameters" class="parameters">
-                    <label for="qualityInput">图片清晰度 60-100<output id="qualityOutput" class="qualityOutput">60</output></label>
-                    <input type="range" id="qualityInput" name="quality" min="60" max="100" value="60" step="5">
+                    <label for="qualityInput">图像质量（选择100时不压缩）<output id="qualityOutput" class="qualityOutput">60</output></label>
+                    <input type="range" id="qualityInput" name="quality" min="60" max="100" value="70" step="5">
                 </div>
                 <div id="progressContainer" class="progressContainer">
                     <div id="progressBar" class="progressBar"></div>
