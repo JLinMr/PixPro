@@ -162,7 +162,6 @@ if ($fileMimeType !== 'image/svg+xml') {
                     'width' => $compressedWidth,
                     'height' => $compressedHeight,
                     'size' => $compressedSize,
-                    'thumb' => $fileUrl,
                     'path' => $ossFilePath
                 ]);
             } catch (OssException $e) {
@@ -186,7 +185,6 @@ if ($fileMimeType !== 'image/svg+xml') {
                 'width' => $compressedWidth,
                 'height' => $compressedHeight,
                 'size' => $compressedSize,
-                'thumb' => $fileUrl,
                 'path' => $finalFilePath
             ]);
         } else if ($storage === 's3') {
@@ -241,7 +239,6 @@ if ($fileMimeType !== 'image/svg+xml') {
                     'width' => $compressedWidth,
                     'height' => $compressedHeight,
                     'size' => $compressedSize,
-                    'thumb' => $fileUrl,
                     'path' => $s3FilePath
                 ]);
             } catch (S3Exception $e) {
