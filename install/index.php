@@ -84,10 +84,10 @@ function handlePostRequest($step) {
         $configContent .= "\n[Other]\n";
         $configContent .= "storage = $storage\n";
         $configContent .= "protocol = $protocol\n";
-        $configContent .= "per_page = 20\n";
+        $configContent .= "per_page = 45\n";
         $configContent .= "; // storage = local 本地存储  //  oss  阿里云对象存储  //  s3  AWS S3 兼容三方\n";
         $configContent .= "; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3 无需配置\n";
-        $configContent .= "; // per_page  后台每页显示的图片数量，默认20  *** 其他设置查看 validate.php 文件\n";
+        $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
         $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
         addOSSConfig($configContent);
