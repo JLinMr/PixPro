@@ -90,8 +90,14 @@ function handlePostRequest($step) {
         $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
         $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
-        addOSSConfig($configContent);
-        addS3Config($configContent);
+        if ($storage === 'local') {
+            addOSSConfig($configContent);
+            addS3Config($configContent);
+        } elseif ($storage === 'oss') {
+            addS3Config($configContent);
+        } elseif ($storage === 's3') {
+            addOSSConfig($configContent);
+        }
 
         file_put_contents('../config/config.ini', $configContent);
         chmod('../config/config.ini', 0600);
