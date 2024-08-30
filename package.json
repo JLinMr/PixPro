@@ -19,10 +19,5 @@
     "ajax刷新"
   ],
   "author": "梦爱吃鱼",
-  "license": "ISC",
-  "allowPackages": {
-    "pixpro": {
-      "version": "*"
-    }
-  }
+  "license": "ISC"
 }
