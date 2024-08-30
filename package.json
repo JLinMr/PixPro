@@ -1,6 +1,6 @@
 {
   "name": "pixpro",
-  "version": "1.7.1",
+  "version": "1.7.5",
   "description": "PixPro 一款个人需求的高效图床，集成了强大的图片压缩功能与优雅的前台。后台管理瀑布流展示和AJAX刷新，能有效降低存储与带宽成本。",
   "main": "index.php",
   "scripts": {
@@ -19,5 +19,10 @@
     "ajax刷新"
   ],
   "author": "梦爱吃鱼",
-  "license": "ISC"
+  "license": "ISC",
+  "allowPackages": {
+    "pixpro": {
+      "version": "*"
+    }
+  }
 }
