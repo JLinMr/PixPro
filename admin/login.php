@@ -35,7 +35,7 @@ if (isset($_POST['login'])) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/css/login.css?v=1.7">
+    <link rel="stylesheet" type="text/css" href="/static/css/login.css?v=1.7.5">
 </head>
 <body>
     <div class="login-container">

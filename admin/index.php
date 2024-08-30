@@ -56,7 +56,7 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="/static/css/admin.css?v=1.7">
+    <link rel="stylesheet" type="text/css" href="/static/css/admin.css?v=1.7.5">
     <!-- 引入Fancybox 当前版本 Fancybox5.0.36 -->
     <link rel="stylesheet" href="/static/css/fancybox.min.css?v=5.0.36">
     <script src="/static/js/fancybox.umd.min.js?v=5.0.36" defer></script>
@@ -77,8 +77,8 @@ if (isset($_SESSION['loggedin']) && $_SESSION['loggedin']) {
         <div class="spinner"></div>
         <div class="loading-text">加载中...</div>
     </div>
-    <script src="/static/js/admin.js?v=1.7" defer></script>
-    <script src="/static/js/ajax.js?v=1.7" defer></script>
+    <script src="/static/js/admin.js?v=1.7.5" defer></script>
+    <script src="/static/js/ajax.js?v=1.7.5" defer></script>
 </body>
 </html>
 <?php

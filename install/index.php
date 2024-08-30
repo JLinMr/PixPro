@@ -11,7 +11,7 @@ if (file_exists('install.lock')) {
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
         <title>系统已安装</title>
         <link rel="shortcut icon" href="../static/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css?v=1.7">
+        <link rel="stylesheet" type="text/css" href="style.css?v=1.7.5">
     </head>
     <body>
         <div class="message-box">
@@ -264,8 +264,8 @@ function handleS3Config() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.7">
-    <script type="text/javascript" src="script.js?v=1.7" defer></script>
+    <link rel="stylesheet" type="text/css" href="style.css?v=1.7.5">
+    <script type="text/javascript" src="script.js?v=1.7.5" defer></script>
     <script>
         function showNotification(message, className = 'msg-red') {
             const notification = document.createElement('div');
