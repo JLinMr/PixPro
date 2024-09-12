@@ -11,10 +11,17 @@ $db = Database::getInstance();
 $mysqli = $db->getConnection();
 
 /**
+ * 设置响应头
+ */
+header("Access-Control-Allow-Origin: *");
+header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+header("Access-Control-Allow-Headers: Content-Type");
+
+/**
  * 记录日志信息
  */
 function logMessage($message) {
-    $logFile = 'process_log.txt';
+    $logFile = '上传日志.txt';
     $currentTime = date('Y-m-d H:i:s');
     $logMessage = "[$currentTime] $message" . PHP_EOL;
     file_put_contents($logFile, $logMessage, FILE_APPEND);
