@@ -38,7 +38,6 @@
 
 如果需要更换存储策略，需安装后修改`config.ini`文件
 
-
 ### 安全配置
 
 设置站点伪静态或修改nginx配置
@@ -49,22 +48,11 @@ location ~* /config\.ini$ {
 ```
 ### 登录上传
 
-根目录下`index.php`头部`php`内容修改为
+编辑 `config.ini` 文件
 
-```PHP
-<?php
-session_start();
-
-if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
-    header('Location: /admin');  // admin 为后台地址
-    exit();
-}
-
-if (!file_exists('install/install.lock')) {
-    header('Location: /install');
-    exit;
-}
-?>
+``` ini
+login_restriction = false
+; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片
 ```
 
 ### 上传限制
@@ -86,13 +74,32 @@ const maxFilesPerUpload = 5; // 最多上传5张图片
 
 直接修改 `admin` 目录名即可
 
+## 资源加速
+
+项目已经上传到NPM，所有静态资源均可以使用
+###  使用npmmirror，@version需要改为版本号
+https://cdn.npmmirror.com/packages/pixpro/@version/files/
+
+例如: https://cdn.npmmirror.com/packages/pixpro/1.7.6/files/static/js/admin.js
+
+### 使用 jsdelivr
+https://cdn.jsdelivr.net/npm/pixpro@latest/
+
+例如: https://cdn.jsdelivr.net/npm/pixpro@1.7.6/static/js/admin.js
+
+### 使用 UNPKG的第三方镜像
+https://cdn.cbd.int/pixpro@latest/
+
+例如：https://cdn.cbd.int/pixpro@1.7.6/static/js/admin.js
+
+
 ## 拓展功能
 
 本程序支持 Upgit 对接在Typora使用，对接方法如下
 
 ### 下载upgit
 
-前往下载 [Upgit](https://alist.ruom.top/%E5%BC%80%E6%BA%90-%E9%A1%B9%E7%9B%AE/PixPro--%E6%8B%A5%E6%9C%89%E5%BC%BA%E5%A4%A7%E5%8E%8B%E7%BC%A9%E7%8E%87%E7%9A%84%E5%BC%80%E6%BA%90%E5%9B%BE%E5%BA%8A/Upgit)
+前往下载 [Upgit](https://alist.ruom.top/%E8%B5%84%E6%BA%90-%E5%88%86%E4%BA%AB/%E6%88%91%E7%9A%84%E9%A1%B9%E7%9B%AE/Upgit)
 
 ### 如何配置
 
