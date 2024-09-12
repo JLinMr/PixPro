@@ -3,26 +3,11 @@ error_reporting(E_ALL);
 ini_set('display_errors', 1);
 
 if (file_exists('install.lock')) {
-    echo '
-    <!DOCTYPE html>
-    <html lang="zh-CN">
-    <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>系统已安装</title>
-        <link rel="shortcut icon" href="../static/favicon.ico">
-        <link rel="stylesheet" type="text/css" href="style.css?v=1.7.5">
-    </head>
-    <body>
-        <div class="message-box">
-            <h1>系统已经安装成功</h1>
-            <p>如需重新安装，请删除install/install.lock文件</p>
-            <a href="/">回到首页</a>
-        </div>
-    </body>
-    </html>
-    ';
-    die();
+    $host = $_SERVER['HTTP_HOST'];
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https' : 'http';
+    $url = "$protocol://$host/";
+    header("Location: $url");
+    exit();
 }
 
 $step = isset($_GET['step']) ? intval($_GET['step']) : 1;
@@ -85,9 +70,11 @@ function handlePostRequest($step) {
         $configContent .= "storage = $storage\n";
         $configContent .= "protocol = $protocol\n";
         $configContent .= "per_page = 45\n";
-        $configContent .= "; // storage = local 本地存储  //  oss  阿里云对象存储  //  s3  AWS S3 兼容三方\n";
-        $configContent .= "; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3 无需配置\n";
+        $configContent .= "login_restriction = false\n";
+        $configContent .= "; // storage = local 本地存储  //  oss 阿里云对象存储  //  s3 AWS S3 兼容三方\n";
+        $configContent .= "; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3默认域名 无需配置\n";
         $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
+        $configContent .= "; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片\n";
         $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
         if ($storage === 'local') {
@@ -113,10 +100,18 @@ function handlePostRequest($step) {
             header('Location: ?step=4');
             exit;
         }
-    } elseif ($step === 3) {
-        handleOSSConfig();
-    } elseif ($step === 4) {
-        handleS3Config();
+    } elseif ($step === 3 || $step === 4) {
+        $configType = $step === 3 ? 'OSS' : 'S3';
+        $configData = [];
+        foreach ($_POST as $key => $value) {
+            if (strpos($key, strtolower($configType)) === 0) {
+                $configData[substr($key, strlen($configType) + 1)] = $value;
+            }
+        }
+        saveConfigSection($configType, $configData);
+        file_put_contents('install.lock', '安装锁');
+        header('Location: ?step=5');
+        exit;
     }
 }
 
@@ -127,6 +122,16 @@ function saveConfig($mysql) {
     }
     file_put_contents('../config/config.ini', $configContent);
     chmod('../config/config.ini', 0777);
+}
+
+function saveConfigSection($section, $data) {
+    $configContent = file_get_contents('../config/config.ini');
+    $configContent .= "\n[$section]\n";
+    foreach ($data as $key => $value) {
+        $configContent .= "$key = $value\n";
+    }
+    file_put_contents('../config/config.ini', $configContent);
+    chmod('../config/config.ini', 0600);
 }
 
 function createOrUpdateTableStructure($mysqli) {
@@ -208,53 +213,6 @@ function addS3Config(&$configContent) {
     $configContent .= "s3AccessKeySecret = \n";
     $configContent .= "customUrlPrefix = \n";
 }
-
-function handleOSSConfig() {
-    $oss = [
-        'accessKeyId' => $_POST['oss_accessKeyId'],
-        'accessKeySecret' => $_POST['oss_accessKeySecret'],
-        'endpoint' => $_POST['oss_endpoint'],
-        'bucket' => $_POST['oss_bucket'],
-        'cdndomain' => $_POST['oss_cdndomain'],
-    ];
-
-    $configContent = file_get_contents('../config/config.ini');
-    $configContent .= "\n[OSS]\n";
-    foreach ($oss as $key => $value) {
-        $configContent .= "$key = $value\n";
-    }
-
-    file_put_contents('../config/config.ini', $configContent);
-    chmod('../config/config.ini', 0600);
-
-    file_put_contents('install.lock', '安装锁');
-    header('Location: ?step=5');
-    exit;
-}
-
-function handleS3Config() {
-    $s3 = [
-        's3Region' => $_POST['s3_region'],
-        's3Bucket' => $_POST['s3_bucket'],
-        's3Endpoint' => $_POST['s3_endpoint'],
-        's3AccessKeyId' => $_POST['s3_accessKeyId'],
-        's3AccessKeySecret' => $_POST['s3_accessKeySecret'],
-        'customUrlPrefix' => $_POST['s3_customUrlPrefix'],
-    ];
-
-    $configContent = file_get_contents('../config/config.ini');
-    $configContent .= "\n[S3]\n";
-    foreach ($s3 as $key => $value) {
-        $configContent .= "$key = $value\n";
-    }
-
-    file_put_contents('../config/config.ini', $configContent);
-    chmod('../config/config.ini', 0600);
-
-    file_put_contents('install.lock', '安装锁');
-    header('Location: ?step=5');
-    exit;
-}
 ?>
 
 <!DOCTYPE html>
@@ -264,8 +222,7 @@ function handleS3Config() {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.ico">
-    <link rel="stylesheet" type="text/css" href="style.css?v=1.7.5">
-    <script type="text/javascript" src="script.js?v=1.7.5" defer></script>
+    <link rel="stylesheet" type="text/css" href="../static/css/install.css">
     <script>
         function showNotification(message, className = 'msg-red') {
             const notification = document.createElement('div');
@@ -277,6 +234,22 @@ function handleS3Config() {
                 setTimeout(() => notification.remove(), 800);
             }, 1500);
         }
+
+        function generateToken() {
+            const token = Array.from({length: 32}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+            [Math.random() * 62 | 0]).join('');
+            document.getElementById('validToken').value = token;
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const generateTokenButton = document.getElementById('generateToken');
+            if (generateTokenButton) {
+                generateTokenButton.addEventListener('click', e => {
+                    e.preventDefault();
+                    generateToken();
+                });
+            }
+        });
     </script>
 </head>
 <body>
@@ -337,7 +310,7 @@ function handleS3Config() {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="protocol">协议头<span style="margin-left: 15px;color: #ff0000;">URL协议头，本地存储和OSS需要配置</span></label>
+                    <label for="protocol">协议头<span class="example-hint">URL协议头，本地存储和OSS需要配置</span></label>
                     <div class="radio-group">
                         <label>
                             <input type="radio" id="protocol_https" name="protocol" value="https://" required>
@@ -350,7 +323,7 @@ function handleS3Config() {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="validToken">API接口Token<botton id="generateToken" style="margin-left: 15px;color: #ff0000;cursor: pointer;">点我生成</botton></label>
+                    <label for="validToken">API接口Token<button id="generateToken" class="generateToken">点我生成</button></label>
                     <input type="text" id="validToken" name="validToken" required>
                 </div>
                 <div class="form-group">
@@ -394,7 +367,7 @@ function handleS3Config() {
                     <input type="text" id="s3_bucket" name="s3_bucket" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_endpoint">S3 Endpoint<span style="margin-left: 15px;color: #ccc;">举个例子: https://s3.ap-northeast-2.amazonaws.com</span></label>
+                    <label for="s3_endpoint">S3 Endpoint<span class="example-hint">举个例子: s3.ap-northeast-2.amazonaws.com</span></label>
                     <input type="text" id="s3_endpoint" name="s3_endpoint" required>
                 </div>
                 <div class="form-group">
@@ -406,7 +379,7 @@ function handleS3Config() {
                     <input type="text" id="s3_accessKeySecret" name="s3_accessKeySecret" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_customUrlPrefix">S3 自定义前缀<span style="margin-left: 15px;color: #ccc;">兼容第三方添加的配置</span></label>
+                    <label for="s3_customUrlPrefix">S3 自定义域名<span class="example-hint">兼容第三方添加的配置(无需协议头)</span></label>
                     <input type="text" id="s3_customUrlPrefix" name="s3_customUrlPrefix" placeholder="非必填">
                 </div>
                 <div class="form-group">
@@ -419,14 +392,5 @@ function handleS3Config() {
             </div>
         <?php endif; ?>
     </div>
-    <script>
-    // 生成随机 Token
-    document.getElementById('generateToken').addEventListener('click', e => {
-        e.preventDefault();
-        const token = Array.from({length: 32}, () => 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
-        [Math.random() * 62 | 0]).join('');
-        document.getElementById('validToken').value = token;
-    });
-    </script>
 </body>
 </html>
