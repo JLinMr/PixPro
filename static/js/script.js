@@ -20,8 +20,8 @@ const elements = {
 
 // 定义最大文件大小和每次上传的最大文件数
 const maxFileSize = 5 * 1024 * 1024; // 5MB
-const maxFilesPerUpload = 5; // 最多上传5张图片
-const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml'];
+const maxFilesPerUpload = 5; // 单次最多上传5张图片
+const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']; // 支持的图片格式
 
 // 设置事件监听器
 function setupEventListeners() {
