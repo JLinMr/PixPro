@@ -1,7 +1,7 @@
 <?php
 session_start();
 
-$config = parse_ini_file('config/config.ini');
+$config = parse_ini_file('config/config.ini', true);
 
 if (isset($config['Other']['login_restriction']) && filter_var($config['Other']['login_restriction'], FILTER_VALIDATE_BOOLEAN) && (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'])) {
     header('Location: /admin');
