@@ -120,15 +120,14 @@ body {
 
 /* 导航栏样式 */
 header {
+    display: flex;
     border-radius: 10px;
     margin-bottom: 20px;
 }
 
 /* 导航链接样式 */
 header a.header-link {
-    float: left;
     padding: 15px;
-    text-decoration: none;
     border-radius: 10px;
     transition: background-color 0.3s, color 0.3s;
 }

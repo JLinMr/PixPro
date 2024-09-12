@@ -53,6 +53,13 @@ body {
     margin-bottom: 5px;
 }
 
+.form-container {
+    display: none;
+}
+.form-container.active {
+    display: block;
+}
+
 .form-group input {
     width: calc(100% - 20px);
     padding: 10px;
