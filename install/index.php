@@ -61,21 +61,14 @@ function handlePostRequest($step) {
         $validToken = $_POST['validToken'];
         $protocol = $_POST['protocol'];
 
-        $configContent = file_get_contents('../config/config.ini');
-        $configContent .= "\n[Token]\n";
-        $configContent .= "validToken = $validToken\n";
-        $configContent .= "; // 为了站点安全，不建议你暴漏你的token\n";
+        $host = $_SERVER['HTTP_HOST'];
+        $currentUrl = "$protocol$host/";
 
-        $configContent .= "\n[Other]\n";
-        $configContent .= "storage = $storage\n";
-        $configContent .= "protocol = $protocol\n";
-        $configContent .= "per_page = 45\n";
-        $configContent .= "login_restriction = false\n";
-        $configContent .= "; // storage = local 本地存储  //  oss 阿里云对象存储  //  s3 AWS S3 兼容三方\n";
-        $configContent .= "; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3默认域名 无需配置\n";
-        $configContent .= "; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n";
-        $configContent .= "; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片\n";
-        $configContent .= "; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
+        $configContent = file_get_contents('../config/config.ini');
+        $configContent .= "\n[Token]\nvalidToken = $validToken\n";
+        $configContent .= "; // 为了站点安全，不建议你暴漏你的token\n";
+        $configContent .= "\n[Other]\nstorage = $storage\nprotocol = $protocol\nper_page = 45\nlogin_restriction = false\nwhitelist = $currentUrl\n";
+        $configContent .= "; // storage = local 本地存储  //  oss 阿里云对象存储  //  s3 AWS S3 兼容三方\n; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3默认域名 无需配置\n; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片\n; // whitelist 设置后白名单站点使用API上传无需验证Token 例子: http://localhost/,http://127.0.0.1/\n; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
 
         if ($storage === 'local') {
             addOSSConfig($configContent);
@@ -196,22 +189,11 @@ function handleAdminUser($mysqli) {
 }
 
 function addOSSConfig(&$configContent) {
-    $configContent .= "\n[OSS]\n";
-    $configContent .= "accessKeyId = \n";
-    $configContent .= "accessKeySecret = \n";
-    $configContent .= "endpoint = \n";
-    $configContent .= "bucket = \n";
-    $configContent .= "cdndomain = \n";
+    $configContent .= "\n[OSS]\naccessKeyId = \naccessKeySecret = \nendpoint = \nbucket = \ncdndomain = \n";
 }
 
 function addS3Config(&$configContent) {
-    $configContent .= "\n[S3]\n";
-    $configContent .= "s3Region = \n";
-    $configContent .= "s3Bucket = \n";
-    $configContent .= "s3Endpoint = \n";
-    $configContent .= "s3AccessKeyId = \n";
-    $configContent .= "s3AccessKeySecret = \n";
-    $configContent .= "customUrlPrefix = \n";
+    $configContent .= "\n[S3]\ns3Region = \ns3Bucket = \ns3Endpoint = \ns3AccessKeyId = \ns3AccessKeySecret = \ncustomUrlPrefix = \n";
 }
 ?>
 
@@ -310,7 +292,7 @@ function addS3Config(&$configContent) {
                     </div>
                 </div>
                 <div class="form-group">
-                    <label for="protocol">协议头<span class="example-hint">URL协议头，本地存储和OSS需要配置</span></label>
+                    <label for="protocol">协议头<span class="example-hint">URL协议头</span></label>
                     <div class="radio-group">
                         <label>
                             <input type="radio" id="protocol_https" name="protocol" value="https://" required>

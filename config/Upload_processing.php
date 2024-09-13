@@ -5,22 +5,22 @@ require_once 'image_processing.php';
 require_once 'storage_handlers.php';
 
 // 读取配置文件
-$config = parse_ini_file('config/config.ini');
-$accessKeyId = $config['accessKeyId'];
-$accessKeySecret = $config['accessKeySecret'];
-$endpoint = $config['endpoint'];
-$bucket = $config['bucket'];
-$cdndomain = $config['cdndomain'];
-$validToken = $config['validToken'];
-$storage = $config['storage'];
-$protocol = $config['protocol'];
-$s3Region = $config['s3Region'];
-$s3Bucket = $config['s3Bucket'];
-$s3Endpoint = $config['s3Endpoint'];
-$s3AccessKeyId = $config['s3AccessKeyId'];
-$s3AccessKeySecret = $config['s3AccessKeySecret'];
-$customUrlPrefix = $config['customUrlPrefix'];
-$frontendDomain = $_SERVER['HTTP_HOST'];
+$config = parse_ini_file('config/config.ini', true);
+$accessKeyId = $config['OSS']['accessKeyId'];
+$accessKeySecret = $config['OSS']['accessKeySecret'];
+$endpoint = $config['OSS']['endpoint'];
+$bucket = $config['OSS']['bucket'];
+$cdndomain = $config['OSS']['cdndomain'];
+$validToken = $config['Token']['validToken'];
+$storage = $config['Other']['storage'];
+$protocol = $config['Other']['protocol'];
+$s3Region = $config['S3']['s3Region'];
+$s3Bucket = $config['S3']['s3Bucket'];
+$s3Endpoint = $config['S3']['s3Endpoint'];
+$s3AccessKeyId = $config['S3']['s3AccessKeyId'];
+$s3AccessKeySecret = $config['S3']['s3AccessKeySecret'];
+$customUrlPrefix = $config['S3']['customUrlPrefix'];
+$whitelist = explode(',', $config['Other']['whitelist']);
 
 /**
  * 验证令牌。
@@ -29,14 +29,18 @@ $frontendDomain = $_SERVER['HTTP_HOST'];
  * @param string $referer 来源URL。
  */
 function validateToken($token, $referer) {
-    global $frontendDomain, $validToken;
+    global $validToken, $whitelist;
 
-    if (!empty($referer) && strpos($referer, $frontendDomain) !== false) {
-    } else {
-        if ($token !== $validToken) {
-            respondAndExit(['result' => 'error', 'code' => 403, 'message' => 'Token错误']);
-        }
+    if (!empty($referer) && in_array($referer, $whitelist)) {
+        return;
     }
+
+    if ($token === $validToken) {
+        return; 
+    }
+
+    // 如果 referer 和 token 都无效，返回错误
+    respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
 }
 
 /**
@@ -68,7 +72,7 @@ function getClientIp() {
  * @param string $referer 请求来源
  */
 function handleUploadedFile($file, $token, $referer) {
-    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix, $frontendDomain;
+    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix;
 
     $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
     validateToken($token, $referer);
