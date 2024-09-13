@@ -52,7 +52,7 @@ location ~* /config\.ini$ {
 
 ``` ini
 login_restriction = false
-; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片
+; // login_restriction  true 开启 false 关闭 // 默认false，开启后只有登录用户才能上传图片
 ```
 
 ### 上传限制
