@@ -134,7 +134,7 @@ function handleUploadedFile($file, $token, $referer) {
             list($convertSuccess, $finalFilePath) = processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality);
         }
 
-        // 处理图片方向
+        // 处理图片方向 依赖exif扩展
         if ($fileMimeType === 'image/jpeg') {
             $exif = @exif_read_data($finalFilePath);
             if ($exif && isset($exif['Orientation'])) {

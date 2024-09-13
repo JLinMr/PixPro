@@ -30,7 +30,7 @@
 
 推荐PHP 8.1 + MySQL >= 5.7
 
-本程序依赖PHP的 Fileinfo 、 Imagick 拓展，需要自行安装。依赖 pcntl 扩展（宝塔PHP默认已安装）
+本程序依赖PHP的 Fileinfo 、 Imagick 、 exif拓展，需要自行安装。依赖 pcntl 扩展（宝塔PHP默认已安装）
 
 要求 pcntl_signal 和 pcntl_alarm 函数可用（需主动解除禁用）
 
