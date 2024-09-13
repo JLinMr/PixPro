@@ -20,7 +20,8 @@ const elements = {
 
 // 定义最大文件大小和每次上传的最大文件数
 const maxFileSize = 5 * 1024 * 1024; // 5MB
-const maxFilesPerUpload = 5; // 最多上传5张图片
+const maxFilesPerUpload = 5; // 单次最多上传5张图片
+const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']; // 支持的图片格式
 
 // 设置事件监听器
 function setupEventListeners() {
@@ -102,6 +103,10 @@ function handleFileInput(files) {
 
 // 处理文件
 function processFile(file) {
+    if (!allowedTypes.includes(file.type)) {
+        showNotification(`不支持的文件类型`, 'msg-red');
+        return;
+    }
     if (file.size > maxFileSize) {
         showNotification(`文件大小超过限制，最大允许 ${maxFileSize / 1024 / 1024}MB`, 'msg-red');
         return;

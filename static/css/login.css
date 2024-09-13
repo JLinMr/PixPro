@@ -1,18 +1,18 @@
 html {
-    cursor: url(/static/images/alternate.png) 16 16, auto;
+    cursor: url(../images/alternate.png) 16 16, auto;
 }
 
 a,
 button,
 input {
-    cursor: url(/static/images/link.png) 16 16, pointer;
+    cursor: url(../images/link.png) 16 16, pointer;
 }
 
 p,
 span,
 h2,
 label {
-    cursor: url(/static/images/text.png) 16 16, text;
+    cursor: url(../images/text.png) 16 16, text;
 }
 
 body {
@@ -23,7 +23,7 @@ body {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    background: url(/static/images/bg.webp) no-repeat 100% 100%;
+    background: url(../images/bg.webp) no-repeat 100% 100%;
     background-size: cover;
     background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
@@ -51,6 +51,13 @@ body {
 .form-group label {
     display: block;
     margin-bottom: 5px;
+}
+
+.form-container {
+    display: none;
+}
+.form-container.active {
+    display: block;
 }
 
 .form-group input {

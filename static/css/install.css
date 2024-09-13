@@ -9,7 +9,7 @@ body {
     margin: 0;
     color: #000;
     padding: 0px 15px 0 15px;
-    background: url(/static/images/bg.webp) no-repeat 100% 100%;
+    background: url(../images/bg.webp) no-repeat 100% 100%;
     background-size: cover;
     background-attachment: fixed;
     -webkit-tap-highlight-color: transparent;
@@ -20,7 +20,7 @@ body {
     border-radius: 8px;
     width: 100%;
     max-width: 600px;
-    background-color: rgba(255, 255, 255, 0.2);
+    background-color: rgba(255, 255, 255, 0.3);
     backdrop-filter: blur(10px);
     -webkit-backdrop-filter: blur(10px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
@@ -169,6 +169,20 @@ a {
     color: #e3e3e3;
     font-size: 18px;
     margin-bottom: 20px;
+}
+.generateToken {
+    font-size: 16px;
+    font-weight: 600;
+    margin-left: 15px;
+    color: #ff0000;
+    cursor: pointer;
+    background: transparent;
+    border: none;
+    outline: none;
+}
+.example-hint {
+    margin-left: 15px;
+    color: #ff0000;
 }
 /* 消息弹窗样式 */
 .msg {

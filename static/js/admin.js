@@ -11,12 +11,12 @@ function initializeFancyBox() {
     Fancybox.bind('[data-fancybox="gallery"]', {
         Toolbar: {
             display: {
-                left: [],
-                middle: [],
-                right: ["close"],
+                right: ["slideshow", "thumbs", "close"],
             },
         },
-        Thumbs: false,
+        Thumbs: {
+            showOnStart: false,
+        },
     });
 }
 

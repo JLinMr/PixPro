@@ -8,21 +8,22 @@
 
 /* 设置全局鼠标样式 */
 html {
-    cursor: url(/static/images/alternate.png) 16 16, auto;
+    cursor: url(../images/alternate.png) 16 16, auto;
 }
 
 /* 设置特定元素的鼠标样式 */
 a, button, input, #imageUploadBox {
-    cursor: url(/static/images/link.png) 16 16, pointer;
+    cursor: url(../images/link.png) 16 16, pointer;
 }
 
 /* 设置文本元素的鼠标样式 */
 p, span, h2, label, #pasteOrUrlInput {
-    cursor: url(/static/images/text.png) 16 16, text;
+    cursor: url(../images/text.png) 16 16, text;
 }
 
 /* 移除链接的下划线 */
 a {
+    transition:all 0.3s ease-in-out;
     text-decoration: none;
 }
 
@@ -39,7 +40,7 @@ input[type="range"] {
     background: rgb(255 255 255 / 20%);
     outline: none;
     opacity: 0.7;
-    transition: all 0.3s;
+    transition: all 0.3s  ease-in-out;
     border-radius: 5px;
 }
 
@@ -103,7 +104,7 @@ body {
     flex-direction: column;
     align-items: center;
     padding: 20px 0 0 0;
-    background: url(/static/images/bg.webp) no-repeat 100% 100% / cover fixed;
+    background: url(../images/bg.webp) no-repeat 100% 100% / cover fixed;
     -webkit-tap-highlight-color: transparent;
 }
 
@@ -120,17 +121,16 @@ body {
 
 /* 导航栏样式 */
 header {
+    display: flex;
     border-radius: 10px;
     margin-bottom: 20px;
 }
 
 /* 导航链接样式 */
 header a.header-link {
-    float: left;
     padding: 15px;
-    text-decoration: none;
     border-radius: 10px;
-    transition: background-color 0.3s, color 0.3s;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
 }
 
 /* 鼠标悬停效果 */
@@ -170,11 +170,12 @@ main {
 }
 
 /* 删除按钮鼠标悬停旋转效果 */
-.deleteImageButton:hover img {
+.deleteImageButton img {
     transition: transform .4s ease-in-out;
+}
+.deleteImageButton:hover img {
     transform: rotate(180deg);
 }
-
 /* 图片上传区域样式 */
 .imageUploadBox {
     width: 100%;
@@ -186,7 +187,7 @@ main {
     border-radius: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
-    transition: all 0.3s;
+    transition: all 0.3s ease-in-out;
 }
 
 /* 图片上传区域鼠标悬停效果 */
@@ -216,7 +217,7 @@ main {
     border-radius: 10px;
     outline: 0;
     border: 1px solid #aaa;
-    transition: all 0.3s;
+    transition: all 0.3s ease-in-out;
     box-sizing: border-box;
     margin-bottom: 10px;
 }
@@ -257,7 +258,7 @@ main {
     text-align: center;
     color: white;
     font-weight: bold;
-    transition: width 0.3s;
+    transition: width 0.3s ease-in-out;
     line-height: 12px;
     border-radius: 10px;
 }
@@ -274,7 +275,7 @@ main {
     height: 105px;
     overflow-y: scroll;
     box-sizing: border-box;
-    background: url(/static/images/svg/wheel.svg) no-repeat right;
+    background: url(../images/svg/wheel.svg) no-repeat right;
 }
 
 /* 标签按钮容器 */
@@ -292,7 +293,7 @@ main {
     background-color: transparent;
     border: none;
     outline: none;
-    transition: background-color 0.3s, transform 0.3s;
+    transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
     position: relative;
     z-index: 1;
 }
@@ -356,7 +357,7 @@ header a:hover img,
     margin: 5px auto;
     overflow: hidden;
     outline: 0;
-    transition: all 0.3s;
+    transition: all 0.3s ease-in-out;
     -webkit-appearance: none;
 }
 
@@ -437,7 +438,7 @@ footer span {
     line-height: 1.5;
     padding: 15px;
     margin: 15px;
-    transition: all .5s;
+    transition: all .5s ease-in-out;
     color: #eee;
     border-radius: 15px;
 }
