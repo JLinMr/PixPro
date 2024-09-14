@@ -31,15 +31,19 @@ $whitelist = explode(',', $config['Other']['whitelist']);
 function validateToken($token, $referer) {
     global $validToken, $whitelist;
 
-    if (!empty($referer) && in_array($referer, $whitelist)) {
-        return;
+    if (!empty($referer)) {
+        $refererHost = parse_url($referer, PHP_URL_HOST);
+        foreach ($whitelist as $allowedHost) {
+            if ($refererHost === parse_url($allowedHost, PHP_URL_HOST)) {
+                return;
+            }
+        }
     }
 
     if ($token === $validToken) {
-        return; 
+        return;
     }
 
-    // 如果 referer 和 token 都无效，返回错误
     respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
 }
 
