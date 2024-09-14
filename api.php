@@ -6,16 +6,12 @@ require_once 'config/validate.php';
 require_once 'config/Database.php';
 require_once 'config/Upload_processing.php';
 
-// 获取数据库连接
+/**
+ * 获取数据库连接
+ */
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
 
-/**
- * 设置响应头
- */
-header("Access-Control-Allow-Origin: *");
-header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-header("Access-Control-Allow-Headers: Content-Type");
 
 /**
  * 记录日志信息
