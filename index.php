@@ -18,8 +18,8 @@ if (!file_exists('install/install.lock')) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>若梦图床</title>
-    <meta name="keywords" content="图床程序,高效图片压缩,前端后台设计,图片上传,WEBP转换,阿里云OSS,本地存储,多格式支持,瀑布流管理,图片管理后台,自定义压缩率,尺寸限制">
+    <title>PixPro图床 - Github存储版</title>
+    <meta name="keywords" content="图床程序,高效图片压缩,前端后台设计,图片上传,WEBP转换,本地存储,多格式支持,瀑布流管理,图片管理后台,自定义压缩率,尺寸限制">
     <meta name="description" content="一款专为个人需求设计的高效图床解决方案，集成了强大的图片压缩功能与优雅的前台后台界面。项目结构精简高效，提供自定义图片压缩率与尺寸设置，有效降低存储与带宽成本。支持JPEG, PNG, GIF转换为WEBP以及SVG、WEBP直接上传，搭载阿里云OSS存储（默认）及灵活的本地存储选项。特性包括点击、拖拽、粘贴及URL本地化上传方式，以及配备瀑布流布局的管理后台，实现图片轻松管理与预览。完全可自定制的体验，满足不同用户对图片管理和优化的高级需求。">
     <link rel="shortcut icon" href="static/favicon.ico">
     <link rel="stylesheet" type="text/css" href="static/css/styles.css">

@@ -68,15 +68,10 @@ function handlePostRequest($step) {
         $configContent .= "\n[Token]\nvalidToken = $validToken\n";
         $configContent .= "; // 为了站点安全，不建议你暴漏你的token\n";
         $configContent .= "\n[Other]\nstorage = $storage\nprotocol = $protocol\nper_page = 45\nlogin_restriction = false\nwhitelist = $currentUrl\n";
-        $configContent .= "; // storage = local 本地存储  //  oss 阿里云对象存储  //  s3 AWS S3 兼容三方\n; // protocol  配置图片URL协议头，如果你有证书建议使用https  S3默认域名 无需配置\n; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片\n; // whitelist 设置后白名单站点使用API上传无需验证Token 例子: http://localhost/,http://127.0.0.1/\n; // 请不要删除OSS和S3配置项，否则会发生一些小意外\n";
+        $configContent .= "; // storage = local 本地存储  //  github 仓库存储\n; // protocol  配置图片URL协议头，如果你有证书建议使用https\n; // per_page  后台每页显示的图片数量，默认45  *** 其他设置查看 validate.php 文件\n; // login_restriction  true 开启 false 关闭 // 是否开启登录保护，默认false，开启后只有登录用户才能上传图片\n; // whitelist 设置后白名单站点使用API上传无需验证Token 例子: http://localhost/,http://127.0.0.1/\n";
 
         if ($storage === 'local') {
-            addOSSConfig($configContent);
-            addS3Config($configContent);
-        } elseif ($storage === 'oss') {
-            addS3Config($configContent);
-        } elseif ($storage === 's3') {
-            addOSSConfig($configContent);
+            addGitHubConfig($configContent);
         }
 
         file_put_contents('../config/config.ini', $configContent);
@@ -86,15 +81,12 @@ function handlePostRequest($step) {
             file_put_contents('install.lock', '安装锁');
             header('Location: ?step=5');
             exit;
-        } elseif ($storage === 'oss') {
+        } elseif ($storage === 'github') {
             header('Location: ?step=3');
             exit;
-        } elseif ($storage === 's3') {
-            header('Location: ?step=4');
-            exit;
         }
-    } elseif ($step === 3 || $step === 4) {
-        $configType = $step === 3 ? 'OSS' : 'S3';
+    } elseif ($step === 3) {
+        $configType = 'GitHub';
         $configData = [];
         foreach ($_POST as $key => $value) {
             if (strpos($key, strtolower($configType)) === 0) {
@@ -134,7 +126,7 @@ function createOrUpdateTableStructure($mysqli) {
             user_id INT UNSIGNED NULL COMMENT '用户ID',
             url VARCHAR(255) NOT NULL COMMENT '图片URL',
             path VARCHAR(255) NOT NULL COMMENT '图片存储路径',
-            storage ENUM('oss', 'local', 's3', 'other') NOT NULL COMMENT '存储方式',
+            storage ENUM('github', 'local', 'other') NOT NULL COMMENT '存储方式',
             size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)',
             upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址',
             created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
@@ -187,13 +179,8 @@ function handleAdminUser($mysqli) {
         }
     }
 }
-
-function addOSSConfig(&$configContent) {
-    $configContent .= "\n[OSS]\naccessKeyId = \naccessKeySecret = \nendpoint = \nbucket = \ncdndomain = \n";
-}
-
-function addS3Config(&$configContent) {
-    $configContent .= "\n[S3]\ns3Region = \ns3Bucket = \ns3Endpoint = \ns3AccessKeyId = \ns3AccessKeySecret = \ncustomUrlPrefix = \n";
+function addGitHubConfig(&$configContent) {
+    $configContent .= "\n[GitHub]\nrepoOwner = \nrepoName = \nbranch = \ngithubToken = \n";
 }
 ?>
 
@@ -282,12 +269,8 @@ function addS3Config(&$configContent) {
                             <span>Local</span>
                         </label>
                         <label>
-                            <input type="radio" id="storage_oss" name="storage" value="oss" required>
-                            <span>OSS</span>
-                        </label>
-                        <label>
-                            <input type="radio" id="storage_s3" name="storage" value="s3" required>
-                            <span>S3</span>
+                            <input type="radio" id="storage_github" name="storage" value="github" required>
+                            <span>GitHub</span>
                         </label>
                     </div>
                 </div>
@@ -315,54 +298,20 @@ function addS3Config(&$configContent) {
         <?php elseif ($step === 3): ?>
             <form method="POST">
                 <div class="form-group">
-                    <label for="oss_accessKeyId">OSS Access Key ID</label>
-                    <input type="text" id="oss_accessKeyId" name="oss_accessKeyId" required>
+                    <label for="github_repoOwner">GitHub 用户名</label>
+                    <input type="text" id="github_repoOwner" name="github_repoOwner" required>
                 </div>
                 <div class="form-group">
-                    <label for="oss_accessKeySecret">OSS Access Key Secret</label>
-                    <input type="text" id="oss_accessKeySecret" name="oss_accessKeySecret" required>
+                    <label for="github_repoName">GitHub 仓库名</label>
+                    <input type="text" id="github_repoName" name="github_repoName" required>
                 </div>
                 <div class="form-group">
-                    <label for="oss_endpoint">OSS Endpoint</label>
-                    <input type="text" id="oss_endpoint" name="oss_endpoint" required>
+                    <label for="github_branch">GitHub 分支</label>
+                    <input type="text" id="github_branch" name="github_branch" value="main" required>
                 </div>
                 <div class="form-group">
-                    <label for="oss_bucket">OSS Bucket</label>
-                    <input type="text" id="oss_bucket" name="oss_bucket" required>
-                </div>
-                <div class="form-group">
-                    <label for="oss_cdndomain">OSS CDN 域名</label>
-                    <input type="text" id="oss_cdndomain" name="oss_cdndomain" value="oss-cdn.your-domain.com" required>
-                </div>
-                <div class="form-group">
-                    <input type="submit" value="完成安装">
-                </div>
-            </form>
-        <?php elseif ($step === 4): ?>
-            <form method="POST">
-                <div class="form-group">
-                    <label for="s3_region">S3 Region</label>
-                    <input type="text" id="s3_region" name="s3_region" required>
-                </div>
-                <div class="form-group">
-                    <label for="s3_bucket">S3 Bucket</label>
-                    <input type="text" id="s3_bucket" name="s3_bucket" required>
-                </div>
-                <div class="form-group">
-                    <label for="s3_endpoint">S3 Endpoint<span class="example-hint">举个例子: s3.ap-northeast-2.amazonaws.com</span></label>
-                    <input type="text" id="s3_endpoint" name="s3_endpoint" required>
-                </div>
-                <div class="form-group">
-                    <label for="s3_accessKeyId">S3 Access Key ID</label>
-                    <input type="text" id="s3_accessKeyId" name="s3_accessKeyId" required>
-                </div>
-                <div class="form-group">
-                    <label for="s3_accessKeySecret">S3 Access Key Secret</label>
-                    <input type="text" id="s3_accessKeySecret" name="s3_accessKeySecret" required>
-                </div>
-                <div class="form-group">
-                    <label for="s3_customUrlPrefix">S3 自定义域名<span class="example-hint">兼容第三方添加的配置(无需协议头)</span></label>
-                    <input type="text" id="s3_customUrlPrefix" name="s3_customUrlPrefix" placeholder="非必填">
+                    <label for="github_githubToken">GitHub Token</label>
+                    <input type="text" id="github_githubToken" name="github_githubToken" required>
                 </div>
                 <div class="form-group">
                     <input type="submit" value="完成安装">

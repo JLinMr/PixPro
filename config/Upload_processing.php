@@ -6,20 +6,13 @@ require_once 'storage_handlers.php';
 
 // 读取配置文件
 $config = parse_ini_file('config/config.ini', true);
-$accessKeyId = $config['OSS']['accessKeyId'];
-$accessKeySecret = $config['OSS']['accessKeySecret'];
-$endpoint = $config['OSS']['endpoint'];
-$bucket = $config['OSS']['bucket'];
-$cdndomain = $config['OSS']['cdndomain'];
 $validToken = $config['Token']['validToken'];
 $storage = $config['Other']['storage'];
 $protocol = $config['Other']['protocol'];
-$s3Region = $config['S3']['s3Region'];
-$s3Bucket = $config['S3']['s3Bucket'];
-$s3Endpoint = $config['S3']['s3Endpoint'];
-$s3AccessKeyId = $config['S3']['s3AccessKeyId'];
-$s3AccessKeySecret = $config['S3']['s3AccessKeySecret'];
-$customUrlPrefix = $config['S3']['customUrlPrefix'];
+$githubRepoOwner = $config['GitHub']['repoOwner'];
+$githubRepoName = $config['GitHub']['repoName'];
+$githubBranch = $config['GitHub']['branch'];
+$githubToken = $config['GitHub']['githubToken'];
 $whitelist = explode(',', $config['Other']['whitelist']);
 
 /**
@@ -76,7 +69,7 @@ function getClientIp() {
  * @param string $referer 请求来源
  */
 function handleUploadedFile($file, $token, $referer) {
-    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix;
+    global $storage, $protocol, $githubRepoOwner, $githubRepoName, $githubBranch, $githubToken;
 
     $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
     validateToken($token, $referer);
@@ -131,14 +124,12 @@ function handleUploadedFile($file, $token, $referer) {
         set_time_limit(300);
         $quality = isset($_POST['quality']) ? intval($_POST['quality']) : 60;
 
-        // 如果质量设置为100，直接跳过压缩和转换步骤
         if ($quality == 100) {
             $convertSuccess = true;
         } else {
             list($convertSuccess, $finalFilePath) = processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality);
         }
 
-        // 处理图片方向
         if ($fileMimeType === 'image/jpeg') {
             $exif = @exif_read_data($finalFilePath);
             if ($exif && isset($exif['Orientation'])) {
@@ -178,16 +169,16 @@ function handleUploadedFile($file, $token, $referer) {
 
         if ($storage === 'local') {
             handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip);
-        } else if ($storage === 'oss') {
-            handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip);
-        } else if ($storage === 's3') {
-            handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip);
+        } else if ($storage === 'github') {
+            handleGitHubUpload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip);
         } else {
             logMessage('文件上传失败: ' . $file['error']);
             respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传失败']);
         }
     }
 }
+
+
 /**
  * 删除本地文件
  *

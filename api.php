@@ -1,12 +1,13 @@
 <?php
 ob_start();
 
-require_once 'vendor/autoload.php';
 require_once 'config/validate.php';
 require_once 'config/Database.php';
 require_once 'config/Upload_processing.php';
 
-// 获取数据库连接
+/**
+ * 获取数据库连接
+ */
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
 
