@@ -31,17 +31,46 @@ $whitelist = explode(',', $config['Other']['whitelist']);
 function validateToken($token, $referer) {
     global $validToken, $whitelist;
 
-    if (!empty($referer) && in_array($referer, $whitelist)) {
-        return;
+    if (!empty($referer)) {
+        $refererHost = parse_url($referer, PHP_URL_HOST);
+        foreach ($whitelist as $allowedHost) {
+            if ($refererHost === parse_url($allowedHost, PHP_URL_HOST)) {
+                return;
+            }
+        }
     }
 
     if ($token === $validToken) {
-        return; 
+        return;
     }
 
-    // 如果 referer 和 token 都无效，返回错误
     respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
 }
+
+/**
+ * 设置响应头
+ */
+function setCorsHeaders() {
+    global $whitelist;
+    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
+    if (!empty($origin)) {
+        $originHost = parse_url($origin, PHP_URL_HOST);
+        foreach ($whitelist as $allowedHost) {
+            if ($originHost === parse_url($allowedHost, PHP_URL_HOST)) {
+                header("Access-Control-Allow-Origin: $origin");
+                header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+                header("Access-Control-Allow-Headers: Content-Type");
+                return;
+            }
+        }
+    }
+    http_response_code(403);
+    header("Access-Control-Allow-Origin: *"); // 临时允许所有来源
+    respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
+    exit;
+}
+setCorsHeaders();
+
 
 /**
  * 获取客户端IP地址
