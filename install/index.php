@@ -341,24 +341,24 @@ function addS3Config(&$configContent) {
         <?php elseif ($step === 4): ?>
             <form method="POST">
                 <div class="form-group">
-                    <label for="s3_region">S3 Region</label>
-                    <input type="text" id="s3_region" name="s3_region" required>
+                    <label for="s3_s3Region">S3 Region</label>
+                    <input type="text" id="s3_s3Region" name="s3_s3Region" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_bucket">S3 Bucket</label>
-                    <input type="text" id="s3_bucket" name="s3_bucket" required>
+                    <label for="s3_s3Bucket">S3 Bucket</label>
+                    <input type="text" id="s3_s3Bucket" name="s3_s3Bucket" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_endpoint">S3 Endpoint<span class="example-hint">举个例子: s3.ap-northeast-2.amazonaws.com</span></label>
-                    <input type="text" id="s3_endpoint" name="s3_endpoint" required>
+                    <label for="s3_s3Endpoint">S3 Endpoint<span class="example-hint">举个例子: s3.ap-northeast-2.amazonaws.com</span></label>
+                    <input type="text" id="s3_s3Endpoint" name="s3_s3Endpoint" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_accessKeyId">S3 Access Key ID</label>
-                    <input type="text" id="s3_accessKeyId" name="s3_accessKeyId" required>
+                    <label for="s3_s3AccessKeyId">S3 Access Key ID</label>
+                    <input type="text" id="s3_s3AccessKeyId" name="s3_s3AccessKeyId" required>
                 </div>
                 <div class="form-group">
-                    <label for="s3_accessKeySecret">S3 Access Key Secret</label>
-                    <input type="text" id="s3_accessKeySecret" name="s3_accessKeySecret" required>
+                    <label for="s3_s3AccessKeySecret">S3 Access Key Secret</label>
+                    <input type="text" id="s3_s3AccessKeySecret" name="s3_s3AccessKeySecret" required>
                 </div>
                 <div class="form-group">
                     <label for="s3_customUrlPrefix">S3 自定义域名<span class="example-hint">兼容第三方添加的配置(无需协议头)</span></label>
