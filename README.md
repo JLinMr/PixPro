@@ -92,9 +92,9 @@ https://cdn.cbd.int/pixpro@latest/
 修改目录下`config.toml`文件，内容如下
 
 ```toml
-default_uploader = "easyimage"
+default_uploader = "PixPro"
 
-[uploaders.easyimage]
+[uploaders.PixPro]
 request_url = "https://xxx.xxx.xxx/api.php"
 token = "这里内容替换为你的Token"
 ```
