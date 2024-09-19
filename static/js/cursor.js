@@ -32,17 +32,6 @@ class Ex {
         document.onmouseleave = () => this.cursor.classList.add("hidden");
         document.onmousedown = () => this.cursor.classList.add("active");
         document.onmouseup = () => this.cursor.classList.remove("active");
-
-        setTimeout(() => {
-            document.getElementById('imageInput').addEventListener('change', () => {
-                let attempts = 5;
-                const checkCursor = () => {
-                    this.cursor.classList.remove("hidden", "active");
-                    if (attempts-- > 0) setTimeout(checkCursor, 100);
-                };
-                setTimeout(checkCursor, 50);
-            });
-        }, 1000);
     }
 
     render() {
@@ -80,11 +69,10 @@ class Ex {
 
 Math.lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
-document.addEventListener("DOMContentLoaded", () => {
-    const cursorInstance = new Ex();
-    new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            entry.isIntersecting ? cursorInstance.resumeRendering() : cursorInstance.pauseRendering();
-        });
-    }).observe(document.body);
-});
+// 直接创建实例并监听全局事件
+const cursorInstance = new Ex();
+new IntersectionObserver(entries => {
+    entries.forEach(entry => {
+        entry.isIntersecting ? cursorInstance.resumeRendering() : cursorInstance.pauseRendering();
+    });
+}).observe(document.body);
