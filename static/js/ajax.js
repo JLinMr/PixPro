@@ -69,10 +69,12 @@ function togglePageInputVisibility(currentTotalPages, input) {
  */
 function handlePageInputKeypress(e, input) {
     if (e.key === 'Enter') {
-        const page = input.value;
-        if (page) {
+        const page = parseInt(input.value, 10);
+        if (page && page >= 1) {
             loadPage(page);
             hidePageInput(input, document.getElementById('current-total-pages'));
+        } else {
+            showNotification('请输入有效的页码', 'msg-red');
         }
     }
 }
