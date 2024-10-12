@@ -83,7 +83,7 @@ function handleGitHubUpload($finalFilePath, $newFilePath, $datePath, $compressed
 
     deleteLocalFile($finalFilePath, $newFilePath);
 
-    $fileUrl = 'https://fastly.jsdelivr.net/gh/' . $githubRepoOwner . '/' . $githubRepoName . '/' . $filePathInRepo;
+    $fileUrl = 'https://cdn.jsdelivr.net/gh/' . $githubRepoOwner . '/' . $githubRepoName . '/' . $filePathInRepo;
 
     logMessage("文件上传到GitHub成功: $filePathInRepo");
     insertImageRecord($fileUrl, $filePathInRepo, 'github', $compressedSize, $upload_ip, $user_id);
