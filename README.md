@@ -18,9 +18,9 @@
 
 ## 演示站点
 
-前端：https://dev.ruom.top/
+前端：https://img.119990.xyz/
 
-后台：https://dev.ruom.top/admin/
+后台：https://img.119990.xyz/admin/
 
 ## 安装教程
 
