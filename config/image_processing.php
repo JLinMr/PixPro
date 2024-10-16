@@ -37,20 +37,30 @@ function convertToWebp($source, $destination, $quality = 60) {
 function convertPngWithImagick($source, $destination, $quality = 60) {
     try {
         $image = new Imagick($source);
+
+        // 检查是否包含透明通道
+        if ($image->getImageAlphaChannel()) {
+            // 设置背景颜色为透明
+            $image->setImageBackgroundColor(new ImagickPixel('transparent'));
+            $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+            $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+        }
+
         $image->setImageFormat('webp');
         $image->setImageCompressionQuality($quality);
-        $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
-        $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+
         $width = $image->getImageWidth();
         $height = $image->getImageHeight();
         $maxWidth = 2500;
         $maxHeight = 1600;
+
         if ($width > $maxWidth || $height > $maxHeight) {
             $ratio = min($maxWidth / $width, $maxHeight / $height);
             $newWidth = round($width * $ratio);
             $newHeight = round($height * $ratio);
             $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
         }
+
         $result = $image->writeImage($destination);
         $image->clear();
         $image->destroy();

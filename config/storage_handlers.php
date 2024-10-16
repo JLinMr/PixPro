@@ -5,6 +5,22 @@ use OSS\Core\OssException;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
 
+// 读取配置文件
+$config = parse_ini_file('config/config.ini', true);
+$accessKeyId = $config['OSS']['accessKeyId'];
+$accessKeySecret = $config['OSS']['accessKeySecret'];
+$endpoint = $config['OSS']['endpoint'];
+$bucket = $config['OSS']['bucket'];
+$cdndomain = $config['OSS']['cdndomain'];
+$storage = $config['Other']['storage'];
+$protocol = $config['Other']['protocol'];
+$s3Region = $config['S3']['s3Region'];
+$s3Bucket = $config['S3']['s3Bucket'];
+$s3Endpoint = $config['S3']['s3Endpoint'];
+$s3AccessKeyId = $config['S3']['s3AccessKeyId'];
+$s3AccessKeySecret = $config['S3']['s3AccessKeySecret'];
+$customUrlPrefix = $config['S3']['customUrlPrefix'];
+
 /**
  * 处理本地存储
  *

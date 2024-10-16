@@ -4,74 +4,6 @@ session_start();
 require_once 'image_processing.php';
 require_once 'storage_handlers.php';
 
-// 读取配置文件
-$config = parse_ini_file('config/config.ini', true);
-$accessKeyId = $config['OSS']['accessKeyId'];
-$accessKeySecret = $config['OSS']['accessKeySecret'];
-$endpoint = $config['OSS']['endpoint'];
-$bucket = $config['OSS']['bucket'];
-$cdndomain = $config['OSS']['cdndomain'];
-$validToken = $config['Token']['validToken'];
-$storage = $config['Other']['storage'];
-$protocol = $config['Other']['protocol'];
-$s3Region = $config['S3']['s3Region'];
-$s3Bucket = $config['S3']['s3Bucket'];
-$s3Endpoint = $config['S3']['s3Endpoint'];
-$s3AccessKeyId = $config['S3']['s3AccessKeyId'];
-$s3AccessKeySecret = $config['S3']['s3AccessKeySecret'];
-$customUrlPrefix = $config['S3']['customUrlPrefix'];
-$whitelist = explode(',', $config['Other']['whitelist']);
-
-/**
- * 验证令牌。
- *
- * @param string $token 令牌。
- * @param string $referer 来源URL。
- */
-function validateToken($token, $referer) {
-    global $validToken, $whitelist;
-
-    if (!empty($referer)) {
-        $refererHost = parse_url($referer, PHP_URL_HOST);
-        foreach ($whitelist as $allowedHost) {
-            if ($refererHost === parse_url($allowedHost, PHP_URL_HOST)) {
-                return;
-            }
-        }
-    }
-
-    if ($token === $validToken) {
-        return;
-    }
-
-    respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
-}
-
-/**
- * 设置响应头
- */
-function setCorsHeaders() {
-    global $whitelist;
-    $origin = isset($_SERVER['HTTP_ORIGIN']) ? $_SERVER['HTTP_ORIGIN'] : '';
-    if (!empty($origin)) {
-        $originHost = parse_url($origin, PHP_URL_HOST);
-        foreach ($whitelist as $allowedHost) {
-            if ($originHost === parse_url($allowedHost, PHP_URL_HOST)) {
-                header("Access-Control-Allow-Origin: $origin");
-                header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-                header("Access-Control-Allow-Headers: Content-Type");
-                return;
-            }
-        }
-    }
-    http_response_code(403);
-    header("Access-Control-Allow-Origin: *"); // 临时允许所有来源
-    respondAndExit(['result' => 'error', 'code' => 403, 'message' => '你的域名未在白名单内或Token错误']);
-    exit;
-}
-setCorsHeaders();
-
-
 /**
  * 获取客户端IP地址
  *
@@ -101,10 +33,9 @@ function getClientIp() {
  * @param string $referer 请求来源
  */
 function handleUploadedFile($file, $token, $referer) {
-    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $mysqli, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix;
+    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $storage, $protocol, $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix;
 
     $user_id = isset($_SESSION['user_id']) ? $_SESSION['user_id'] : NULL;
-    validateToken($token, $referer);
     $uploadDir = 'i/';
     $allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml', 'application/octet-stream'];
     $finfo = finfo_open(FILEINFO_MIME_TYPE);
@@ -163,7 +94,7 @@ function handleUploadedFile($file, $token, $referer) {
             list($convertSuccess, $finalFilePath) = processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality);
         }
 
-        // 处理图片方向 依赖exif扩展
+        // 处理图片方向
         if ($fileMimeType === 'image/jpeg') {
             $exif = @exif_read_data($finalFilePath);
             if ($exif && isset($exif['Orientation'])) {
@@ -213,6 +144,7 @@ function handleUploadedFile($file, $token, $referer) {
         }
     }
 }
+
 /**
  * 删除本地文件
  *

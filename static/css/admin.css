@@ -31,9 +31,7 @@ label {
 img.fancybox-image {
     border-radius: 8px;
 }
-.f-button {
-	backdrop-filter: blur(5px);
-}
+
 @media (hover: hover) {
     .f-button:hover:not([disabled]) {
         border-radius: 50%!important;
