@@ -84,17 +84,17 @@ function respondAndExit($response) {
     exit;
 }
 
-
 try {
-    if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_FILES['image'])) {
-        $file = $_FILES['image'];
+    if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES)) {
         $token = $_POST['token'] ?? '';
         $referer = $_SERVER['HTTP_REFERER'] ?? '';
 
         validateToken($token, $referer, $allowedHosts);
 
         try {
-            handleUploadedFile($file, $token, $referer);
+            foreach ($_FILES as $file) {
+                handleUploadedFile($file, $token, $referer);
+            }
         } catch (Exception $fileException) {
             logMessage('文件处理错误', ['error' => $fileException->getMessage()]);
             respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件处理错误: ' . $fileException->getMessage()]);
