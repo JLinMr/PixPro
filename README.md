@@ -14,9 +14,9 @@
 
 ## 演示站点
 
-前端：https://img.119990.xyz/
+前端：https://dev.ruom.top/
 
-后台：https://img.119990.xyz/admin/
+后台：https://dev.ruom.top/admin/（用户名：admin，密码：123456）
 
 ## 安装教程
 
@@ -29,16 +29,6 @@
 本程序依赖PHP的 Fileinfo 、 Imagick 、 exif拓展，需要自行安装。依赖 pcntl 扩展（宝塔PHP默认已安装）
 
 要求 pcntl_signal 和 pcntl_alarm 函数可用（需主动解除禁用）
-
-
-### 安全配置
-
-设置站点伪静态或修改nginx配置
-```
-location ~* /config\.ini$ {
-    deny all;
-}
-```
 
 ## 资源加速
 
