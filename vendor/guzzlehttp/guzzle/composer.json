@@ -1,5 +1,6 @@
 {
     "name": "guzzlehttp/guzzle",
+    "type": "library",
     "description": "Guzzle is a PHP HTTP client library",
     "keywords": [
         "framework",
@@ -8,10 +9,9 @@
         "web service",
         "curl",
         "client",
-        "HTTP client",
-        "PSR-7",
-        "PSR-18"
+        "HTTP client"
     ],
+    "homepage": "http://guzzlephp.org/",
     "license": "MIT",
     "authors": [
         {
@@ -51,40 +51,29 @@
         }
     ],
     "require": {
-        "php": "^7.2.5 || ^8.0",
+        "php": ">=5.5",
         "ext-json": "*",
-        "guzzlehttp/promises": "^1.5.3 || ^2.0.1",
-        "guzzlehttp/psr7": "^1.9.1 || ^2.5.1",
-        "psr/http-client": "^1.0",
-        "symfony/deprecation-contracts": "^2.2 || ^3.0"
-    },
-    "provide": {
-        "psr/http-client-implementation": "1.0"
+        "symfony/polyfill-intl-idn": "^1.17",
+        "guzzlehttp/promises": "^1.0",
+        "guzzlehttp/psr7": "^1.9"
     },
     "require-dev": {
         "ext-curl": "*",
-        "bamarni/composer-bin-plugin": "^1.8.2",
-        "php-http/client-integration-tests": "dev-master#2c025848417c1135031fdf9c728ee53d0a7ceaee as 3.0.999",
-        "php-http/message-factory": "^1.1",
-        "phpunit/phpunit": "^8.5.36 || ^9.6.15",
-        "psr/log": "^1.1 || ^2.0 || ^3.0"
+        "phpunit/phpunit": "^4.8.35 || ^5.7 || ^6.4 || ^7.0",
+        "psr/log": "^1.1"
     },
     "suggest": {
-        "ext-curl": "Required for CURL handler support",
-        "ext-intl": "Required for Internationalized Domain Name (IDN) support",
         "psr/log": "Required for using the Log middleware"
     },
     "config": {
+        "sort-packages": true,
         "allow-plugins": {
             "bamarni/composer-bin-plugin": true
-        },
-        "preferred-install": "dist",
-        "sort-packages": true
+        }
     },
     "extra": {
-        "bamarni-bin": {
-            "bin-links": true,
-            "forward-command": false
+        "branch-alias": {
+            "dev-master": "6.5-dev"
         }
     },
     "autoload": {

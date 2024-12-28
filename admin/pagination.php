@@ -1,20 +1,4 @@
 <?php
-function renderImages($mysqli, $items_per_page, $offset) {
-    $query = "SELECT * FROM images ORDER BY id DESC LIMIT ? OFFSET ?";
-    $stmt = $mysqli->prepare($query);
-    $stmt->bind_param("ii", $items_per_page, $offset);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    $images = [];
-    if ($result->num_rows > 0) {
-        while ($row = $result->fetch_assoc()) {
-            $images[] = $row;
-        }
-    }
-    return $images;
-}
-
 function renderPagination($current_page, $total_pages) {
     // 如果总页码大于1，则显示分页链接
     if ($total_pages > 1) {

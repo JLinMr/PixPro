@@ -1,0 +1,208 @@
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    margin: 0;
+    color: #000;
+    padding: 0px 15px 0 15px;
+    background: url(../static/images/bg.webp) no-repeat 100% 100%;
+    background-size: cover;
+    background-attachment: fixed;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.container {
+    padding: 20px;
+    border-radius: 8px;
+    width: 100%;
+    max-width: 600px;
+    background-color: rgba(255, 255, 255, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.container h2 {
+    margin-top: 0;
+    text-align: center;
+    color: #000;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+.form-group input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px;
+    outline: 0;
+    border: 1px solid #aaa;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.2);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.form-group input[type="submit"],
+.form-group input[type="button"] {
+    background-color: #5cb85c;
+    color: white;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 4px;
+    transition: background-color 0.3s ease;
+}
+
+.form-group input[type="submit"]:hover,
+.form-group input[type="button"]:hover {
+    background-color: #4cae4c;
+}
+
+/* 消息弹窗样式 */
+.msg {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    padding: 15px;
+    border-radius: 8px;
+    color: #fff;
+    -webkit-backdrop-filter: blur(5px);
+            backdrop-filter: blur(5px);
+    z-index: 9999;
+    border: 1px solid rgb(255 255 255 / 20%);
+    -webkit-animation: fadeInTop .6s forwards;
+            animation: fadeInTop .6s forwards;
+}
+
+.msg-green { background-color: rgba(0, 126, 0, 0.7); }
+.msg-red { background-color: rgba(166, 19, 19, 0.7); }
+
+.msg-right { 
+    -webkit-animation: fadeOutRight .8s forwards; 
+    animation: fadeOutRight .8s forwards; 
+}
+
+@-webkit-keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeInTop {
+    0% { opacity: 0; transform: translateY(-100%); }
+    100% { opacity: 1; transform: translateY(0); }
+}
+
+@-webkit-keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+@keyframes fadeOutRight {
+    0% { opacity: 1; transform: translateX(0); }
+    100% { opacity: 0; transform: translateX(100%); }
+}
+
+.check-table {
+    width: 100%;
+    border-collapse: separate;
+    border-spacing: 0;
+    margin: 20px 0;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.check-table th,
+.check-table td {
+    padding: 15px 20px;
+    text-align: left;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.check-table th {
+    background-color: rgba(52, 152, 219, 0.1);
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.check-table tr:last-child td {
+    border-bottom: none;
+}
+
+.check-table tr.success {
+    background-color: rgba(46, 204, 113, 0.1);
+}
+
+.check-table tr.error {
+    background-color: rgba(231, 76, 60, 0.1);
+}
+
+.check-table tr.success td {
+    color: #27ae60;
+}
+
+.check-table tr.error td {
+    color: #e74c3c;
+}
+
+.check-table tr td:last-child {
+    position: relative;
+    padding-right: 40px;
+}
+
+.check-table tr.success td:last-child::after {
+    content: "✓";
+    position: absolute;
+    right: 20px;
+    color: #27ae60;
+    font-weight: bold;
+}
+
+.check-table tr.error td:last-child::after {
+    content: "✗";
+    position: absolute;
+    right: 20px;
+    color: #e74c3c;
+    font-weight: bold;
+}
+
+.error-message {
+    color: #c0392b;
+    padding: 15px 20px;
+    margin-top: 20px;
+    border-radius: 8px;
+    background: rgba(231, 76, 60, 0.1);
+    border: 1px solid rgba(231, 76, 60, 0.3);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 500;
+}
+
+.error-message::before {
+    content: "⚠️";
+    margin-right: 10px;
+    font-size: 1.2em;
+}
+
+.force-install {
+    display: inline-block;
+    padding: 5px 10px;
+    background-color: #fc6969;
+    color: white;
+    text-decoration: none;
+    border-radius: 3px;
+    margin-left: 10px;
+}
+
+.force-install:hover {
+    background-color: #ff3333;
+}

@@ -1,16 +1,23 @@
 <?php
 session_start();
 
-$config = parse_ini_file('config/config.ini', true);
+require_once 'config/database.php';
 
-if (isset($config['Other']['login_restriction']) && filter_var($config['Other']['login_restriction'], FILTER_VALIDATE_BOOLEAN) && (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'])) {
-    header('Location: /admin');
-    exit();
-}
-
-if (!file_exists('install/install.lock')) {
-    header('Location: /install');
-    exit;
+try {
+    $db = Database::getInstance();
+    $mysqli = $db->getConnection();
+    $config = Database::getConfig($mysqli);
+    
+    // 检查是否需要登录限制
+    if ($config && 
+        isset($config['login_restriction']) && 
+        filter_var($config['login_restriction'], FILTER_VALIDATE_BOOLEAN) && 
+        (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'])) {
+        header('Location: /admin');
+        exit();
+    }
+} catch (Exception $e) {
+    die($e->getMessage());
 }
 ?>
 <!DOCTYPE html>
@@ -23,10 +30,6 @@ if (!file_exists('install/install.lock')) {
     <meta name="description" content="一款专为个人需求设计的高效图床解决方案，集成了强大的图片压缩功能与优雅的前台后台界面。项目结构精简高效，提供自定义图片压缩率与尺寸设置，有效降低存储与带宽成本。支持JPEG, PNG, GIF转换为WEBP以及SVG、WEBP直接上传，搭载阿里云OSS存储（默认）及灵活的本地存储选项。特性包括点击、拖拽、粘贴及URL本地化上传方式，以及配备瀑布流布局的管理后台，实现图片轻松管理与预览。完全可自定制的体验，满足不同用户对图片管理和优化的高级需求。">
     <link rel="shortcut icon" href="static/favicon.ico">
     <link rel="stylesheet" type="text/css" href="static/css/styles.css">
-    <!-- 弹窗公告 -->
-    <link rel="stylesheet" type="text/css" href="static/css/notification.css">
-    <script type="text/javascript" src="static/js/notification.js" defer></script>
-    <!-- 不需要的直接注释这两行 -->
 </head>
 <body>
     <header class="blur">
@@ -58,7 +61,7 @@ if (!file_exists('install/install.lock')) {
                 </div>
                 <div id="parameters" class="parameters">
                     <label for="qualityInput">图片清晰度 60-100<output id="qualityOutput" class="qualityOutput">60</output></label>
-                    <input type="range" id="qualityInput" name="quality" min="60" max="100" value="60" step="5">
+                    <input type="range" id="qualityInput" name="quality" min="60" max="100" value="60" step="1">
                 </div>
                 <div id="progressContainer" class="progressContainer">
                     <div id="progressBar" class="progressBar"></div>
