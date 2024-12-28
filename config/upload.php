@@ -4,94 +4,84 @@ session_start();
 require_once 'storage.php';
 
 /**
- * 将JPEG图片转换为WebP格式
+ * 统一的图片转换函数
+ * @param string $source 源文件路径
+ * @param string $destination 目标文件路径
+ * @param int $quality 图片质量
+ * @return bool 转换是否成功
  */
-function convertToWebp($source, $destination, $quality = 60) {
-    $info = getimagesize($source);
-
-    if ($info['mime'] == 'image/jpeg') {
-        $image = imagecreatefromjpeg($source);
-    } elseif ($info['mime'] == 'image/gif') {
-        return false;
-    } else {
-        return false;
-    }
-    $width = imagesx($image);
-    $height = imagesy($image);
-    $maxWidth = 2500;
-    $maxHeight = 1600;
-    if ($width > $maxWidth || $height > $maxHeight) {
-        $ratio = min($maxWidth / $width, $maxHeight / $height);
-        $newWidth = round($width * $ratio);
-        $newHeight = round($height * $ratio);
-        $newImage = imagecreatetruecolor($newWidth, $newHeight);
-        imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
-        imagedestroy($image);
-        $image = $newImage;
-    }
-    $result = imagewebp($image, $destination, $quality);
-    imagedestroy($image);
-    gc_collect_cycles();
-    return $result;
-}
-
-/**
- * 使用Imagick将PNG图片转换为WebP格式
- */
-function convertPngWithImagick($source, $destination, $quality = 60) {
+function convertImageToWebp($source, $destination, $quality = 60) {
     try {
-        $image = new Imagick($source);
-
-        if ($image->getImageAlphaChannel()) {
-            $image->setImageBackgroundColor(new ImagickPixel('transparent'));
-            $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
-            $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
-        }
-
-        $image->setImageFormat('webp');
-        $image->setImageCompressionQuality($quality);
-
-        $width = $image->getImageWidth();
-        $height = $image->getImageHeight();
         $maxWidth = 2500;
         $maxHeight = 1600;
+        $info = getimagesize($source);
+        $mimeType = $info['mime'];
 
-        if ($width > $maxWidth || $height > $maxHeight) {
-            $ratio = min($maxWidth / $width, $maxHeight / $height);
-            $newWidth = round($width * $ratio);
-            $newHeight = round($height * $ratio);
-            $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+        // 使用Imagick处理PNG和GIF
+        if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
+            $image = new Imagick($source);
+            
+            if ($mimeType === 'image/png' && $image->getImageAlphaChannel()) {
+                $image->setImageBackgroundColor(new ImagickPixel('transparent'));
+                $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
+                $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
+            }
+
+            if ($mimeType === 'image/gif') {
+                $image = $image->coalesceImages();
+                foreach ($image as $frame) {
+                    $frame->setImageFormat('webp');
+                    $frame->setImageCompressionQuality($quality);
+                }
+                $image = $image->optimizeImageLayers();
+            } else {
+                $image->setImageFormat('webp');
+                $image->setImageCompressionQuality($quality);
+            }
+
+            // 调整图片尺寸
+            $width = $image->getImageWidth();
+            $height = $image->getImageHeight();
+            if ($width > $maxWidth || $height > $maxHeight) {
+                $ratio = min($maxWidth / $width, $maxHeight / $height);
+                $newWidth = round($width * $ratio);
+                $newHeight = round($height * $ratio);
+                $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+            }
+
+            $result = $mimeType === 'image/gif' 
+                ? $image->writeImages($destination, true)
+                : $image->writeImage($destination);
+            
+            $image->clear();
+            $image->destroy();
+            return $result;
+        }
+        // 使用GD处理JPEG和其他格式
+        else if ($mimeType === 'image/jpeg') {
+            $image = imagecreatefromjpeg($source);
+            $width = imagesx($image);
+            $height = imagesy($image);
+
+            if ($width > $maxWidth || $height > $maxHeight) {
+                $ratio = min($maxWidth / $width, $maxHeight / $height);
+                $newWidth = round($width * $ratio);
+                $newHeight = round($height * $ratio);
+                $newImage = imagecreatetruecolor($newWidth, $newHeight);
+                imagecopyresampled($newImage, $image, 0, 0, 0, 0, $newWidth, $newHeight, $width, $height);
+                imagedestroy($image);
+                $image = $newImage;
+            }
+
+            $result = imagewebp($image, $destination, $quality);
+            imagedestroy($image);
+            gc_collect_cycles();
+            return $result;
         }
 
-        $result = $image->writeImage($destination);
-        $image->clear();
-        $image->destroy();
-        return $result;
-    } catch (Exception $e) {
-        logMessage('Imagick转换PNG失败: ' . $e->getMessage());
         return false;
-    }
-}
-
-/**
- * 使用Imagick将GIF图片转换为WebP格式
- */
-function convertGifToWebp($source, $destination, $quality = 60) {
-    try {
-        $image = new Imagick();
-        $image->readImage($source);
-        $image = $image->coalesceImages();
-        foreach ($image as $frame) {
-            $frame->setImageFormat('webp');
-            $frame->setImageCompressionQuality($quality);
-        }
-        $image = $image->optimizeImageLayers();
-        $result = $image->writeImages($destination, true);
-        $image->clear();
-        $image->destroy();
-        return $result;
     } catch (Exception $e) {
-        logMessage('GIF转换WebP失败: ' . $e->getMessage());
+        logMessage('图片转换失败: ' . $e->getMessage());
         return false;
     }
 }
@@ -106,35 +96,29 @@ function processImageCompression($fileMimeType, $newFilePath, $newFilePathWithou
     $config = Database::getConfig($mysqli);
     $outputFormat = isset($config['output_format']) ? $config['output_format'] : 'webp';
     
-    // 如果不是原始格式，需要进行格式转换
-    if ($outputFormat !== 'original') {
-        // 当quality不是100时，进行压缩转换
-        if ($quality != 100) {
-            if ($fileMimeType === 'image/png') {
-                $convertSuccess = convertPngWithImagick($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-                if ($convertSuccess) {
-                    $finalFilePath = $newFilePathWithoutExt . '.webp';
-                    unlink($newFilePath);
-                }
-            } elseif ($fileMimeType === 'image/gif') {
-                $convertSuccess = convertGifToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-                if ($convertSuccess) {
-                    $finalFilePath = $newFilePathWithoutExt . '.webp';
-                    unlink($newFilePath);
-                }
-            } elseif ($fileMimeType !== 'image/webp' && $fileMimeType !== 'image/svg+xml') {
-                $convertSuccess = convertToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-                if ($convertSuccess) {
-                    $finalFilePath = $newFilePathWithoutExt . '.webp';
-                    unlink($newFilePath);
-                }
-            }
+    // 当quality不是100且不是svg或webp时，进行压缩转换为webp
+    if ($quality != 100 && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/webp') {
+        $convertSuccess = convertImageToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        if ($convertSuccess) {
+            $finalFilePath = $newFilePathWithoutExt . '.webp';
+            unlink($newFilePath);
         }
-        
-        // 检查当前文件扩展名是否符合配置的输出格式
+    }
+    
+    // 根据配置的输出格式修改文件后缀
+    // 如果是quality=100或者是svg/webp，直接重命名为目标格式
+    if ($outputFormat !== 'webp' || ($quality == 100 && $fileMimeType !== 'image/svg+xml')) {
         $currentExt = strtolower(pathinfo($finalFilePath, PATHINFO_EXTENSION));
         if ($currentExt !== $outputFormat) {
-            $newFinalFilePath = $newFilePathWithoutExt . '.' . $outputFormat;
+            if ($outputFormat === 'original') {
+                // 如果是original，使用原始文件的扩展名
+                $originalExt = strtolower(pathinfo($newFilePath, PATHINFO_EXTENSION));
+                $newFinalFilePath = $newFilePathWithoutExt . '.' . $originalExt;
+            } else {
+                // 使用配置的输出格式作为扩展名
+                $newFinalFilePath = $newFilePathWithoutExt . '.' . $outputFormat;
+            }
+            
             rename($finalFilePath, $newFinalFilePath);
             $finalFilePath = $newFinalFilePath;
         }
