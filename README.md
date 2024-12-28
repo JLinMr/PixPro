@@ -16,7 +16,9 @@
 
 前端：https://dev.ruom.top/
 
-后台：https://dev.ruom.top/admin/（用户名：admin，密码：123456）
+后台：https://dev.ruom.top/admin/  
+
+用户名：admin，密码：123456
 
 ## 安装教程
 
