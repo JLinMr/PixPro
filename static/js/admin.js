@@ -119,8 +119,19 @@ const UI = {
             await navigator.clipboard.writeText(text);
             this.showNotification('已复制到剪贴板');
         } catch (err) {
-            this.showNotification('复制失败', 'error');
-            console.error('Copy failed:', err);
+            console.error('复制到剪贴板失败: ', err);
+            try {
+                const tempInput = document.createElement('input');
+                tempInput.value = text;
+                document.body.appendChild(tempInput);
+                tempInput.select();
+                document.execCommand('copy');
+                document.body.removeChild(tempInput);
+                this.showNotification('已复制到剪贴板');
+            } catch (err) {
+                console.error('备用方法复制到剪贴板失败: ', err);
+                this.showNotification('复制到剪贴板失败', 'error');
+            }
         }
     },
 
