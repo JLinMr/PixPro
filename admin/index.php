@@ -73,6 +73,7 @@ $pagination = renderPagination($current_page, $total_pages);
     <div id="gallery" class="gallery"><?= $images_html ?></div>
     <div class="rightside">
         <a href="/" class="floating-link" title="返回主页"><img src="/static/images/svg/home.svg" alt="主页"></a>
+        <a class="select-link" title="多选模式"><img src="/static/images/svg/select.svg" alt="多选"></a>
         <a href="settings.php" class="settings-link" title="系统设置"><img src="/static/images/svg/Setting.svg" alt="设置"></a>
         <a href="?logout=true" class="logout-link" title="退出登录"><img src="/static/images/svg/logout.svg" alt="退出"></a>
         <a class="top-link" id="scroll-to-top" title="回到顶部"><img src="/static/images/svg/top.svg" alt="顶部"></a>

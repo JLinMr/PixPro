@@ -406,7 +406,8 @@ body {
     transition: background-color 0.3s, color 0.3s;
 }
 
-a.page-link.active {
+a.page-link.active,
+.select-link.active {
     background-color: rgb(88 221 32 / 54%);
 }
 
@@ -440,9 +441,10 @@ a.ellipsis {
     height: 40px;
     justify-content: center;
     align-items: center;
+    background: rgb(25 25 25 / 20%);
 }
 
-.floating-link, .settings-link, .logout-link {
+.floating-link, .select-link, .settings-link, .logout-link {
     transition: transform 0.5s;
 }
 
@@ -457,6 +459,7 @@ a.ellipsis {
 
 .rightside.shifted .floating-link,
 .rightside.shifted .settings-link,
+.rightside.shifted .select-link,
 .rightside.shifted .logout-link {
     transform: translateY(-50px);
 }
@@ -479,6 +482,7 @@ a.ellipsis {
     display: grid !important;
     place-items: center;
     font-size: 12px;
+    background: rgb(25 25 25 / 20%);
 }
 
 #cancel-delete:hover,

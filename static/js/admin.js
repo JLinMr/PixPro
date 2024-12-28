@@ -268,13 +268,12 @@ function setupDocumentClickHandler() {
 function setupMultiSelect() {
     const state = {
         isMultiSelectMode: false,
-        selectedItems: new Set(),
-        pressTimer: null,
-        initialTouch: null
+        selectedItems: new Set()
     };
     
     const toolbar = createMultiSelectToolbar();
     const gallery = document.getElementById('gallery');
+    const multiSelectBtn = document.querySelector('.select-link');
     
     function createMultiSelectToolbar() {
         const toolbar = document.createElement('div');
@@ -292,7 +291,10 @@ function setupMultiSelect() {
         state.isMultiSelectMode = !state.isMultiSelectMode;
         gallery.classList.toggle('multi-select-mode');
         toolbar.classList.toggle('show');
-        if (!state.isMultiSelectMode) clearSelection();
+        multiSelectBtn.classList.toggle('active');
+        if (!state.isMultiSelectMode) {
+            clearSelection();
+        }
     }
     
     function clearSelection() {
@@ -329,14 +331,6 @@ function setupMultiSelect() {
         updateSelectedCount();
     }
 
-    function handleMultiSelectTrigger(e) {
-        const galleryItem = e.target.closest('.gallery-item');
-        if (!galleryItem || state.isMultiSelectMode) return;
-        
-        toggleMultiSelectMode();
-        handleItemSelection(e);
-    }
-
     function handleDeleteSelected() {
         if (state.selectedItems.size === 0) {
             UI.showNotification('请先选择要删除的图片', 'error');
@@ -362,56 +356,12 @@ function setupMultiSelect() {
             }
         );
     }
-
-    // 触摸事件处理
-    const touchHandlers = {
-        handleTouchStart(e) {
-            if (state.isMultiSelectMode) return;
-            state.initialTouch = {
-                x: e.touches[0].clientX,
-                y: e.touches[0].clientY
-            };
-            state.pressTimer = setTimeout(() => handleMultiSelectTrigger(e), 500);
-        },
-
-        handleTouchMove(e) {
-            if (!state.pressTimer || !state.initialTouch) return;
-            
-            const threshold = 10;
-            const touch = e.touches[0];
-            const moved = Math.abs(touch.clientX - state.initialTouch.x) > threshold || 
-                         Math.abs(touch.clientY - state.initialTouch.y) > threshold;
-            
-            if (moved) {
-                clearTimeout(state.pressTimer);
-                state.pressTimer = null;
-            }
-        },
-
-        handleTouchEnd() {
-            clearTimeout(state.pressTimer);
-            state.pressTimer = null;
-            state.initialTouch = null;
-        }
-    };
     
     // 事件绑定
-    gallery.addEventListener('contextmenu', e => {
-        e.preventDefault();
-        if (!state.isMultiSelectMode) {
-            handleMultiSelectTrigger(e);
-        }
-    });
+    gallery.addEventListener('click', handleItemSelection);
     
-    gallery.addEventListener('click', e => {
-        if (state.isMultiSelectMode) {
-            handleItemSelection(e);
-        }
-    });
-    
-    Object.entries(touchHandlers).forEach(([event, handler]) => {
-        gallery.addEventListener(event.toLowerCase(), handler);
-    });
+    // 多选按钮事件
+    multiSelectBtn.addEventListener('click', toggleMultiSelectMode);
     
     // 工具栏按钮事件
     toolbar.querySelector('.delete-selected').onclick = handleDeleteSelected;
