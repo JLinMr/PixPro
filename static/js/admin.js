@@ -28,7 +28,7 @@ function setupEventHandlers() {
 
 // API工具类
 const API = {
-    async sendDeleteRequest(id, path, showNotification = true) {
+    async sendDeleteRequest(id, path) {
         try {
             const response = await fetch('/config/delete.php', {
                 method: 'POST',
@@ -36,17 +36,55 @@ const API = {
                 body: `id=${encodeURIComponent(id)}&path=${encodeURIComponent(path)}`
             });
             const data = await response.json();
-            
-            if (data.result === 'success') {
-                document.getElementById('image-' + id)?.remove();
-                showNotification && UI.showNotification('删除成功');
-                return true;
-            }
-            throw new Error(data.message);
+            return data.result === 'success';
         } catch (error) {
-            showNotification && UI.showNotification('删除失败', 'error');
-            throw error;
+            console.error('Delete error:', error);
+            return false;
         }
+    },
+
+    async deleteImages(ids, paths) {
+        const errors = [];
+        
+        // 处理单个删除的情况
+        if (!Array.isArray(ids)) {
+            ids = [ids];
+            paths = [paths];
+        }
+        
+        // 执行删除操作
+        for (let i = 0; i < ids.length; i++) {
+            try {
+                const success = await this.sendDeleteRequest(ids[i], paths[i]);
+                if (!success) {
+                    errors.push(ids[i]);
+                }
+            } catch (error) {
+                errors.push(ids[i]);
+                console.error(`Failed to delete image ${ids[i]}:`, error);
+            }
+        }
+
+        // 刷新页面内容
+        const currentPage = parseInt(document.getElementById('current-total-pages').textContent.split('/')[0]);
+        const pageData = await this.loadPage(currentPage);
+        
+        if (pageData.success) {
+            DOM.gallery.innerHTML = pageData.html;
+            DOM.pagination.innerHTML = pageData.pagination;
+            DOM.pageDisplay.textContent = `${pageData.currentPage}/${pageData.totalPages}`;
+            initLazyLoad();
+            initFancybox();
+        }
+        
+        // 显示结果通知
+        if (errors.length > 0) {
+            UI.showNotification(`删除失败 ${errors.length} 张图片`, 'error');
+            throw new Error(`Failed to delete ${errors.length} images`);
+        }
+        
+        UI.showNotification(ids.length > 1 ? `成功删除 ${ids.length} 张图片` : '删除成功');
+        return true;
     },
 
     async loadPage(page) {
@@ -60,28 +98,6 @@ const API = {
             UI.showNotification('加载失败', 'error');
             throw error;
         }
-    },
-
-    async deleteImages(selectedItems) {
-        const errors = [];
-        for (const id of selectedItems) {
-            const element = document.getElementById('image-' + id);
-            if (!element) continue;
-            
-            try {
-                const path = element.querySelector('.delete-btn').dataset.path;
-                await this.sendDeleteRequest(id, path, false);
-            } catch (error) {
-                errors.push(id);
-                console.error(`Failed to delete image ${id}:`, error);
-            }
-        }
-        
-        if (errors.length > 0) {
-            throw new Error(`Failed to delete ${errors.length} images`);
-        }
-        
-        return true;
     }
 };
 
@@ -197,7 +213,7 @@ function setupCopyAndDeleteHandlers() {
             UI.createConfirmDialog('确定删除这张图片吗？', 
                 async () => {
                     try {
-                        await API.sendDeleteRequest(btn.dataset.id, btn.dataset.path);
+                        await API.deleteImages(btn.dataset.id, btn.dataset.path);
                     } catch (error) {
                         console.error('Delete error:', error);
                     }
@@ -320,12 +336,16 @@ function setupMultiSelect() {
             '确定删除这些图片吗？',
             async () => {
                 try {
-                    await API.deleteImages(state.selectedItems);
-                    UI.showNotification(`成功删除 ${state.selectedItems.size} 张图片`);
+                    const ids = Array.from(state.selectedItems);
+                    const paths = ids.map(id => {
+                        const element = document.getElementById('image-' + id);
+                        return element ? element.querySelector('.delete-btn').dataset.path : null;
+                    }).filter(path => path !== null);
+                    
+                    await API.deleteImages(ids, paths);
                     clearSelection();
                     toggleMultiSelectMode();
                 } catch (error) {
-                    UI.showNotification('删除过程中发生错误', 'error');
                     console.error('Delete error:', error);
                 }
             }
