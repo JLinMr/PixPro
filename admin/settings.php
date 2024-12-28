@@ -134,6 +134,7 @@ $storageConfigs = json_decode(file_get_contents('../config/configs.json'), true)
                 </div>
                 <div id="custom-protocol-input" class="custom-input" style="display: none;">
                     <input type="text" name="custom_protocol" id="custom_protocol" 
+                           value="<?= !in_array($configs['protocol']['value'], ['http://', 'https://']) ? $configs['protocol']['value'] : '' ?>"
                            placeholder="请输入自定义协议，例如：https://i1.wp.com/">
                 </div>
             </div>

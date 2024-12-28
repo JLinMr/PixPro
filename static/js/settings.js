@@ -37,9 +37,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
         elements.settingsForm?.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const formData = new FormData(e.target);
+            
+            // 处理自定义协议
+            if (formData.get('protocol') === 'custom') {
+                const customProtocol = formData.get('custom_protocol');
+                if (customProtocol) {
+                    formData.set('protocol', customProtocol);
+                }
+            }
+            
             const response = await fetch('settings.php', {
                 method: 'POST',
-                body: new FormData(e.target)
+                body: formData
             });
             const {message, success} = await response.json();
             UI.showNotification(message, success ? 'success' : 'error');
