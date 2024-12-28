@@ -1,7 +1,5 @@
 <?php
 
-declare(strict_types=1);
-
 namespace GuzzleHttp\Psr7;
 
 use InvalidArgumentException;
@@ -28,16 +26,16 @@ class Request implements RequestInterface
     /**
      * @param string                               $method  HTTP method
      * @param string|UriInterface                  $uri     URI
-     * @param (string|string[])[]                  $headers Request headers
+     * @param array                                $headers Request headers
      * @param string|resource|StreamInterface|null $body    Request body
      * @param string                               $version Protocol version
      */
     public function __construct(
-        string $method,
+        $method,
         $uri,
         array $headers = [],
         $body = null,
-        string $version = '1.1'
+        $version = '1.1'
     ) {
         $this->assertMethod($method);
         if (!($uri instanceof UriInterface)) {
@@ -58,24 +56,24 @@ class Request implements RequestInterface
         }
     }
 
-    public function getRequestTarget(): string
+    public function getRequestTarget()
     {
         if ($this->requestTarget !== null) {
             return $this->requestTarget;
         }
 
         $target = $this->uri->getPath();
-        if ($target === '') {
+        if ($target == '') {
             $target = '/';
         }
         if ($this->uri->getQuery() != '') {
-            $target .= '?'.$this->uri->getQuery();
+            $target .= '?' . $this->uri->getQuery();
         }
 
         return $target;
     }
 
-    public function withRequestTarget($requestTarget): RequestInterface
+    public function withRequestTarget($requestTarget)
     {
         if (preg_match('#\s#', $requestTarget)) {
             throw new InvalidArgumentException(
@@ -85,30 +83,28 @@ class Request implements RequestInterface
 
         $new = clone $this;
         $new->requestTarget = $requestTarget;
-
         return $new;
     }
 
-    public function getMethod(): string
+    public function getMethod()
     {
         return $this->method;
     }
 
-    public function withMethod($method): RequestInterface
+    public function withMethod($method)
     {
         $this->assertMethod($method);
         $new = clone $this;
         $new->method = strtoupper($method);
-
         return $new;
     }
 
-    public function getUri(): UriInterface
+    public function getUri()
     {
         return $this->uri;
     }
 
-    public function withUri(UriInterface $uri, $preserveHost = false): RequestInterface
+    public function withUri(UriInterface $uri, $preserveHost = false)
     {
         if ($uri === $this->uri) {
             return $this;
@@ -124,7 +120,7 @@ class Request implements RequestInterface
         return $new;
     }
 
-    private function updateHostFromUri(): void
+    private function updateHostFromUri()
     {
         $host = $this->uri->getHost();
 
@@ -133,7 +129,7 @@ class Request implements RequestInterface
         }
 
         if (($port = $this->uri->getPort()) !== null) {
-            $host .= ':'.$port;
+            $host .= ':' . $port;
         }
 
         if (isset($this->headerNames['host'])) {
@@ -143,17 +139,14 @@ class Request implements RequestInterface
             $this->headerNames['host'] = 'Host';
         }
         // Ensure Host is the first header.
-        // See: https://datatracker.ietf.org/doc/html/rfc7230#section-5.4
+        // See: http://tools.ietf.org/html/rfc7230#section-5.4
         $this->headers = [$header => [$host]] + $this->headers;
     }
 
-    /**
-     * @param mixed $method
-     */
-    private function assertMethod($method): void
+    private function assertMethod($method)
     {
         if (!is_string($method) || $method === '') {
-            throw new InvalidArgumentException('Method must be a non-empty string.');
+            throw new \InvalidArgumentException('Method must be a non-empty string.');
         }
     }
 }

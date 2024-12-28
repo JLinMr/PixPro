@@ -1,0 +1,7 @@
+{
+    "require": {
+        "upyun/sdk": "^3.5",
+        "aliyuncs/oss-sdk-php": "^2.7",
+        "aws/aws-sdk-php": "^3.336"
+    }
+}
