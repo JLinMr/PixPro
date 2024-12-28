@@ -120,10 +120,29 @@ body {
     min-height: 253px;
 }
 
+/* 移动端适配 */
 @media screen and (max-width: 768px) {
     .gallery {
         grid-template-columns: repeat(2, 1fr);
         gap: 10px;
+    }
+    
+    body .multi-select-toolbar {
+        padding: 8px;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 90%;
+    }
+
+    body .multi-select-toolbar button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    body .selected-count {
+        padding: 6px 12px;
+        font-size: 12px;
     }
 }
 
