@@ -6,21 +6,17 @@
 
 项目结构精简高效，提供自定义图片压缩率与尺寸设置，有效降低存储与带宽成本。
 
-支持上传JPEG、PNG、GIF格式图片并转换为WEBP格式，支持上传SVG、WEBP图片。
-
 支持本地储存，阿里云OSS储存，S3存储。可通过把储存桶挂载到本地的方式解锁更多储存方式。
 
 简洁美观的前端，支持点击、拖拽、粘贴、URL、批量上传。
 
 瀑布流管理后台，便捷查看图片信息，支持图片灯箱、AJAX无加载刷新。
 
-支持自定义压缩率，默认60。支持设置每日上传限制，单次上传限制，文件大小限制
-
 ## 演示站点
 
-前端：https://dev.ruom.top/
+前端：https://img.119990.xyz/
 
-后台：https://dev.ruom.top/admin/
+后台：https://img.119990.xyz/admin/
 
 ## 安装教程
 
@@ -28,15 +24,12 @@
 
 ## 运行环境
 
-推荐PHP 8.1 + MySQL >= 5.7
+推荐PHP 8.1 + MySQL >= 5.6
 
 本程序依赖PHP的 Fileinfo 、 Imagick 、 exif拓展，需要自行安装。依赖 pcntl 扩展（宝塔PHP默认已安装）
 
 要求 pcntl_signal 和 pcntl_alarm 函数可用（需主动解除禁用）
 
-## 功能配置
-
-如果需要更换存储策略，需安装后修改`config.ini`文件
 
 ### 安全配置
 
@@ -46,33 +39,6 @@ location ~* /config\.ini$ {
     deny all;
 }
 ```
-### 登录上传
-
-编辑 `config.ini` 文件
-
-``` ini
-login_restriction = false
-; // login_restriction  true 开启 false 关闭 // 默认false，开启后只有登录用户才能上传图片
-```
-
-### 上传限制
-
-编辑 `config/validate.php` 文件头部。同步修改`static/js/script.js`的头部内容
-```php
-// validate.php
-// 设置参数
-$maxUploadsPerDay = 50; // 每天最多上传50次
-$maxFileSize = 5 * 1024 * 1024; // 文件大小限制 5MB 修改这里同步修改 script.js
-```
-```js
-// script.js
-// 设置参数
-const maxFileSize = 5 * 1024 * 1024;  // 文件大小限制 5MB
-const maxFilesPerUpload = 5; // 最多上传5张图片
-```
-### 修改后台
-
-直接修改 `admin` 目录名即可
 
 ## 资源加速
 
@@ -87,11 +53,6 @@ https://cdn.jsdelivr.net/npm/pixpro@latest/
 
 例如: https://cdn.jsdelivr.net/npm/pixpro@1.7.6/static/js/admin.js
 
-### 使用 UNPKG的第三方镜像
-https://cdn.cbd.int/pixpro@latest/
-
-例如：https://cdn.cbd.int/pixpro@1.7.6/static/js/admin.js
-
 
 ## 拓展功能
 
@@ -99,7 +60,7 @@ https://cdn.cbd.int/pixpro@latest/
 
 ### 下载upgit
 
-前往下载 [Upgit](https://alist.ruom.top/%E8%B5%84%E6%BA%90-%E5%88%86%E4%BA%AB/%E6%88%91%E7%9A%84%E9%A1%B9%E7%9B%AE/Upgit)
+前往下载 [Upgit](https://www.ilanzou.com/s/dkc0YXrI)
 
 ### 如何配置
 

@@ -1,0 +1,143 @@
+{
+  "storage_types": {
+    "local": {
+      "name": "本地",
+      "configs": []
+    },
+    "oss": {
+      "name": "OSS",
+      "configs": [
+        {
+          "key": "oss_endpoint",
+          "name": "Endpoint",
+          "description": "OSS服务入口",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：oss-cn-hangzhou.aliyuncs.com（不含https://）"
+        },
+        {
+          "key": "oss_bucket",
+          "name": "Bucket",
+          "description": "OSS存储空间名称",
+          "type": "text",
+          "default": "",
+          "placeholder": "OSS Bucket名称"
+        },
+        {
+          "key": "oss_access_key_id",
+          "name": "AccessKey ID",
+          "description": "阿里云AccessKey ID",
+          "type": "password",
+          "default": "",
+          "placeholder": "阿里云AccessKey ID"
+        },
+        {
+          "key": "oss_access_key_secret",
+          "name": "AccessKey Secret",
+          "description": "阿里云AccessKey Secret",
+          "type": "password",
+          "default": "",
+          "placeholder": "阿里云AccessKey Secret"
+        },
+        {
+          "key": "oss_cdn_domain",
+          "name": "CDN域名",
+          "description": "OSS CDN加速域名",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：cdn.example.com（不含https://）"
+        }
+      ]
+    },
+    "s3": {
+      "name": "S3",
+      "configs": [
+        {
+          "key": "s3_region",
+          "name": "Region",
+          "description": "S3区域",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：us-east-1（AWS区域代码）"
+        },
+        {
+          "key": "s3_bucket",
+          "name": "Bucket",
+          "description": "S3存储桶名称",
+          "type": "text",
+          "default": "",
+          "placeholder": "S3存储桶名称"
+        },
+        {
+          "key": "s3_endpoint",
+          "name": "Endpoint",
+          "description": "S3服务入口",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：s3.amazonaws.com（AWS）或其他S3兼容服务的endpoint"
+        },
+        {
+          "key": "s3_access_key_id",
+          "name": "Access Key ID",
+          "description": "S3 Access Key ID",
+          "type": "password",
+          "default": "",
+          "placeholder": "S3 Access Key ID"
+        },
+        {
+          "key": "s3_access_key_secret",
+          "name": "Access Key Secret",
+          "description": "S3 Access Key Secret",
+          "type": "password",
+          "default": "",
+          "placeholder": "S3 Access Key Secret"
+        },
+        {
+          "key": "s3_custom_url_prefix",
+          "name": "CDN域名",
+          "description": "S3自定义访问域名",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：cdn.example.com（不含https://）"
+        }
+      ]
+    },
+    "upyun": {
+      "name": "又拍云",
+      "configs": [
+        {
+          "key": "upyun_bucket",
+          "name": "服务名称",
+          "description": "又拍云服务名称",
+          "type": "text",
+          "default": "",
+          "placeholder": "您的又拍云服务名称"
+        },
+        {
+          "key": "upyun_operator",
+          "name": "操作员",
+          "description": "又拍云操作员账号",
+          "type": "text",
+          "default": "",
+          "placeholder": "操作员账号"
+        },
+        {
+          "key": "upyun_password",
+          "name": "操作员密码",
+          "description": "又拍云操作员密码",
+          "type": "password",
+          "default": "",
+          "placeholder": "操作员密码"
+        },
+        {
+          "key": "upyun_domain",
+          "name": "加速域名",
+          "description": "又拍云加速域名",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：cdn.example.com（不含https://）"
+        }
+      ]
+    }
+  }
+} 

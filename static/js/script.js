@@ -18,9 +18,7 @@ const elements = {
     imageUploadBox: document.getElementById('imageUploadBox')
 };
 
-// 定义最大文件大小和每次上传的最大文件数
-const maxFileSize = 5 * 1024 * 1024; // 5MB
-const maxFilesPerUpload = 5; // 单次最多上传5张图片
+// 定义支持的图片格式
 const allowedTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']; // 支持的图片格式
 
 // 设置事件监听器
@@ -33,11 +31,14 @@ function setupEventListeners() {
     elements.imageUploadBox.addEventListener('dragover', handleDragOver);
     elements.imageUploadBox.addEventListener('dragleave', handleDragLeave);
     elements.imageUploadBox.addEventListener('drop', handleDrop);
+    elements.qualityInput.addEventListener('input', saveQuality);
+    loadSavedQuality();
 }
 
 // 更新质量输出
 function updateQualityOutput() {
     elements.qualityOutput.textContent = elements.qualityInput.value;
+    saveQuality();
 }
 
 // 处理文件输入
@@ -53,10 +54,6 @@ function handlePaste(event) {
         if (item.kind === 'file') {
             files.push(item.getAsFile());
         }
-    }
-    if (files.length > maxFilesPerUpload) {
-        showNotification(`单次最多粘贴 ${maxFilesPerUpload} 张图片`, 'msg-red');
-        return;
     }
     for (const file of files) {
         processFile(file);
@@ -88,10 +85,6 @@ function isValidUrl(string) {
 // 处理文件输入
 function handleFileInput(files) {
     if (files.length > 0) {
-        if (files.length > maxFilesPerUpload) {
-            showNotification(`单次最多上传 ${maxFilesPerUpload} 张图片`, 'msg-red');
-            return;
-        }
         for (const file of files) {
             processFile(file);
         }
@@ -105,10 +98,6 @@ function handleFileInput(files) {
 function processFile(file) {
     if (!allowedTypes.includes(file.type)) {
         showNotification(`不支持的文件类型`, 'msg-red');
-        return;
-    }
-    if (file.size > maxFileSize) {
-        showNotification(`文件大小超过限制，最大允许 ${maxFileSize / 1024 / 1024}MB`, 'msg-red');
         return;
     }
     previewImage(file);
@@ -233,6 +222,13 @@ function handleDrop(event) {
 function handleUploadResponse(xhr) {
     if (xhr.status === 200) {
         const response = JSON.parse(xhr.responseText);
+        
+        // 检查是否有错误消息
+        if (response.message) {
+            showNotification(response.message, 'msg-red');
+            return;
+        }
+        
         if (response.url) {
             const imageName = response.url.split('/').pop().split('?')[0];
             if (response.width && response.height && response.size) {
@@ -308,6 +304,20 @@ document.querySelectorAll('.tab-button').forEach(button => {
         button.classList.add('active');
     });
 });
+
+// 加载保存的压缩率设置
+function loadSavedQuality() {
+    const savedQuality = localStorage.getItem('imageQuality');
+    if (savedQuality) {
+        elements.qualityInput.value = savedQuality;
+        elements.qualityOutput.textContent = savedQuality;
+    }
+}
+
+function saveQuality() {
+    const quality = elements.qualityInput.value;
+    localStorage.setItem('imageQuality', quality);
+}
 
 // 初始化事件监听器
 setupEventListeners();

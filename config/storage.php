@@ -4,6 +4,8 @@ use OSS\OssClient;
 use OSS\Core\OssException;
 use Aws\S3\S3Client;
 use Aws\S3\Exception\S3Exception;
+use Upyun\Upyun;
+use Upyun\Config;
 
 /**
  * 处理本地存储
@@ -19,10 +21,11 @@ use Aws\S3\Exception\S3Exception;
  * @param string $upload_ip 上传IP地址
  */
 function handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip) {
-    global $protocol, $mysqli;
+    global $mysqli;
+    $config = Database::getConfig($mysqli);
 
     logMessage("文件存储在本地: $finalFilePath");
-    $fileUrl = $protocol . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
+    $fileUrl = $config['protocol'] . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
     insertImageRecord($fileUrl, $finalFilePath, 'local', $compressedSize, $upload_ip, $user_id);
 
     respondAndExit([
@@ -52,17 +55,23 @@ function handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath
  * @param string $upload_ip 上传IP地址
  */
 function handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip) {
-    global $accessKeyId, $accessKeySecret, $endpoint, $bucket, $cdndomain, $protocol, $mysqli;
+    global $mysqli;
+    $config = Database::getConfig($mysqli);
 
     try {
-        $ossClient = new OssClient($accessKeyId, $accessKeySecret, $endpoint);
+        $ossClient = new OssClient(
+            $config['oss_access_key_id'],
+            $config['oss_access_key_secret'],
+            $config['oss_endpoint']
+        );
+        
         $ossFilePath = $datePath . '/' . basename($finalFilePath);
-        $ossClient->uploadFile($bucket, $ossFilePath, $finalFilePath);
+        $ossClient->uploadFile($config['oss_bucket'], $ossFilePath, $finalFilePath);
 
         deleteLocalFile($finalFilePath, $newFilePath);
 
         logMessage("文件上传到OSS成功: $ossFilePath");
-        $fileUrl = $protocol . $cdndomain . '/' . $ossFilePath;
+        $fileUrl = $config['protocol'] . $config['oss_cdn_domain'] . '/' . $ossFilePath;
         insertImageRecord($fileUrl, $ossFilePath, 'oss', $compressedSize, $upload_ip, $user_id);
 
         respondAndExit([
@@ -96,22 +105,23 @@ function handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSiz
  * @param string $upload_ip 上传IP地址
  */
 function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip) {
-    global $s3Region, $s3Bucket, $s3Endpoint, $s3AccessKeyId, $s3AccessKeySecret, $customUrlPrefix, $protocol, $mysqli;
+    global $mysqli;
+    $config = Database::getConfig($mysqli);
 
     try {
-
         $s3Client = new S3Client([
-            'region' => $s3Region,
+            'region' => $config['s3_region'],
             'version' => 'latest',
-            'endpoint' => $protocol . $s3Endpoint,
+            'endpoint' => $config['protocol'] . $config['s3_endpoint'],
             'credentials' => [
-                'key' => $s3AccessKeyId,
-                'secret' => $s3AccessKeySecret,
+                'key' => $config['s3_access_key_id'],
+                'secret' => $config['s3_access_key_secret'],
             ],
         ]);
-        $s3FilePath = $datePath . '/' .  basename($finalFilePath);
+        
+        $s3FilePath = $datePath . '/' . basename($finalFilePath);
         $result = $s3Client->putObject([
-            'Bucket' => $s3Bucket,
+            'Bucket' => $config['s3_bucket'],
             'Key' => $s3FilePath,
             'SourceFile' => $finalFilePath,
             'ACL' => 'public-read',
@@ -121,10 +131,10 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
 
         logMessage("文件上传到S3成功: $s3FilePath");
 
-        if (empty($customUrlPrefix)) {
+        if (empty($config['s3_custom_url_prefix'])) {
             $fileUrl = $result['ObjectURL'];
         } else {
-            $fileUrl = $protocol . $customUrlPrefix . '/' . $s3FilePath;
+            $fileUrl = $config['protocol'] . $config['s3_custom_url_prefix'] . '/' . $s3FilePath;
         }
 
         insertImageRecord($fileUrl, $s3FilePath, 's3', $compressedSize, $upload_ip, $user_id);
@@ -143,5 +153,57 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
     } catch (S3Exception $e) {
         logMessage('文件上传到S3失败: ' . $e->getMessage());
         respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传到S3失败: ' . $e->getMessage()]);
+    }
+}
+
+/**
+ * 处理又拍云上传
+ *
+ * @param string $finalFilePath 最终文件路径
+ * @param string $newFilePath 新文件路径
+ * @param string $datePath 日期路径
+ * @param int $compressedSize 压缩后文件大小
+ * @param int $compressedWidth 压缩后图片宽度
+ * @param int $compressedHeight 压缩后图片高度
+ * @param string $randomFileName 随机文件名
+ * @param int $user_id 用户ID
+ * @param string $upload_ip 上传IP地址
+ */
+function handleUpyunUpload($finalFilePath, $newFilePath, $datePath, $compressedSize, $compressedWidth, $compressedHeight, $randomFileName, $user_id, $upload_ip) {
+    global $mysqli;
+    $config = Database::getConfig($mysqli);
+
+    try {
+        $serviceConfig = new \Upyun\Config(
+            $config['upyun_bucket'],
+            $config['upyun_operator'],
+            $config['upyun_password']
+        );
+        $upyun = new \Upyun\Upyun($serviceConfig);
+        
+        $upyunFilePath = $datePath . '/' . basename($finalFilePath);
+        $fileContent = file_get_contents($finalFilePath);
+        $upyun->write($upyunFilePath, $fileContent);
+
+        deleteLocalFile($finalFilePath, $newFilePath);
+
+        logMessage("文件上传到又拍云成功: $upyunFilePath");
+        $fileUrl = $config['protocol'] . $config['upyun_domain'] . '/' . $upyunFilePath;
+        insertImageRecord($fileUrl, $upyunFilePath, 'upyun', $compressedSize, $upload_ip, $user_id);
+
+        respondAndExit([
+            'result' => 'success',
+            'code' => 200,
+            'url' => $fileUrl,
+            'srcName' => $randomFileName,
+            'width' => $compressedWidth,
+            'height' => $compressedHeight,
+            'size' => $compressedSize,
+            'thumb' => $fileUrl,
+            'path' => $upyunFilePath
+        ]);
+    } catch (\Exception $e) {
+        logMessage('文件上传到又拍云失败: ' . $e->getMessage());
+        respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传到又拍云失败: ' . $e->getMessage()]);
     }
 }
