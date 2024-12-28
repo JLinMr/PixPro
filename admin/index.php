@@ -60,14 +60,14 @@ $pagination = renderPagination($current_page, $total_pages);
     <title>管理后台</title>
     <link rel="shortcut icon" href="/static/favicon.ico">
     <link rel="stylesheet" href="/static/css/admin.css">
-    <!-- 引入Fancybox 当前版本 Fancybox5.0.36 -->
+    <!-- 引入Fancybox 和  vanilla-lazyload-->
     <link rel="stylesheet" href="/static/css/fancybox.min.css">
     <script src="/static/js/fancybox.umd.min.js" defer></script>
-    <!-- 引入 vanilla-lazyload -->
-    <script src="https://lib.baomitu.com/vanilla-lazyload/19.1.3/lazyload.min.js"></script>
-    <!-- 你可以使用第三方CDN进行加速 当前版本 Fancybox5.0.36 -->
-    <!-- <link rel="stylesheet" href="https://cdn.npmmirror.com/packages/pixpro/1.7.5/files/static/css/fancybox.min.css"> -->
-    <!-- <script src="https://cdn.npmmirror.com/packages/pixpro/1.7.5/files/static/js/fancybox.umd.min.js" defer></script> -->
+    <script src="/static/js/lazyload.min.js" defer></script>
+    <!-- 你可以使用第三方CDN进行加速 Fancybox 版本 5.0.36 和 vanilla-lazyload 版本 19.1.3 -->
+    <!-- <link rel="stylesheet" href="https://lib.baomitu.com/fancyapps-ui/5.0.36/fancybox/fancybox.min.css">
+    <script src="https://lib.baomitu.com/fancyapps-ui/5.0.36/fancybox/fancybox.umd.min.js" defer></script>
+    <script src="https://lib.baomitu.com/vanilla-lazyload/19.1.3/lazyload.min.js" defer></script> -->
 </head>
 <body>
     <div id="gallery" class="gallery"><?= $images_html ?></div>
