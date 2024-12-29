@@ -291,9 +291,10 @@ body {
     padding: 10px;
     border-radius: 8px;
     pointer-events: none;
-    transition: opacity .6s, transform .6s;
+    transition: opacity .3s, transform .3s;
     background: rgb(0 0 0 / 50%);
     transform: translateY(10px) scale(0.9);
+    will-change: transform, opacity;
 }
 
 .gallery-item:hover .image-info {
