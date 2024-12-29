@@ -1,6 +1,9 @@
 <?php
 session_start();
-!isset($_SESSION['loggedin']) && exit('未登录');
+if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+    require 'login.php';
+    exit;
+}
 
 require_once '../config/database.php';
 $db = Database::getInstance();
