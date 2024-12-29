@@ -1,3 +1,4 @@
+// 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
     initialize();
     setupEventHandlers();
@@ -12,12 +13,13 @@ const DOM = {
     rightside: document.querySelector('.rightside')
 };
 
+// 初始化所有必要的组件和功能
 function initialize() {
-    initLazyLoad();
-    initFancybox();
+    initComponents();
     setupPageInput();
 }
 
+// 设置所有事件处理器
 function setupEventHandlers() {
     setupCopyAndDeleteHandlers();
     setupScrollToTop();
@@ -28,6 +30,7 @@ function setupEventHandlers() {
 
 // API工具类
 const API = {
+    // 发送删除请求到服务器
     async sendDeleteRequest(id, path) {
         try {
             const response = await fetch('/config/delete.php', {
@@ -43,6 +46,7 @@ const API = {
         }
     },
 
+    // 批量删除图片
     async deleteImages(ids, paths) {
         const errors = [];
         
@@ -70,11 +74,7 @@ const API = {
         const pageData = await this.loadPage(currentPage);
         
         if (pageData.success) {
-            DOM.gallery.innerHTML = pageData.html;
-            DOM.pagination.innerHTML = pageData.pagination;
-            DOM.pageDisplay.textContent = `${pageData.currentPage}/${pageData.totalPages}`;
-            initLazyLoad();
-            initFancybox();
+            updatePageContent(pageData);
         }
         
         // 显示结果通知
@@ -87,6 +87,7 @@ const API = {
         return true;
     },
 
+    // 加载指定页码的数据
     async loadPage(page) {
         try {
             const response = await fetch(`/admin/index.php?page=${page}`, {
@@ -101,8 +102,9 @@ const API = {
     }
 };
 
-// UI工具类
+// UI工具类 - 处理界面交互和显示
 const UI = {
+    // 显示通知消息
     showNotification(message, type = 'success') {
         const notification = document.createElement('div');
         notification.className = `msg ${type === 'error' ? 'msg-red' : 'msg-green'}`;
@@ -114,27 +116,35 @@ const UI = {
         }, 1500);
     },
 
+    // 复制内容到剪贴板
     async copyToClipboard(text) {
         try {
+            // 优先使用现代API
             await navigator.clipboard.writeText(text);
             this.showNotification('已复制到剪贴板');
         } catch (err) {
-            console.error('复制到剪贴板失败: ', err);
-            try {
-                const tempInput = document.createElement('input');
-                tempInput.value = text;
-                document.body.appendChild(tempInput);
-                tempInput.select();
-                document.execCommand('copy');
-                document.body.removeChild(tempInput);
-                this.showNotification('已复制到剪贴板');
-            } catch (err) {
-                console.error('备用方法复制到剪贴板失败: ', err);
-                this.showNotification('复制到剪贴板失败', 'error');
-            }
+            // 降级使用传统方法
+            this.fallbackCopy(text);
         }
     },
 
+    // 降级的复制方法
+    fallbackCopy(text) {
+        try {
+            const tempInput = document.createElement('input');
+            tempInput.value = text;
+            document.body.appendChild(tempInput);
+            tempInput.select();
+            document.execCommand('copy');
+            document.body.removeChild(tempInput);
+            this.showNotification('已复制到剪贴板');
+        } catch (err) {
+            console.error('复制到剪贴板失败: ', err);
+            this.showNotification('复制到剪贴板失败', 'error');
+        }
+    },
+
+    // 创建确认对话框
     createConfirmDialog(message, onConfirm) {
         const existingDialog = document.querySelector('.custom-confirm');
         if (existingDialog) {
@@ -169,47 +179,48 @@ const UI = {
 // 页面输入控制
 function setupPageInput() {
     const currentTotalPages = document.getElementById('current-total-pages');
-    const input = createPageInput();
-    currentTotalPages.parentNode.appendChild(input);
-
-    currentTotalPages.addEventListener('click', () => togglePageInputVisibility(currentTotalPages, input));
-    input.addEventListener('keypress', (e) => handlePageInputKeypress(e, input));
-}
-
-function createPageInput() {
     const input = document.createElement('input');
     input.type = 'number';
     input.min = '1';
     input.classList.add('page-input');
     input.style.display = 'none';
-    return input;
-}
+    
+    currentTotalPages.parentNode.appendChild(input);
 
-function togglePageInputVisibility(currentTotalPages, input) {
-    currentTotalPages.style.display = 'none';
-    input.style.display = 'inline-block';
-    input.focus();
-}
-
-function handlePageInputKeypress(e, input) {
-    if (e.key === 'Enter') {
-        const page = parseInt(input.value, 10);
-        const totalPages = parseInt(document.getElementById('current-total-pages').textContent.split('/')[1], 10);
-        
-        if (page && page >= 1 && page <= totalPages) {
-            window.location.href = `?page=${page}`;
-            hidePageInput(input, document.getElementById('current-total-pages'));
+    // 切换输入框显示状态
+    const toggleInput = (show) => {
+        currentTotalPages.style.display = show ? 'none' : 'inline-block';
+        input.style.display = show ? 'inline-block' : 'none';
+        if (show) {
+            input.focus();
         } else {
-            UI.showNotification('请输入有效的页码', 'error');
             input.value = '';
         }
-    }
-}
+    };
 
-function hidePageInput(input, currentTotalPages) {
-    currentTotalPages.style.display = 'inline-block';
-    input.style.display = 'none';
-    input.value = '';
+    // 处理页码输入
+    const handlePageInput = (e) => {
+        if (e.key === 'Enter') {
+            const page = parseInt(input.value, 10);
+            const totalPages = parseInt(currentTotalPages.textContent.split('/')[1], 10);
+            
+            if (page && page >= 1 && page <= totalPages) {
+                window.location.href = `?page=${page}`;
+                toggleInput(false);
+            } else {
+                UI.showNotification('请输入有效的页码', 'error');
+                input.value = '';
+            }
+        }
+    };
+
+    currentTotalPages.addEventListener('click', () => toggleInput(true));
+    input.addEventListener('keypress', handlePageInput);
+    document.addEventListener('click', e => {
+        if (!input.contains(e.target) && e.target !== currentTotalPages) {
+            toggleInput(false);
+        }
+    });
 }
 
 // 事件处理器
@@ -266,6 +277,7 @@ function setupDocumentClickHandler() {
 
 // 多选功能
 function setupMultiSelect() {
+    // 多选状态管理
     const state = {
         isMultiSelectMode: false,
         selectedItems: new Set()
@@ -275,6 +287,7 @@ function setupMultiSelect() {
     const gallery = document.getElementById('gallery');
     const multiSelectBtn = document.querySelector('.select-link');
     
+    // 创建工具栏
     function createMultiSelectToolbar() {
         const toolbar = document.createElement('div');
         toolbar.className = 'multi-select-toolbar';
@@ -283,15 +296,20 @@ function setupMultiSelect() {
             <button class="delete-selected">删除所选</button>
             <button class="cancel-select">取消选择</button>
         `;
+        
+        // 绑定工具栏按钮事件
+        toolbar.querySelector('.delete-selected').onclick = handleDeleteSelected;
+        toolbar.querySelector('.cancel-select').onclick = toggleMultiSelectMode;
+        
         document.body.appendChild(toolbar);
         return toolbar;
     }
     
+    // 切换多选模式
     function toggleMultiSelectMode() {
         state.isMultiSelectMode = !state.isMultiSelectMode;
-        gallery.classList.toggle('multi-select-mode');
-        toolbar.classList.toggle('show');
-        multiSelectBtn.classList.toggle('active');
+        [gallery, toolbar, multiSelectBtn].forEach(el => 
+            el.classList.toggle(el === gallery ? 'multi-select-mode' : 'show'));
         if (!state.isMultiSelectMode) {
             clearSelection();
         }
@@ -362,10 +380,6 @@ function setupMultiSelect() {
     
     // 多选按钮事件
     multiSelectBtn.addEventListener('click', toggleMultiSelectMode);
-    
-    // 工具栏按钮事件
-    toolbar.querySelector('.delete-selected').onclick = handleDeleteSelected;
-    toolbar.querySelector('.cancel-select').onclick = toggleMultiSelectMode;
 }
 
 // 添加分页处理函数
@@ -379,18 +393,8 @@ function setupPagination() {
             if (page) {
                 try {
                     const data = await API.loadPage(page);
-                    
-                    // 更新图片内容和分页
-                    DOM.gallery.innerHTML = data.html;
-                    DOM.pagination.innerHTML = data.pagination;
-                    DOM.pageDisplay.textContent = `${page}/${data.totalPages}`;
-                    
-                    // 更新URL但不刷新页面
+                    updatePageContent(data);
                     window.history.pushState({page}, '', `?page=${page}`);
-                    
-                    // 重新初始化组件
-                    initLazyLoad();
-                    initFancybox();
                 } catch (error) {
                     console.error('Load error:', error);
                     UI.showNotification('加载失败', 'error');
@@ -400,7 +404,7 @@ function setupPagination() {
     });
 }
 
-// LazyLoad 函数
+// 图片懒加载初始化
 function initLazyLoad() {
     window.lazyLoadInstance = new LazyLoad({
         elements_selector: ".lazy",
@@ -416,7 +420,7 @@ function initLazyLoad() {
     });
 }
 
-// Fancybox 函数
+// Fancybox图片预览初始化
 function initFancybox() {
     Fancybox.bind('[data-fancybox="gallery"]', {
         Toolbar: { display: { right: ["slideshow", "thumbs", "close"] }},
@@ -429,4 +433,18 @@ function initFancybox() {
             destroy: () => document.body.style.overflow = ''
         }
     });
+}
+
+// 更新页面内容的函数
+function updatePageContent(data) {
+    DOM.gallery.innerHTML = data.html;
+    DOM.pagination.innerHTML = data.pagination;
+    DOM.pageDisplay.textContent = `${data.currentPage}/${data.totalPages}`;
+    initComponents();
+}
+
+// 初始化所有UI组件
+function initComponents() {
+    initLazyLoad();
+    initFancybox();
 }
