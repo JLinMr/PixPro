@@ -163,6 +163,12 @@ function handleUploadedFile($file, $token, $referer) {
     $fileMimeType = finfo_file($finfo, $file['tmp_name']);
     finfo_close($finfo);
 
+    // 对于SVG文件特殊处理
+    if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) === 'svg') {
+        // 如果文件扩展名是svg，则强制设置MIME类型
+        $fileMimeType = 'image/svg+xml';
+    }
+
     if (!in_array($fileMimeType, $allowedTypes)) {
         respondAndExit(['result' => 'error', 'code' => 406, 'message' => '不支持的文件类型']);
     }

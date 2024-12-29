@@ -57,7 +57,7 @@ try {
                     <img id="imagePreview" class="imagePreview" src="static/images/svg/up.svg" alt="预览图片">
                 </div>
                 <div id="pasteOrUrlInputBox">
-                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput blur" placeholder="此处可粘贴图像URL或使用Ctrl+V粘贴图片">
+                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput blur" placeholder="此处使用Ctrl+V粘贴图片上传">
                 </div>
                 <div id="parameters" class="parameters">
                     <label for="qualityInput">图片清晰度 60-100<output id="qualityOutput" class="qualityOutput">60</output></label>
