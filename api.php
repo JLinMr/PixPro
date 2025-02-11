@@ -10,11 +10,7 @@ $db = Database::getInstance();
 $mysqli = $db->getConnection();
 
 $config = Database::getConfig($mysqli);
-$validToken = $config['valid_token'];
-$whitelist = explode(',', $config['whitelist']);
-$allowedHosts = array_map(function($url) {
-    return parse_url($url, PHP_URL_HOST);
-}, $whitelist);
+$siteDomain = $config['site_domain'];
 
 // 获取配置值
 $maxUploadsPerDay = getConfigValue($mysqli, 'max_uploads_per_day');
@@ -68,46 +64,61 @@ function isUploadAllowed($maxUploadsPerDay) {
 }
 
 /**
- * 验证令牌和来源域名
- * @param string $token 访问令牌
- * @param string $referer 来源地址
- * @param array $allowedHosts 允许的域名列表
+ * 验证令牌和请求来源
  */
-function validateToken($token, $referer, $allowedHosts) {
-    global $validToken;
-    $refererHost = parse_url($referer, PHP_URL_HOST) ?: '';
-
-    if (!in_array($refererHost, $allowedHosts) && $token !== $validToken) {
-        respondAndExit([
-            'result' => 'error', 
-            'code' => 403, 
-            'message' => '域名未在白名单或Token验证失败'
-        ]);
+function validateToken() {
+    global $mysqli, $config;
+    
+    // 获取 Authorization header
+    $authHeader = $_SERVER['HTTP_AUTHORIZATION'] ?? '';
+    $token = '';
+    
+    // 尝试从 Authorization header 获取 Bearer token
+    if (preg_match('/Bearer\s+(.*)$/i', $authHeader, $matches)) {
+        $token = $matches[1];
+    } else {
+        // 如果没有 Bearer token，则从 POST 参数获取
+        $token = $_POST['token'] ?? '';
     }
+    
+    // 验证请求来源
+    $referer = $_SERVER['HTTP_REFERER'] ?? '';
+    $siteDomains = explode(',', $config['site_domain']);
+    $refererHost = parse_url($referer, PHP_URL_HOST);
+    
+    // 如果有合法的请求来源，直接通过
+    foreach ($siteDomains as $domain) {
+        $domain = trim($domain);
+        if ($refererHost === parse_url($domain, PHP_URL_HOST)) {
+            return;
+        }
+    }
+    
+    // 验证 token
+    if (!empty($token)) {
+        $stmt = $mysqli->prepare("SELECT id FROM users WHERE token = ?");
+        $stmt->bind_param("s", $token);
+        $stmt->execute();
+        if ($stmt->get_result()->num_rows > 0) {
+            return;
+        }
+    }
+    
+    respondAndExit([
+        'result' => 'error', 
+        'code' => 403, 
+        'message' => 'Token验证失败 或 域名未授权'
+    ]);
 }
 
 /**
  * 设置CORS响应头
  * @param array $allowedHosts 允许的域名列表
  */
-function setCorsHeaders($allowedHosts) {
-    $origin = $_SERVER['HTTP_ORIGIN'] ?? '';
-    $originHost = !empty($origin) ? parse_url($origin, PHP_URL_HOST) : '';
-
-    if (in_array($originHost, $allowedHosts)) {
-        header("Access-Control-Allow-Origin: $origin");
-        header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
-        header("Access-Control-Allow-Headers: Content-Type");
-        return;
-    }
-
+function setCorsHeaders() {
     header("Access-Control-Allow-Origin: *");
-    http_response_code(403);
-    respondAndExit([
-        'result' => 'error', 
-        'code' => 403, 
-        'message' => '你的域名未在白名单内'
-    ]);
+    header("Access-Control-Allow-Methods: GET, POST, OPTIONS");
+    header("Access-Control-Allow-Headers: Content-Type, Authorization");
 }
 
 /**
@@ -127,14 +138,15 @@ function logMessage($message) {
  */
 function respondAndExit($response) {
     ob_end_clean();
-    echo json_encode($response);
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode($response, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     ob_flush();
     flush();
     exit;
 }
 
 try {
-    setCorsHeaders($allowedHosts);
+    setCorsHeaders();
 
     if ($_SERVER['REQUEST_METHOD'] === 'POST' && !empty($_FILES)) {
         // 验证上传次数限制

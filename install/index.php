@@ -95,7 +95,8 @@ function createOrUpdateTableStructure($mysqli) {
         CREATE TABLE IF NOT EXISTS users (
             id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户 ID',
             username VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
-            password VARCHAR(255) NOT NULL COMMENT '密码'
+            password VARCHAR(255) NOT NULL COMMENT '密码',
+            token VARCHAR(32) NOT NULL UNIQUE COMMENT 'API Token'
         ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
     ";
     
@@ -123,18 +124,21 @@ function createOrUpdateTableStructure($mysqli) {
 }
 
 function initializeConfigs($mysqli) {
-    global $protocol, $baseUrl;
+    global $protocol;
+    
+    // 获取当前网站域名
+    $host = $_SERVER['HTTP_HOST'];
+    $siteUrl = $protocol . $host;
     
     $defaultConfigs = [
         ['storage', 'local', '存储方式'],
         ['protocol', $protocol, 'URL协议'],
         ['per_page', '20', '每页显示数量'],
         ['login_restriction', 'false', '登录保护'],
-        ['whitelist', $baseUrl, '白名单域名'],
-        ['valid_token', generateRandomToken(), 'API Token'],
         ['max_file_size', '5242880', '最大文件大小'],
         ['max_uploads_per_day', '50', '每日上传限制'],
         ['output_format', 'webp', '输出图片格式'],
+        ['site_domain', $siteUrl, '网站域名']
     ];
 
     $stmt = $mysqli->prepare("REPLACE INTO configs (`key`, value, description) VALUES (?, ?, ?)");
@@ -153,6 +157,7 @@ function handleAdminUser($mysqli) {
 
     $username = $_POST['mysql_adminUser'];
     $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
+    $token = generateRandomToken();
 
     $checkUserSQL = "SELECT id, username FROM users WHERE username = ?";
     $stmt = $mysqli->prepare($checkUserSQL);
@@ -164,16 +169,16 @@ function handleAdminUser($mysqli) {
         $adminUserExists = true;
         $adminUsername = $username;
 
-        $updateAdminSQL = "UPDATE users SET password = ? WHERE username = ?";
+        $updateAdminSQL = "UPDATE users SET password = ?, token = ? WHERE username = ?";
         $stmt = $mysqli->prepare($updateAdminSQL);
-        $stmt->bind_param("ss", $password, $username);
+        $stmt->bind_param("sss", $password, $token, $username);
         if (!$stmt->execute()) {
             throw new Exception('更新管理员用户失败: ' . $stmt->error);
         }
     } else {
-        $insertAdminSQL = "INSERT INTO users (username, password) VALUES (?, ?)";
+        $insertAdminSQL = "INSERT INTO users (username, password, token) VALUES (?, ?, ?)";
         $stmt = $mysqli->prepare($insertAdminSQL);
-        $stmt->bind_param("ss", $username, $password);
+        $stmt->bind_param("sss", $username, $password, $token);
         if (!$stmt->execute()) {
             throw new Exception('插入管理员用户失败: ' . $stmt->error);
         }
@@ -265,7 +270,7 @@ if ($step === 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
-    <link rel="shortcut icon" href="../static/favicon.ico">
+    <link rel="shortcut icon" href="../static/favicon.svg">
     <link rel="stylesheet" type="text/css" href="../install/install.css">
     <script>
     function showNotification(message, className = 'msg-green') {

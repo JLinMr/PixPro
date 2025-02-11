@@ -72,6 +72,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         
         $configManager = new ConfigManager($mysqli);
         
+        if (isset($_POST['token']) && !empty($_POST['token'])) {
+            $newToken = $_POST['token'];
+            $userId = $_SESSION['user_id'];
+            $stmt = $mysqli->prepare("UPDATE users SET token = ? WHERE id = ?");
+            $stmt->bind_param("si", $newToken, $userId);
+            $stmt->execute();
+        }
+        
         if (!empty($_POST['storage']) && $_POST['storage'] !== 'local') {
             $configManager->syncConfigs($_POST['storage']);
         }
@@ -93,6 +101,10 @@ $configs = array_column(
 );
 
 $storageConfigs = json_decode(file_get_contents('../config/configs.json'), true);
+
+$userId = $_SESSION['user_id'];
+$tokenResult = $mysqli->query("SELECT token FROM users WHERE id = $userId");
+$userToken = $tokenResult->fetch_assoc()['token'];
 ?>
 
 <div class="settings-container">
@@ -163,15 +175,10 @@ $storageConfigs = json_decode(file_get_contents('../config/configs.json'), true)
                     'min' => 1,
                     'placeholder' => '建议设置为5242880(5MB)'
                 ],
-                'whitelist' => [
-                    'label' => '白名单域名(多个用逗号分隔)',
+                'site_domain' => [
+                    'label' => '网站域名',
                     'type' => 'text',
-                    'placeholder' => '例如：https://example.com,https://demo.com'
-                ],
-                'valid_token' => [
-                    'label' => 'API Token',
-                    'type' => 'text',
-                    'placeholder' => '用于API接口认证的Token'
+                    'placeholder' => '例如：https://example.com'
                 ],
                 'output_format' => [
                     'label' => '输出图片格式',
@@ -222,6 +229,11 @@ $storageConfigs = json_decode(file_get_contents('../config/configs.json'), true)
                         </label>
                     <?php endforeach; ?>
                 </div>
+            </div>
+
+            <div class="form-group">
+                <label>API Token</label>
+                <input type="text" name="token" value="<?= $userToken ?>" placeholder="用于API接口认证的Token">
             </div>
         </div>
         

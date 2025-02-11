@@ -31,13 +31,17 @@ function handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath
     respondAndExit([
         'result' => 'success',
         'code' => 200,
-        'url' => $fileUrl,
-        'srcName' => $randomFileName,
-        'width' => $compressedWidth,
-        'height' => $compressedHeight,
-        'size' => $compressedSize,
-        'thumb' => $fileUrl,
-        'path' => $finalFilePath
+        'status' => true,
+        'name' => basename($finalFilePath),
+        'data' => [
+            'url' => $fileUrl,
+            'name' => basename($finalFilePath),
+            'width' => $compressedWidth,
+            'height' => $compressedHeight,
+            'size' => $compressedSize,           
+            'path' => $finalFilePath
+        ],
+        'url' => $fileUrl
     ]);
 }
 
@@ -77,17 +81,25 @@ function handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSiz
         respondAndExit([
             'result' => 'success',
             'code' => 200,
-            'url' => $fileUrl,
-            'srcName' => $randomFileName,
-            'width' => $compressedWidth,
-            'height' => $compressedHeight,
-            'size' => $compressedSize,
-            'thumb' => $fileUrl,
-            'path' => $ossFilePath
+            'status' => true,
+            'name' => basename($finalFilePath),
+            'data' => [
+                'url' => $fileUrl,
+                'name' => basename($finalFilePath),
+                'width' => $compressedWidth,
+                'height' => $compressedHeight,
+                'size' => $compressedSize,                
+                'path' => $ossFilePath
+            ],
+            'url' => $fileUrl
         ]);
     } catch (OssException $e) {
         logMessage('文件上传到OSS失败: ' . $e->getMessage());
-        respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传到OSS失败: ' . $e->getMessage()]);
+        respondAndExit([
+            'result' => 'error',
+            'code' => 500,
+            'message' => '文件上传到OSS失败: ' . $e->getMessage()
+        ]);
     }
 }
 
@@ -142,17 +154,25 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
         respondAndExit([
             'result' => 'success',
             'code' => 200,
-            'url' => $fileUrl,
-            'srcName' => $randomFileName,
-            'width' => $compressedWidth,
-            'height' => $compressedHeight,
-            'size' => $compressedSize,
-            'thumb' => $fileUrl,
-            'path' => $s3FilePath
+            'status' => true,
+            'name' => basename($finalFilePath),
+            'data' => [
+                'url' => $fileUrl,
+                'name' => basename($finalFilePath),
+                'width' => $compressedWidth,
+                'height' => $compressedHeight,
+                'size' => $compressedSize,                
+                'path' => $s3FilePath
+            ],
+            'url' => $fileUrl
         ]);
     } catch (S3Exception $e) {
         logMessage('文件上传到S3失败: ' . $e->getMessage());
-        respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传到S3失败: ' . $e->getMessage()]);
+        respondAndExit([
+            'result' => 'error',
+            'code' => 500,
+            'message' => '文件上传到S3失败: ' . $e->getMessage()
+        ]);
     }
 }
 
@@ -194,16 +214,24 @@ function handleUpyunUpload($finalFilePath, $newFilePath, $datePath, $compressedS
         respondAndExit([
             'result' => 'success',
             'code' => 200,
-            'url' => $fileUrl,
-            'srcName' => $randomFileName,
-            'width' => $compressedWidth,
-            'height' => $compressedHeight,
-            'size' => $compressedSize,
-            'thumb' => $fileUrl,
-            'path' => $upyunFilePath
+            'status' => true,
+            'name' => basename($finalFilePath),
+            'data' => [
+                'url' => $fileUrl,
+                'name' => basename($finalFilePath),
+                'width' => $compressedWidth,
+                'height' => $compressedHeight,
+                'size' => $compressedSize,                
+                'path' => $upyunFilePath
+            ],
+            'url' => $fileUrl
         ]);
     } catch (\Exception $e) {
         logMessage('文件上传到又拍云失败: ' . $e->getMessage());
-        respondAndExit(['result' => 'error', 'code' => 500, 'message' => '文件上传到又拍云失败: ' . $e->getMessage()]);
+        respondAndExit([
+            'result' => 'error',
+            'code' => 500,
+            'message' => '文件上传到又拍云失败: ' . $e->getMessage()
+        ]);
     }
 }
