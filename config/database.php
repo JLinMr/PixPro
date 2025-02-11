@@ -87,7 +87,7 @@ class Database {
         return $type ? ($configs[$type] ?? null) : $configs;
     }
 
-    private function __clone() {}
-    private function __wakeup() {}
+    public function __clone() {}
+    public function __wakeup() {}
 }
 ?>
