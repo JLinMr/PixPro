@@ -17,27 +17,18 @@ function convertImageToWebp($source, $destination, $quality = 60) {
         $info = getimagesize($source);
         $mimeType = $info['mime'];
 
-        // 使用Imagick处理PNG和GIF
-        if ($mimeType === 'image/png' || $mimeType === 'image/gif') {
+        // 使用Imagick处理PNG
+        if ($mimeType === 'image/png') {
             $image = new Imagick($source);
             
-            if ($mimeType === 'image/png' && $image->getImageAlphaChannel()) {
+            if ($image->getImageAlphaChannel()) {
                 $image->setImageBackgroundColor(new ImagickPixel('transparent'));
                 $image->setImageAlphaChannel(Imagick::ALPHACHANNEL_ACTIVATE);
                 $image = $image->mergeImageLayers(Imagick::LAYERMETHOD_FLATTEN);
             }
 
-            if ($mimeType === 'image/gif') {
-                $image = $image->coalesceImages();
-                foreach ($image as $frame) {
-                    $frame->setImageFormat('webp');
-                    $frame->setImageCompressionQuality($quality);
-                }
-                $image = $image->optimizeImageLayers();
-            } else {
-                $image->setImageFormat('webp');
-                $image->setImageCompressionQuality($quality);
-            }
+            $image->setImageFormat('webp');
+            $image->setImageCompressionQuality($quality);
 
             // 调整图片尺寸
             $width = $image->getImageWidth();
@@ -49,9 +40,7 @@ function convertImageToWebp($source, $destination, $quality = 60) {
                 $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
             }
 
-            $result = $mimeType === 'image/gif' 
-                ? $image->writeImages($destination, true)
-                : $image->writeImage($destination);
+            $result = $image->writeImage($destination);
             
             $image->clear();
             $image->destroy();
