@@ -58,7 +58,7 @@ $pagination = renderPagination($current_page, $total_pages);
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>管理后台</title>
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/css/admin.css">
     <!-- 引入Fancybox 和  vanilla-lazyload-->
     <link rel="stylesheet" href="/static/css/fancybox.min.css">
