@@ -1,69 +1,85 @@
+::-webkit-scrollbar {
+    width: 0;
+}
+
+::placeholder {
+    color: rgb(255 255 255 / 50%);
+}
+
 body {
     display: flex;
-    justify-content: center;
     align-items: center;
-    height: 100vh;
+    justify-content: center;
+    background: url(../static/images/bg.webp) no-repeat center / cover fixed;
+    min-height: 100vh;
     margin: 0;
-    color: #000;
-    padding: 0px 15px 0 15px;
-    background: url(../static/images/bg.webp) no-repeat 100% 100%;
-    background-size: cover;
-    background-attachment: fixed;
-    -webkit-tap-highlight-color: transparent;
+    padding: 20px;
+    box-sizing: border-box;
 }
 
 .container {
-    padding: 20px;
-    border-radius: 8px;
     width: 100%;
     max-width: 600px;
-    background-color: rgba(255, 255, 255, 0.3);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    padding: 2rem;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 15%);
+    backdrop-filter: blur(12px);
+    border: 1px solid rgb(255 255 255 / 20%);
 }
 
 .container h2 {
-    margin-top: 0;
+    margin: 0 0 1.5rem;
     text-align: center;
-    color: #000;
+    color: #eee;
 }
 
 .form-group {
-    margin-bottom: 20px;
+    margin-bottom: 1.25rem;
 }
 
 .form-group label {
     display: block;
-    margin-bottom: 5px;
-    font-weight: bold;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #f0f0f0;
 }
 
 .form-group input {
     width: 100%;
-    box-sizing: border-box;
-    padding: 10px;
-    outline: 0;
-    border: 1px solid #aaa;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #fff;
+    background: rgb(255 255 255 / 10%);
+    border: 1px solid rgb(255 255 255 / 20%);
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: rgb(255 255 255 / 40%);
+    background: rgb(255 255 255 / 15%);
 }
 
 .form-group input[type="submit"],
 .form-group input[type="button"] {
-    background-color: #5cb85c;
-    color: white;
-    border: none;
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    background: rgb(255 255 255 / 25%);
+    border: 1px solid rgb(255 255 255 / 30%);
+    border-radius: 8px;
+    transition: all 0.3s ease;
     cursor: pointer;
-    font-size: 16px;
-    border-radius: 4px;
-    transition: background-color 0.3s ease;
 }
 
 .form-group input[type="submit"]:hover,
 .form-group input[type="button"]:hover {
-    background-color: #4cae4c;
+    background: rgba(128, 128, 128, 0.35);
 }
 
 /* 消息弹窗样式 */
@@ -112,23 +128,22 @@ body {
     width: 100%;
     border-collapse: separate;
     border-spacing: 0;
-    margin: 20px 0;
-    background: rgba(255, 255, 255, 0.5);
     border-radius: 12px;
     overflow: hidden;
+    background: rgb(0 0 0 / 30%);
 }
 
 .check-table th,
 .check-table td {
     padding: 15px 20px;
     text-align: left;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
 }
 
 .check-table th {
-    background-color: rgba(52, 152, 219, 0.1);
+    background-color: rgb(255 255 255 / 15%);
     font-weight: 600;
-    color: #2c3e50;
+    color: #eee;
 }
 
 .check-table tr:last-child td {
@@ -136,15 +151,15 @@ body {
 }
 
 .check-table tr.success {
-    background-color: rgba(46, 204, 113, 0.1);
+    background-color: rgb(46 204 113 / 15%);
 }
 
 .check-table tr.error {
-    background-color: rgba(231, 76, 60, 0.1);
+    background-color: rgb(231 76 60 / 15%);
 }
 
 .check-table tr.success td {
-    color: #27ae60;
+    color: #2ecc71;
 }
 
 .check-table tr.error td {
@@ -160,7 +175,7 @@ body {
     content: "✓";
     position: absolute;
     right: 20px;
-    color: #27ae60;
+    color: #2ecc71;
     font-weight: bold;
 }
 
@@ -173,18 +188,14 @@ body {
 }
 
 .error-message {
-    color: #c0392b;
-    padding: 15px 20px;
-    margin-top: 20px;
+    color: #fff;
+    margin-top: 15px;
     border-radius: 8px;
-    background: rgba(231, 76, 60, 0.1);
-    border: 1px solid rgba(231, 76, 60, 0.3);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
+    background: rgb(231 76 60 / 20%);
+    border: 1px solid rgb(231 76 60 / 30%);
     display: flex;
     align-items: center;
     justify-content: center;
-    font-weight: 500;
 }
 
 .error-message::before {
@@ -195,14 +206,16 @@ body {
 
 .force-install {
     display: inline-block;
-    padding: 5px 10px;
-    background-color: #fc6969;
-    color: white;
+    margin: 6px;
+    padding: 6px;
+    background: rgb(255 77 79 / 25%);
+    color: #fff;
     text-decoration: none;
-    border-radius: 3px;
-    margin-left: 10px;
+    border-radius: 8px;
+    border: 1px solid rgb(255 77 79 / 30%);
+    transition: all 0.3s ease;
 }
 
 .force-install:hover {
-    background-color: #ff3333;
+    background: rgb(255 77 79 / 50%);
 }
