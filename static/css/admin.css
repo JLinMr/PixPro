@@ -34,10 +34,10 @@ label {
 body {
     padding: 20px 10px 40px 10px;
     display: flex;
-    justify-content: center;
-    background: url(../images/bg.webp) no-repeat 100% 100%;
-    background-size: cover;
-    background-attachment: fixed;
+    flex-direction: column;
+    align-items: center;
+    background: url(../images/bg.webp) no-repeat 100% 100% / cover fixed;
+    -webkit-tap-highlight-color: transparent;
 }
 
 /* 组件样式 */

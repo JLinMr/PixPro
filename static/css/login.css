@@ -16,90 +16,104 @@ label {
 }
 
 body {
-    margin: 0;
-    padding: 0;
-    color: #111;
-    display: flex;
-    justify-content: center;
-    align-items: center;
+    margin: 0px 15px;
     height: 100vh;
-    background: url(../images/bg.webp) no-repeat 100% 100%;
-    background-size: cover;
-    background-attachment: fixed;
+    color: #eee;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: url(../images/bg.webp) no-repeat 100% 100% / cover fixed;
     -webkit-tap-highlight-color: transparent;
 }
 
 .login-container {
-    padding: 20px;
-    border-radius: 10px;
-    width: 300px;
-    text-align: center;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
+    width: 360px;
+    padding: 2rem;
+    border-radius: 16px;
+    background: rgb(255 255 255 / 15%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    box-shadow: 
+        0 4px 6px -1px rgb(0 0 0 / 10%),
+        0 2px 4px -2px rgb(0 0 0 / 10%);
     border: 1px solid rgb(255 255 255 / 20%);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    background: linear-gradient(120deg, rgb(255 255 255 / 20%) 0, rgb(170 170 170 / 20%) 100%);
-    -webkit-animation: fadeIn 0.5s ease-in-out forwards;
-    animation: fadeIn 0.5s ease-in-out forwards;
 }
 
-.form-group {
-    margin-bottom: 15px;
-    text-align: left;
-}
-
-.form-group label {
-    display: block;
-    margin-bottom: 5px;
+h2 {
+    margin: 0 0 1.5rem;
+    font-size: 1.75rem;
+    font-weight: 600;
+    text-align: center;
+    letter-spacing: 0.5px;
 }
 
 .form-container {
     display: none;
+    animation: fadeIn 0.4s ease-out;
 }
+
 .form-container.active {
     display: block;
 }
 
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #f0f0f0;
+}
+
+.input-wrapper {
+    position: relative;
+}
+
 .form-group input {
-    width: calc(100% - 20px);
-    padding: 10px;
-    outline: 0;
-    border: 1px solid #aaa;
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #fff;
+    background: rgb(255 255 255 / 10%);
+    border: 1px solid rgb(255 255 255 / 20%);
     border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.2);
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-    transition: all 0.3s;
+    outline: none;
+    transition: all 0.3s ease;
+    box-sizing: border-box;
+}
+
+.form-group input:focus {
+    border-color: rgb(255 255 255 / 40%);
+    background: rgb(255 255 255 / 15%);
+}
+
+.form-group input::placeholder {
+    color: rgb(255 255 255 / 50%);
+}
+
+.action-buttons {
+    margin-top: 2rem;
 }
 
 button {
+    width: 100%;
+    padding: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    background: rgb(255 255 255 / 25%);
+    border: 1px solid rgb(255 255 255 / 30%);
     border-radius: 8px;
-    border: 1px solid transparent;
-    padding: 0.6em 1.2em;
-    font-size: 16px;
-    transition: 0.2s;
-    border: 1px solid rgb(255 255 255 / 20%);
-    background-color: rgba(255, 255, 255, 0.2);
-    transition: all 0.3s;
+    transition: all 0.3s ease;
 }
 
 button:hover {
-    background-color: rgb(0 0 0 / 20%);
-    color: #ddd;
+    background: rgba(128, 128, 128, 0.35);
 }
 
-.reset-password {
-    text-align: right;
-}
-
-.reset-password a {
-    color: #111;
-    text-decoration: none;
-    transition: color 0.3s;
-}
-
-.reset-password a:hover {
-    color: #f95a5a;
-}
 /* 消息弹窗样式 */
 .msg {
     position: fixed;

@@ -34,7 +34,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['login'])) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>登录</title>
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="/static/favicon.svg">
     <link rel="stylesheet" type="text/css" href="/static/css/login.css">
 </head>
 <body>
