@@ -52,7 +52,7 @@ https://cdn.jsdelivr.net/npm/pixpro@latest/
 
 ### 下载upgit
 
-前往下载 [Upgit](https://www.ilanzou.com/s/dkc0YXrI)
+前往下载 [Upgit](https://coobl.lanzouq.com/i5ZZ82ohf8sf)
 
 ### 如何配置
 
