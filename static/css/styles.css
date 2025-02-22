@@ -169,13 +169,27 @@ main {
             backdrop-filter: blur(10px);
 }
 
-/* 删除按钮鼠标悬停旋转效果 */
-.deleteImageButton img {
-    transition: transform .4s ease-in-out;
-}
-.deleteImageButton:hover img {
+.deleteImageButton:hover .icon {
     transform: rotate(180deg);
 }
+
+.deleteImageButton .icon {
+    width: 20px;
+    height: 20px;
+    color: #fff;
+    transition: transform .4s ease-in-out;
+}
+
+header .icon,
+.tab-button .icon {
+    transition: transform 0.3s ease;
+}
+
+header a:hover .icon,
+.tab-button:hover .icon {
+    transform: scale(1.2);
+}
+
 /* 图片上传区域样式 */
 .imageUploadBox {
     width: 100%;
@@ -187,6 +201,7 @@ main {
     border-radius: 10px;
     margin-bottom: 10px;
     box-sizing: border-box;
+    position: relative;
     transition: all 0.3s ease-in-out;
 }
 
@@ -206,7 +221,14 @@ main {
     max-width: 100%;
     max-height: 100%;
     border-radius: 10px;
-    z-index: 10;
+    opacity: 0;
+}
+
+/* 当图片预览有实际内容时显示 */
+.imagePreview[src*="data:"],
+.imagePreview[src*="http"] {
+    opacity: 1;
+    z-index: 1;
 }
 
 /* 粘贴或URL输入框样式 */
@@ -275,7 +297,21 @@ main {
     height: 105px;
     overflow-y: scroll;
     box-sizing: border-box;
-    background: url(../images/svg/wheel.svg) no-repeat right;
+    background: url("data:image/svg+xml,%3Csvg viewBox='0 0 1025 1024' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M548.283 0C412.825 0 303.17 91.918 303.17 203.187v617.626c0 112.881 109.656 203.187 245.114 203.187 135.459 0 245.115-91.918 245.115-203.187V203.187C793.398 91.918 682.13 0 548.283 0zm169.323 819.2c0 77.405-75.792 138.683-169.323 138.683S378.961 894.993 378.961 819.2V204.8c0-77.405 75.792-138.683 169.322-138.683s169.323 62.89 169.323 138.683v614.4z' fill='%23CCCCCC'/%3E%3Cpath d='M519.257 199.962h56.44v220.926h-56.44zM508.13 202.542l39.928-39.895 116.3 116.3-39.912 39.912zM470.363 318.585l-39.912-39.912 116.317-116.3 39.911 39.911zM519.257 603.112h56.44v220.926h-56.44zM624.398 705.109l39.912 39.911-116.3 116.301-39.912-39.896zM586.631 821.603l-39.912 39.912-116.3-116.317 39.895-39.912z' fill='%23CCCCCC'/%3E%3C/svg%3E") no-repeat right center;
+    background-size: 70px;
+}
+
+/* 自定义滚动条样式 */
+.input-container::-webkit-scrollbar {
+    width: 16px;
+}
+
+.input-container::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.input-container::-webkit-scrollbar-thumb {
+    background: transparent;
 }
 
 /* 标签按钮容器 */
@@ -296,18 +332,6 @@ main {
     transition: background-color 0.3s ease-in-out, transform 0.3s ease-in-out;
     position: relative;
     z-index: 1;
-}
-
-/* 标签按钮中的图片 */
-header a img,
-.tab-button img {
-    transition: transform 0.3s ease;
-}
-
-/* 标签按钮鼠标悬停效果 */
-header a:hover img,
-.tab-button:hover img {
-    transform: scale(1.2);
 }
 
 /* 标签页内容 */
@@ -506,4 +530,34 @@ footer span {
 @keyframes fadeOut {
     0% { opacity: 1; }
     100% { opacity: 0; }
+}
+
+/* 基础图标样式 */
+.icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+}
+
+/* header导航图标大小 */
+header .icon {
+    width: 30px;
+    height: 30px;
+}
+
+/* URL输出区域的图标大小 */
+.tab-button .icon {
+    width: 25px;
+    height: 25px;
+}
+
+/* 上传区域的大图标 */
+.imageUploadBox .upload-icon {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    color: #ccc;
+    pointer-events: none;
 }

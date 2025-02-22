@@ -5,6 +5,12 @@ if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
     exit;
 }
 
+if (empty($_SERVER['HTTP_X_REQUESTED_WITH']) || 
+    strtolower($_SERVER['HTTP_X_REQUESTED_WITH']) !== 'xmlhttprequest') {
+    header('HTTP/1.1 403 Forbidden');
+    exit('禁止直接访问');
+}
+
 require_once '../config/database.php';
 $db = Database::getInstance();
 $mysqli = $db->getConnection();
@@ -108,7 +114,11 @@ $userToken = $tokenResult->fetch_assoc()['token'];
 ?>
 
 <div class="settings-container">
-    <button class="close-modal"><img src="/static/images/svg/xmark.svg" alt="关闭"></button>
+    <button class="close-modal">
+        <svg class="icon" aria-hidden="true">
+            <use xlink:href="#icon-xmark"></use>
+        </svg>
+    </button>
     <form id="settings-form" method="POST">
         <!-- 基本设置 -->
         <div class="settings-group">
@@ -170,15 +180,16 @@ $userToken = $tokenResult->fetch_assoc()['token'];
                     'placeholder' => '建议设置为50'
                 ],
                 'max_file_size' => [
-                    'label' => '单个文件大小限制(字节)',
+                    'label' => '单个文件大小限制(MB)',
                     'type' => 'number',
                     'min' => 1,
-                    'placeholder' => '建议设置为5242880(5MB)'
+                    'placeholder' => '建议设置为5'
                 ],
                 'site_domain' => [
                     'label' => '网站域名',
                     'type' => 'text',
-                    'placeholder' => '例如：https://example.com'
+                    'placeholder' => '例如：https://example.com,http://localhost',
+                    'description' => '用于验证前端上传，多个域名用英文逗号分隔'
                 ],
                 'output_format' => [
                     'label' => '输出图片格式',
@@ -210,10 +221,13 @@ $userToken = $tokenResult->fetch_assoc()['token'];
                         <input type="<?= $setting['type'] ?>" 
                                name="<?= $key ?>" 
                                id="<?= $key ?>"
-                               value="<?= $configs[$key]['value'] ?>"
+                               value="<?= $key === 'max_file_size' ? ($configs[$key]['value'] / (1024 * 1024)) : $configs[$key]['value'] ?>"
                                <?= isset($setting['min']) ? "min=\"{$setting['min']}\"" : '' ?>
                                <?= isset($setting['max']) ? "max=\"{$setting['max']}\"" : '' ?>
                                placeholder="<?= isset($setting['placeholder']) ? $setting['placeholder'] : '' ?>">
+                    <?php endif; ?>
+                    <?php if (isset($setting['description'])): ?>
+                        <div class="form-description"><?= $setting['description'] ?></div>
                     <?php endif; ?>
                 </div>
             <?php endforeach; ?>
@@ -233,7 +247,20 @@ $userToken = $tokenResult->fetch_assoc()['token'];
 
             <div class="form-group">
                 <label>API Token</label>
-                <input type="text" name="token" value="<?= $userToken ?>" placeholder="用于API接口认证的Token">
+                <div class="token-input-group">
+                    <input type="text" name="token" id="token-input"value="<?= $userToken ?>" readonly>
+                    <button type="button" class="token-action-btn copy-token" title="复制">
+                        <svg class="icon" aria-hidden="true">
+                            <use xlink:href="#icon-copy"></use>
+                        </svg>
+                    </button>
+                    <button type="button" class="token-action-btn refresh-token" title="刷新">
+                        <svg class="icon" aria-hidden="true">
+                            <use xlink:href="#icon-refresh"></use>
+                        </svg>
+                    </button>
+                </div>
+                <div class="form-description">用于API接口认证，请勿泄露，妥善保管</div>
             </div>
         </div>
         

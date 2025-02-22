@@ -10,7 +10,7 @@ body {
     display: flex;
     align-items: center;
     justify-content: center;
-    background: url(../static/images/bg.webp) no-repeat center / cover fixed;
+    background: url(../static/images/bg.webp) no-repeat 100% 100% / cover fixed;
     min-height: 100vh;
     margin: 0;
     padding: 20px;

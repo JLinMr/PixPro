@@ -72,11 +72,31 @@ $pagination = renderPagination($current_page, $total_pages);
 <body>
     <div id="gallery" class="gallery"><?= $images_html ?></div>
     <div class="rightside">
-        <a href="/" class="floating-link" title="返回主页"><img src="/static/images/svg/home.svg" alt="主页"></a>
-        <a class="select-link" title="多选模式"><img src="/static/images/svg/select.svg" alt="多选"></a>
-        <a href="settings.php" class="settings-link" title="系统设置"><img src="/static/images/svg/Setting.svg" alt="设置"></a>
-        <a href="?logout=true" class="logout-link" title="退出登录"><img src="/static/images/svg/logout.svg" alt="退出"></a>
-        <a class="top-link" id="scroll-to-top" title="回到顶部"><img src="/static/images/svg/top.svg" alt="顶部"></a>
+        <a href="/" class="floating-link" title="返回主页">
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-home"></use>
+            </svg>
+        </a>
+        <a class="select-link" title="多选模式">
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-select"></use>
+            </svg>
+        </a>
+        <a href="#" class="settings-link" title="系统设置">
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-Setting"></use>
+            </svg>
+        </a>
+        <a href="?logout=true" class="logout-link" title="退出登录">
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-logout"></use>
+            </svg>
+        </a>
+        <a class="top-link" id="scroll-to-top" title="回到顶部">
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-top"></use>
+            </svg>
+        </a>
         <span id="current-total-pages"><?= $current_page ?>/<?= $total_pages ?></span>
     </div>
     <div id="pagination" class="pagination"><?= $pagination ?></div>
@@ -85,6 +105,7 @@ $pagination = renderPagination($current_page, $total_pages);
     </div>
     <script src="/static/js/admin.js" defer></script>
     <script src="/static/js/settings.js" defer></script>
+    <script src="//at.alicdn.com/t/c/font_4623353_ghucu16d9fu.js"></script>
 </body>
 </html>
 <?php
@@ -111,12 +132,16 @@ function renderImagesList($images) {
             </div>
             <div class="action-buttons">
                 <button class="copy-btn" data-url="<?= htmlspecialchars($image['url']) ?>">
-                    <img src="/static/images/svg/link.svg" alt="Copy" />
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-link"></use>
+                    </svg>
                 </button>
                 <button class="delete-btn" 
                         data-id="<?= htmlspecialchars($image['id']) ?>" 
                         data-path="<?= htmlspecialchars($image['path']) ?>">
-                    <img src="/static/images/svg/xmark.svg" alt="X" />
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-xmark"></use>
+                    </svg>
                 </button>
             </div>
             <div class="image-info">

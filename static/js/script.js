@@ -1,6 +1,12 @@
 // 页面加载完成后初始化
 document.addEventListener('DOMContentLoaded', () => {
-    initialize();
+    const scriptTag = document.currentScript || document.querySelector('script[src*="script.js"]');
+    const CONFIG = {
+        allowedTypes: ['image/jpeg', 'image/png', 'gif', 'image/webp', 'image/svg+xml'],
+        maxFileSize: parseInt(scriptTag.dataset.maxFileSize) || 0,
+        maxUploadsPerDay: parseInt(scriptTag.dataset.maxUploadsPerDay) || 0
+    };
+    initialize(CONFIG);
 });
 
 // 缓存DOM元素
@@ -22,16 +28,12 @@ const DOM = {
     imageUploadBox: document.getElementById('imageUploadBox')
 };
 
-// 配置常量
-const CONFIG = {
-    allowedTypes: ['image/jpeg', 'image/png', 'image/gif', 'image/webp', 'image/svg+xml']
-};
-
 // 初始化所有必要的组件和功能
-function initialize() {
+function initialize(CONFIG) {
     setupEventListeners();
     loadSavedQuality();
     setupTabSwitching();
+    window.CONFIG = CONFIG;
 }
 
 // API工具类
@@ -88,8 +90,8 @@ const UI = {
                 return;
             }
             
-            if (response.url) {
-                this.updateImageInfo(response);
+            if (response.data && response.data.url) {
+                this.updateImageInfo(response.data);
             } else if (response.error) {
                 this.showNotification(response.error, 'error');
             }
@@ -110,26 +112,10 @@ const UI = {
     updateImageInfo(response) {
         const imageName = response.url.split('/').pop().split('?')[0];
         
-        // 更新压缩后的尺寸信息
-        if (response.width && response.width > 0) {
-            DOM.compressedWidth.textContent = response.width;
-        } else {
-            DOM.compressedWidth.textContent = '未知';
-        }
+        DOM.compressedWidth.textContent = response.width > 0 ? response.width : '未知';
+        DOM.compressedHeight.textContent = response.height > 0 ? response.height : '未知';
+        DOM.compressedSize.textContent = response.size > 0 ? (response.size / 1024).toFixed(2) : '未知';
         
-        if (response.height && response.height > 0) {
-            DOM.compressedHeight.textContent = response.height;
-        } else {
-            DOM.compressedHeight.textContent = '未知';
-        }
-        
-        if (response.size && response.size > 0) {
-            DOM.compressedSize.textContent = (response.size / 1024).toFixed(2);
-        } else {
-            DOM.compressedSize.textContent = '未知';
-        }
-        
-        // 创建URL容器
         const containers = [
             { id: 'imageUrlContainer', value: response.url },
             { id: 'markdownUrlContainer', value: `![${imageName}](${response.url})` },
@@ -158,7 +144,7 @@ const UI = {
 
     // 清除图片信息
     clearImageInfo() {
-        DOM.imagePreview.src = 'static/images/svg/up.svg';
+        DOM.imagePreview.src = '';
         DOM.deleteImageButton.style.display = 'none';
         DOM.originalWidth.textContent = '';
         DOM.originalHeight.textContent = '';
@@ -216,8 +202,11 @@ const Clipboard = {
 // 图片处理工具类
 const ImageHandler = {
     processFile(file) {
-        if (!CONFIG.allowedTypes.includes(file.type)) {
-            UI.showNotification(`不支持的文件类型`, 'error');
+        // 检查文件大小
+        if (file.size > CONFIG.maxFileSize) {
+            // 将字节转换为MB，并保留2位小数
+            const maxFileSizeMB = Math.floor(CONFIG.maxFileSize / (1024 * 1024));
+            UI.showNotification(`文件大小超过限制，最大允许 ${maxFileSizeMB}MB`, 'error');
             return;
         }
 

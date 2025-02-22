@@ -8,6 +8,20 @@ try {
     $mysqli = $db->getConnection();
     $config = Database::getConfig($mysqli);
     
+    // 获取上传限制配置
+    $maxFileSize = 0;
+    $maxUploadsPerDay = 0;
+    $stmt = $mysqli->prepare("SELECT `key`, value FROM configs WHERE `key` IN ('max_file_size', 'max_uploads_per_day')");
+    $stmt->execute();
+    $result = $stmt->get_result();
+    while ($row = $result->fetch_assoc()) {
+        if ($row['key'] === 'max_file_size') {
+            $maxFileSize = (int)$row['value'];
+        } else if ($row['key'] === 'max_uploads_per_day') {
+            $maxUploadsPerDay = (int)$row['value'];
+        }
+    }
+    
     // 检查是否需要登录限制
     if ($config && 
         isset($config['login_restriction']) && 
@@ -34,27 +48,40 @@ try {
 <body>
     <header class="blur">
         <a href="https://www.bsgun.cn/" target="_blank" title="主页" class="header-link">
-            <img src="static/images/svg/home.svg" alt="主页" class="header-icon" />
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-home"></use>
+            </svg>
         </a>
         <a href="https://blog.bsgun.cn/" target="_blank" title="博客" class="header-link">
-            <img src="static/images/svg/Blog.svg" alt="博客" class="header-icon" />
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-Blog"></use>
+            </svg>
         </a>
         <a href="https://github.com/JLinMr/PixPro/" target="_blank" title="Github" class="header-link">
-            <img src="static/images/svg/Github.svg" alt="Github" class="header-icon" />
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-Github"></use>
+            </svg>
         </a>
         <a href="/admin/" target="_blank" title="后台" class="header-link">
-            <img src="static/images/svg/Setting.svg" alt="后台" class="header-icon" />
+            <svg class="icon" aria-hidden="true">
+                <use xlink:href="#icon-Setting"></use>
+            </svg>
         </a>
     </header>
     <main>
         <div class="uploadForm blur">
             <form id="uploadForm" enctype="multipart/form-data">
                 <button id="deleteImageButton" class="deleteImageButton">
-                    <img src="static/images/svg/xmark.svg" alt="x">
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-xmark"></use>
+                    </svg>
                 </button>
                 <div id="imageUploadBox" class="imageUploadBox blur" onclick="document.getElementById('imageInput').click();">
-                    <input type="file" id="imageInput" name="image[]" accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif" multiple required>
-                    <img id="imagePreview" class="imagePreview" src="static/images/svg/up.svg" alt="预览图片">
+                    <svg class="icon upload-icon" aria-hidden="true">
+                        <use xlink:href="#icon-up"></use>
+                    </svg>
+                    <input type="file" id="imageInput" name="image[]" accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif" multiple>
+                    <img id="imagePreview" class="imagePreview" src="" alt="预览图片">
                 </div>
                 <div id="pasteOrUrlInputBox">
                     <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput blur" placeholder="此处使用Ctrl+V粘贴图片上传">
@@ -71,16 +98,24 @@ try {
         <div class="urlOutput blur" id="urlOutput">
             <div class="tab-buttons blur">
                 <button class="tab-button active" data-target="tab1" title="图片链接">
-                    <img src="static/images/svg/imageUrl.svg" alt="图片链接"/>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-imageUrl"></use>
+                    </svg>
                 </button>
                 <button class="tab-button" data-target="tab2" title="Markdown代码">
-                    <img src="static/images/svg/markdownUrl.svg" alt="Markdown代码"/>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-markdownUrl"></use>
+                    </svg>
                 </button>
                 <button class="tab-button" data-target="tab3" title="Markdown链接">
-                    <img src="static/images/svg/markdownLinkUrl.svg" alt="Markdown链接"/>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-markdownLinkUrl"></use>
+                    </svg>
                 </button>
                 <button class="tab-button" data-target="tab4" title="HTML代码">
-                    <img src="static/images/svg/htmlUrl.svg" alt="HTML代码"/>
+                    <svg class="icon" aria-hidden="true">
+                        <use xlink:href="#icon-htmlUrl"></use>
+                    </svg>
                 </button>
             </div>
             <div class="tab-content">
@@ -133,8 +168,10 @@ try {
             <em class="logotitle blur">本站不保证内容，时效和稳定性，请勿上传包含危害国家安全和民族团结、侵犯他人权益、欺骗性质、色情或暴力的图片。严格遵守国家相关法律法规，尊重版权、著作权等权利；图片内容均由「网友」自行上传，所有图片作用、性质都与本站无关，本站对所有图片合法性概不负责，亦不承担任何法律责任；</em>
         </div>
     </footer>
-    <script type="text/javascript" src="static/js/script.js" defer></script>
+    <script type="text/javascript" src="static/js/script.js" defer data-max-file-size="<?php echo $maxFileSize; ?>"data-max-uploads-per-day="<?php echo $maxUploadsPerDay; ?>">
+    </script>
     <!-- 引入鼠标指针跟随特效 -->
     <script type="text/javascript" src="static/js/cursor.js" defer data-lazy="true"></script>
+    <script src="//at.alicdn.com/t/c/font_4623353_ghucu16d9fu.js"></script>
 </body>
 </html>
