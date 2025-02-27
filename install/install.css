@@ -131,6 +131,7 @@ body {
     border-radius: 12px;
     overflow: hidden;
     background: rgb(0 0 0 / 30%);
+    margin-bottom: 15px;
 }
 
 .check-table th,
