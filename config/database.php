@@ -41,9 +41,9 @@ class Database {
 
         if ($this->connection->connect_error) {
             $error = strpos($this->connection->connect_error, 'Access denied') !== false ? '数据库账号或密码错误' :
-                     (strpos($this->connection->connect_error, 'Unknown database') !== false ? '数据库不存在' :
-                     (strpos($this->connection->connect_error, 'Connection refused') !== false ? '无法连接到数据库服务器' :
-                     '数据库连接失败'));
+                    (strpos($this->connection->connect_error, 'Unknown database') !== false ? '数据库不存在' :
+                    (strpos($this->connection->connect_error, 'Connection refused') !== false ? '无法连接到数据库服务器' :
+                    '数据库连接失败'));
             throw new Exception($error);
         }
 

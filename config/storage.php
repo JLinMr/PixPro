@@ -8,6 +8,44 @@ use Upyun\Upyun;
 use Upyun\Config;
 
 /**
+ * 生成并返回上传响应数据
+ *
+ * @param string $fileUrl 文件URL
+ * @param string $filePath 文件路径
+ * @param string $finalFilePath 最终文件名
+ * @param int $compressedSize 压缩后大小
+ * @param int $compressedWidth 压缩后宽度
+ * @param int $compressedHeight 压缩后高度
+ * @param string $message 错误信息(可选)
+ * @param bool $isError 是否为错误响应
+ */
+function generateUploadResponse($fileUrl, $filePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight, $message = '', $isError = false) {
+    if ($isError) {
+        respondAndExit([
+            'result' => 'error',
+            'code' => 500,
+            'message' => $message
+        ]);
+    }
+
+    respondAndExit([
+        'result' => 'success',
+        'code' => 200,
+        'status' => true,
+        'name' => basename($finalFilePath),
+        'data' => [
+            'url' => $fileUrl,
+            'name' => basename($finalFilePath),
+            'width' => $compressedWidth,
+            'height' => $compressedHeight,
+            'size' => $compressedSize,           
+            'path' => $filePath
+        ],
+        'url' => $fileUrl
+    ]);
+}
+
+/**
  * 处理本地存储
  *
  * @param string $finalFilePath 最终文件路径
@@ -28,21 +66,7 @@ function handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath
     $fileUrl = $config['protocol'] . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
     insertImageRecord($fileUrl, $finalFilePath, 'local', $compressedSize, $upload_ip, $user_id);
 
-    respondAndExit([
-        'result' => 'success',
-        'code' => 200,
-        'status' => true,
-        'name' => basename($finalFilePath),
-        'data' => [
-            'url' => $fileUrl,
-            'name' => basename($finalFilePath),
-            'width' => $compressedWidth,
-            'height' => $compressedHeight,
-            'size' => $compressedSize,           
-            'path' => $finalFilePath
-        ],
-        'url' => $fileUrl
-    ]);
+    generateUploadResponse($fileUrl, $finalFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
 }
 
 /**
@@ -78,28 +102,10 @@ function handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSiz
         $fileUrl = $config['protocol'] . $config['oss_cdn_domain'] . '/' . $ossFilePath;
         insertImageRecord($fileUrl, $ossFilePath, 'oss', $compressedSize, $upload_ip, $user_id);
 
-        respondAndExit([
-            'result' => 'success',
-            'code' => 200,
-            'status' => true,
-            'name' => basename($finalFilePath),
-            'data' => [
-                'url' => $fileUrl,
-                'name' => basename($finalFilePath),
-                'width' => $compressedWidth,
-                'height' => $compressedHeight,
-                'size' => $compressedSize,                
-                'path' => $ossFilePath
-            ],
-            'url' => $fileUrl
-        ]);
+        generateUploadResponse($fileUrl, $ossFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
     } catch (OssException $e) {
         logMessage('文件上传到OSS失败: ' . $e->getMessage());
-        respondAndExit([
-            'result' => 'error',
-            'code' => 500,
-            'message' => '文件上传到OSS失败: ' . $e->getMessage()
-        ]);
+        generateUploadResponse('', '', '', 0, 0, 0, '文件上传到OSS失败: ' . $e->getMessage(), true);
     }
 }
 
@@ -129,6 +135,10 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
                 'key' => $config['s3_access_key_id'],
                 'secret' => $config['s3_access_key_secret'],
             ],
+            // 'http' => [
+            //     'verify' => false
+            // ],
+            // 'suppress_php_deprecation_warning' => true
         ]);
         
         $s3FilePath = $datePath . '/' . basename($finalFilePath);
@@ -151,28 +161,10 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
 
         insertImageRecord($fileUrl, $s3FilePath, 's3', $compressedSize, $upload_ip, $user_id);
 
-        respondAndExit([
-            'result' => 'success',
-            'code' => 200,
-            'status' => true,
-            'name' => basename($finalFilePath),
-            'data' => [
-                'url' => $fileUrl,
-                'name' => basename($finalFilePath),
-                'width' => $compressedWidth,
-                'height' => $compressedHeight,
-                'size' => $compressedSize,                
-                'path' => $s3FilePath
-            ],
-            'url' => $fileUrl
-        ]);
+        generateUploadResponse($fileUrl, $s3FilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
     } catch (S3Exception $e) {
         logMessage('文件上传到S3失败: ' . $e->getMessage());
-        respondAndExit([
-            'result' => 'error',
-            'code' => 500,
-            'message' => '文件上传到S3失败: ' . $e->getMessage()
-        ]);
+        generateUploadResponse('', '', '', 0, 0, 0, '文件上传到S3失败: ' . $e->getMessage(), true);
     }
 }
 
@@ -211,27 +203,9 @@ function handleUpyunUpload($finalFilePath, $newFilePath, $datePath, $compressedS
         $fileUrl = $config['protocol'] . $config['upyun_domain'] . '/' . $upyunFilePath;
         insertImageRecord($fileUrl, $upyunFilePath, 'upyun', $compressedSize, $upload_ip, $user_id);
 
-        respondAndExit([
-            'result' => 'success',
-            'code' => 200,
-            'status' => true,
-            'name' => basename($finalFilePath),
-            'data' => [
-                'url' => $fileUrl,
-                'name' => basename($finalFilePath),
-                'width' => $compressedWidth,
-                'height' => $compressedHeight,
-                'size' => $compressedSize,                
-                'path' => $upyunFilePath
-            ],
-            'url' => $fileUrl
-        ]);
+        generateUploadResponse($fileUrl, $upyunFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
     } catch (\Exception $e) {
         logMessage('文件上传到又拍云失败: ' . $e->getMessage());
-        respondAndExit([
-            'result' => 'error',
-            'code' => 500,
-            'message' => '文件上传到又拍云失败: ' . $e->getMessage()
-        ]);
+        generateUploadResponse('', '', '', 0, 0, 0, '文件上传到又拍云失败: ' . $e->getMessage(), true);
     }
 }

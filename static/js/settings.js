@@ -4,9 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const initializeSettingsForm = () => {
         const elements = {
-            ossSettings: document.getElementById('oss-settings'),
-            s3Settings: document.getElementById('s3-settings'),
-            upyunSettings: document.getElementById('upyun-settings'),
             customProtocolInput: document.getElementById('custom-protocol-input'),
             settingsForm: document.getElementById('settings-form')
         };
@@ -21,10 +18,42 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const updateStorageSettings = () => {
             const selectedStorage = document.querySelector('input[name="storage"]:checked').value;
-            toggleElement(elements.ossSettings, selectedStorage === 'oss');
-            toggleElement(elements.s3Settings, selectedStorage === 's3');
-            toggleElement(elements.upyunSettings, selectedStorage === 'upyun');
+            document.querySelectorAll('[id$="-settings"]').forEach(panel => {
+                panel.style.display = 'none';
+            });
+            const selectedPanel = document.getElementById(`${selectedStorage}-settings`);
+            if (selectedPanel) {
+                selectedPanel.style.display = 'block';
+            }
         };
+
+        // Token相关功能
+        const tokenInput = document.getElementById('token-input');
+        
+        // 复制Token
+        document.querySelector('.copy-token')?.addEventListener('click', () => {
+            if (!tokenInput.value) return;
+            navigator.clipboard.writeText(tokenInput.value).then(() => {
+                UI.showNotification('Token已复制', 'success');
+            });
+        });
+
+        // 刷新Token
+        document.querySelector('.refresh-token')?.addEventListener('click', () => {
+            const randomToken = generateRandomToken(32);
+            tokenInput.value = randomToken;
+            UI.showNotification('Token已刷新', 'success');
+        });
+
+        // 生成随机Token
+        function generateRandomToken(length) {
+            const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+            let token = '';
+            for (let i = 0; i < length; i++) {
+                token += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return token;
+        }
 
         updateProtocolInput();
         updateStorageSettings();
@@ -47,32 +76,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
             
-            const response = await fetch('settings.php', {
-                method: 'POST',
-                body: formData
-            });
-            const {message, success} = await response.json();
-            UI.showNotification(message, success ? 'success' : 'error');
+            // 处理文件大小单位转换（MB转字节）
+            const maxFileSize = formData.get('max_file_size');
+            if (maxFileSize) {
+                formData.set('max_file_size', Math.floor(maxFileSize * 1024 * 1024));
+            }
+            
+            try {
+                const response = await fetch('settings.php', {
+                    method: 'POST',
+                    headers: {
+                        'X-Requested-With': 'XMLHttpRequest'
+                    },
+                    body: formData
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                
+                const {message, success} = await response.json();
+                UI.showNotification(message, success ? 'success' : 'error');
+            } catch (error) {
+                console.error('Error saving settings:', error);
+                UI.showNotification('保存设置失败', 'error');
+            }
         });
     };
 
     settingsLink.addEventListener('click', async (e) => {
         e.preventDefault();
-        const response = await fetch('settings.php');
-        modal.innerHTML = await response.text();
-        modal.style.display = 'block';
-        requestAnimationFrame(() => {
-            modal.classList.add('show');
-        });
-        initializeSettingsForm();
-        
-        modal.querySelector('.close-modal')?.addEventListener('click', () => {
-            modal.classList.remove('show');
-            modal.classList.add('hide');
-            setTimeout(() => {
-                modal.style.display = 'none';
-                modal.classList.remove('hide');
-            }, 300);
-        });
+        try {
+            const response = await fetch('settings.php', {
+                headers: {
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            
+            const content = await response.text();
+            modal.querySelector('.modal-content').innerHTML = content;
+            modal.style.display = 'block';
+            requestAnimationFrame(() => {
+                modal.classList.add('show');
+            });
+            initializeSettingsForm();
+            
+            modal.querySelector('.close-modal')?.addEventListener('click', () => {
+                modal.classList.remove('show');
+                modal.classList.add('hide');
+                setTimeout(() => {
+                    modal.style.display = 'none';
+                    modal.classList.remove('hide');
+                }, 300);
+            });
+        } catch (error) {
+            console.error('Error loading settings:', error);
+            UI.showNotification('加载设置失败', 'error');
+        }
     });
 }); 

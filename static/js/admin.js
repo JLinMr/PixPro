@@ -25,7 +25,6 @@ function setupEventHandlers() {
     setupScrollToTop();
     setupMultiSelect();
     setupPagination();
-    setupDocumentClickHandler();
 }
 
 // API工具类
@@ -262,16 +261,6 @@ function setupScrollToTop() {
 
     DOM.scrollTopBtn.addEventListener('click', () => {
         window.scrollTo({ top: 0, behavior: 'smooth' });
-    });
-}
-
-function setupDocumentClickHandler() {
-    document.addEventListener('click', e => {
-        const input = document.querySelector('.page-input');
-        const currentTotalPages = document.getElementById('current-total-pages');
-        if (input && currentTotalPages && !input.contains(e.target) && e.target !== currentTotalPages) {
-            hidePageInput(input, currentTotalPages);
-        }
     });
 }
 

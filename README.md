@@ -1,71 +1,85 @@
-## 前言
+<div align="center">
+    <img src="static/favicon.svg" width="100" height="100">
+    <h1>PixPro</h1>
+    <p>一个高效、简洁的图片上传系统，支持多种存储方式，包括本地存储、阿里云OSS、S3存储、又拍云存储，另可通过挂载扩展更多存储方式</p>
+    <p align="center">🎮 在线演示：
+      <a href="https://dev.ruom.top" target="_blank">
+        https://dev.ruom.top
+      </a>
+      <p>演示站点更新较频繁，可能与实际效果存在差异</p>
+    </p>
+</div>
 
-点一个 Star 再走吧~
+## ✨ 特性
 
-一款专为个人需求设计的高效图床解决方案，集成了强大的图片压缩功能与优雅的前台后台管理界面。
+- 🚀 **高效压缩** - 集成强大的图片压缩功能，支持自定义压缩率，提升图片加载速度
+- 🌐 **多种格式** - 支持多种图片格式，包括 JPEG、PNG、GIF、WebP、SVG 等，支持输出原格式、WebP、AVIF格式
+- 💾 **多种存储** - 支持本地存储、阿里云OSS、S3存储、又拍云存储，另可通过挂载扩展更多存储方式
+- 🎨 **优雅界面** - 简洁美观的前端界面，支持拖拽上传、粘贴上传等多种上传方式
+- 📊 **便捷管理** - 瀑布流后台布局，支持图片灯箱预览和AJAX无感刷新
 
-项目结构精简高效，提供自定义图片压缩率与尺寸设置，有效降低存储与带宽成本。
+## 🚀 快速开始
 
-支持本地储存，阿里云OSS储存，S3存储。可通过把储存桶挂载到本地的方式解锁更多储存方式。
+1. 下载最新版本源码
+2. 上传到网站根目录
+3. 访问网站，根据向导完成安装
 
-简洁美观的前端，支持点击、拖拽、粘贴、URL、批量上传。
+## 📋 环境要求
 
-瀑布流管理后台，便捷查看图片信息，支持图片灯箱、AJAX无加载刷新。
+- PHP >= 8.1
+- MySQL >= 5.6
+- PHP扩展：
+  - Fileinfo 
+  - Imagick
+  - exif
+  - pcntl (需确保 pcntl_signal 和 pcntl_alarm 函数可用)
 
-## 演示站点
+## 🔗 TWikoo 集成
 
-前端：https://dev.ruom.top/
+> 兼容了Twikoo的兰空图床格式，所以可以直接使用兰空图床的配置
 
-后台：https://dev.ruom.top/admin/  
+### 1. 伪静态配置
 
-演示站点更新较快，可能跟实际效果不太一样
+添加以下重写规则到你的 Nginx 配置或伪静态配置中：
 
-## 安装教程
+```nginx
+location / {
+    if (!-e $request_filename) {
+        rewrite ^/api/v1/upload$ /api.php last;
+    }
+}
+```
 
-首先下载源码ZIP，将文件上传到网站根目录，访问网址  ，填写相关信息，即可完成安装。
+### 2. TWikoo 后台配置
 
-## 运行环境
+参考兰空图床的配置即可，在 TWikoo 管理面板中设置以下参数：
 
-推荐PHP 8.1 + MySQL >= 5.6
+- `IMAGE_CDN`：设置为你的图床域名，例如 `https://your-domain.com/`
+- `IMAGE_CDN_TOKEN`：设置为你的图床 Token
 
-本程序依赖PHP的 Fileinfo 、 Imagick 、 exif拓展，需要自行安装。依赖 pcntl 扩展（宝塔PHP默认已安装）
+## 🔌 Typora 集成
 
-要求 pcntl_signal 和 pcntl_alarm 函数可用（需主动解除禁用）
+本程序支持通过 Upgit 在 Typora 中使用，配置步骤如下：
 
-## 资源加速
+1. 下载 [Upgit](https://coobl.lanzouq.com/i5ZZ82ohf8sf)
 
-项目已经上传到NPM，所有静态资源均可以使用
-###  使用npmmirror，@version需要改为版本号
-https://cdn.npmmirror.com/packages/pixpro/@version/files/
-
-例如: https://cdn.npmmirror.com/packages/pixpro/1.7.6/files/static/js/admin.js
-
-### 使用 jsdelivr
-https://cdn.jsdelivr.net/npm/pixpro@latest/
-
-例如: https://cdn.jsdelivr.net/npm/pixpro@1.7.6/static/js/admin.js
-
-
-## 拓展功能
-
-本程序支持 Upgit 对接在Typora使用，对接方法如下
-
-### 下载upgit
-
-前往下载 [Upgit](https://coobl.lanzouq.com/i5ZZ82ohf8sf)
-
-### 如何配置
-
-修改目录下`config.toml`文件，内容如下
+2. 修改 `config.toml` 文件：
 
 ```toml
 default_uploader = "PixPro"
 
 [uploaders.PixPro]
-request_url = "https://xxx.xxx.xxx/api.php"
-token = "这里内容替换为你的Token"
+request_url = "https://your-domain.com/api.php"
+token = "YOUR_TOKEN"
 ```
-### 接入 Typora
 
-转到 Image 选自定义命令作为图像上传器，在命令文本框中输入 Upgit 程序位置，然后就可以使用了
-![接入到Typora](https://cdn.dusays.com/2022/05/459-2.jpg)
+3. 在 Typora 偏好设置中：
+   - 转到「图像」选项卡
+   - 选择「自定义命令」作为图像上传器
+   - 输入 Upgit 程序路径
+   
+![Typora配置示例](https://cdn.dusays.com/2022/05/459-2.jpg)
+
+## 📝 许可证
+
+[MIT License](LICENSE)
