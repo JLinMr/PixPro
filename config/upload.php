@@ -8,10 +8,15 @@ require_once 'storage.php';
  * @param string $source 源文件路径
  * @param string $destination 目标文件路径
  * @param int $quality 图片质量
- * @return bool 转换是否成功
+ * @return bool|string 转换是否成功或错误标识
  */
 function convertImageToWebp($source, $destination, $quality = 60) {
     try {
+        if (!file_exists($source)) {
+            logMessage("错误: 源文件不存在: $source");
+            return false;
+        }
+        
         $maxWidth = 2500;
         $maxHeight = 1600;
         $info = getimagesize($source);
@@ -19,6 +24,10 @@ function convertImageToWebp($source, $destination, $quality = 60) {
 
         // 使用Imagick处理PNG
         if ($mimeType === 'image/png') {
+            if (!class_exists('Imagick')) {
+                return 'imagick_not_installed';
+            }
+            
             $image = new Imagick($source);
             
             if ($image->getImageAlphaChannel()) {
@@ -35,20 +44,30 @@ function convertImageToWebp($source, $destination, $quality = 60) {
             $height = $image->getImageHeight();
             if ($width > $maxWidth || $height > $maxHeight) {
                 $ratio = min($maxWidth / $width, $maxHeight / $height);
-                $newWidth = round($width * $ratio);
-                $newHeight = round($height * $ratio);
-                $image->resizeImage($newWidth, $newHeight, Imagick::FILTER_LANCZOS, 1);
+                $image->resizeImage(round($width * $ratio), round($height * $ratio), Imagick::FILTER_LANCZOS, 1);
             }
 
             $result = $image->writeImage($destination);
-            
             $image->clear();
             $image->destroy();
             return $result;
         }
-        // 使用GD处理JPEG和其他格式
+        // 使用GD处理JPEG
         else if ($mimeType === 'image/jpeg') {
+            if (!extension_loaded('gd')) {
+                return 'gd_not_installed';
+            }
+            
+            $gdInfo = gd_info();
+            if (!isset($gdInfo['WebP Support']) || !$gdInfo['WebP Support']) {
+                return 'gd_no_webp_support';
+            }
+            
             $image = imagecreatefromjpeg($source);
+            if (!$image) {
+                return 'gd_create_failed';
+            }
+            
             $width = imagesx($image);
             $height = imagesy($image);
 
@@ -68,7 +87,7 @@ function convertImageToWebp($source, $destination, $quality = 60) {
             return $result;
         }
 
-        return false;
+        return 'unsupported_mime_type';
     } catch (Exception $e) {
         logMessage('图片转换失败: ' . $e->getMessage());
         return false;
@@ -80,33 +99,44 @@ function convertImageToWebp($source, $destination, $quality = 60) {
  */
 function processImageCompression($fileMimeType, $newFilePath, $newFilePathWithoutExt, $quality) {
     global $mysqli;
-    $convertSuccess = true;
     $finalFilePath = $newFilePath;
     $config = Database::getConfig($mysqli);
     $outputFormat = isset($config['output_format']) ? $config['output_format'] : 'webp';
     
     // 当quality不是100且不是svg或webp时，进行压缩转换为webp
     if ($quality != 100 && $fileMimeType !== 'image/svg+xml' && $fileMimeType !== 'image/webp') {
-        $convertSuccess = convertImageToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
-        if ($convertSuccess) {
-            $finalFilePath = $newFilePathWithoutExt . '.webp';
-            unlink($newFilePath);
+        $convertResult = convertImageToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        
+        if ($convertResult === true) {
+            $webpPath = $newFilePathWithoutExt . '.webp';
+            if (file_exists($webpPath) && filesize($webpPath) > 0) {
+                $finalFilePath = $webpPath;
+                unlink($newFilePath);
+            } else {
+                logMessage("转换失败：webp文件不存在或大小为0，保持原格式");
+            }
+        } else if (is_string($convertResult)) {
+            $errorMessages = [
+                'imagick_not_installed' => 'Imagick扩展未安装，无法处理PNG图片',
+                'gd_not_installed' => 'GD扩展未安装，无法处理图片',
+                'gd_no_webp_support' => 'GD扩展不支持webp格式，无法转换图片',
+                'gd_create_failed' => '无法创建图像资源，图片可能已损坏',
+                'unsupported_mime_type' => '不支持的图片格式'
+            ];
+            $message = $errorMessages[$convertResult] ?? '图片转换失败';
+            respondAndExit(['result' => 'error', 'code' => 500, 'message' => $message]);
+        } else {
+            respondAndExit(['result' => 'error', 'code' => 500, 'message' => '图片转换为webp失败']);
         }
     }
     
     // 根据配置的输出格式修改文件后缀
-    // 如果是quality=100或者是svg/webp，直接重命名为目标格式
     if ($outputFormat !== 'webp' || ($quality == 100 && $fileMimeType !== 'image/svg+xml')) {
         $currentExt = strtolower(pathinfo($finalFilePath, PATHINFO_EXTENSION));
         if ($currentExt !== $outputFormat) {
-            if ($outputFormat === 'original') {
-                // 如果是original，使用原始文件的扩展名
-                $originalExt = strtolower(pathinfo($newFilePath, PATHINFO_EXTENSION));
-                $newFinalFilePath = $newFilePathWithoutExt . '.' . $originalExt;
-            } else {
-                // 使用配置的输出格式作为扩展名
-                $newFinalFilePath = $newFilePathWithoutExt . '.' . $outputFormat;
-            }
+            $newFinalFilePath = $outputFormat === 'original' 
+                ? $newFilePathWithoutExt . '.' . strtolower(pathinfo($newFilePath, PATHINFO_EXTENSION))
+                : $newFilePathWithoutExt . '.' . $outputFormat;
             
             rename($finalFilePath, $newFinalFilePath);
             $finalFilePath = $newFinalFilePath;
@@ -157,6 +187,12 @@ function handleUploadedFile($file, $token, $referer) {
         // 如果文件扩展名是svg，则强制设置MIME类型
         $fileMimeType = 'image/svg+xml';
     }
+    
+    // 对于webp文件特殊处理
+    if (strtolower(pathinfo($file['name'], PATHINFO_EXTENSION)) === 'webp') {
+        // 如果文件扩展名是webp，则强制设置MIME类型
+        $fileMimeType = 'image/webp';
+    }
 
     if (!in_array($fileMimeType, $allowedTypes)) {
         respondAndExit(['result' => 'error', 'code' => 406, 'message' => '不支持的文件类型']);
@@ -181,8 +217,21 @@ function handleUploadedFile($file, $token, $referer) {
     }
 
     $randomFileName = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
-    $extension = pathinfo($file['name'], PATHINFO_EXTENSION) ?: 'webp';
-    $newFilePath = $uploadDir . $randomFileName . '.' . $extension;
+    $originalExtension = pathinfo($file['name'], PATHINFO_EXTENSION);
+    
+    // 确保原始文件使用正确的扩展名
+    if (empty($originalExtension)) {
+        $extensionMap = [
+            'image/jpeg' => 'jpg',
+            'image/png' => 'png', 
+            'image/gif' => 'gif',
+            'image/webp' => 'webp',
+            'image/svg+xml' => 'svg'
+        ];
+        $originalExtension = $extensionMap[$fileMimeType] ?? 'jpg';
+    }
+    
+    $newFilePath = $uploadDir . $randomFileName . '.' . $originalExtension;
     
     // 上传和处理文件
     if (move_uploaded_file($file['tmp_name'], $newFilePath)) {
@@ -201,10 +250,8 @@ function handleUploadedFile($file, $token, $referer) {
         if ($fileMimeType === 'image/svg+xml') {
             $dimensions = ['width' => 100, 'height' => 100];
         } else {
-            // 使用更可靠的方式获取图片尺寸
             try {
                 if (class_exists('Imagick')) {
-                    // 优先使用 Imagick
                     $image = new Imagick($finalFilePath);
                     $dimensions = [
                         'width' => $image->getImageWidth(),
@@ -212,7 +259,6 @@ function handleUploadedFile($file, $token, $referer) {
                     ];
                     $image->destroy();
                 } else {
-                    // 降级使用 GD
                     $dimensions = getimagesize($finalFilePath);
                     if ($dimensions) {
                         $dimensions = [
@@ -223,7 +269,6 @@ function handleUploadedFile($file, $token, $referer) {
                 }
 
                 if (!$dimensions) {
-                    // 如果还是获取失败，尝试直接读取图片
                     $image = imagecreatefromstring(file_get_contents($finalFilePath));
                     if ($image) {
                         $dimensions = [
@@ -238,7 +283,6 @@ function handleUploadedFile($file, $token, $referer) {
             }
         }
 
-        // 即使获取失败也不中断上传
         if (empty($dimensions) || !isset($dimensions['width']) || !isset($dimensions['height'])) {
             $dimensions = ['width' => 0, 'height' => 0];
             logMessage("警告: 无法获取图片 {$finalFilePath} 的尺寸信息");
@@ -248,15 +292,18 @@ function handleUploadedFile($file, $token, $referer) {
         $upload_ip = getClientIp();
         $storageTypes = array_keys(Database::getStorageConfig());
         
+        // 获取文件大小
+        $fileSize = filesize($finalFilePath);
+        
         if ($storage === 'local') {
-            handleLocalStorage($finalFilePath, $newFilePath, $uploadDir, filesize($finalFilePath), 
+            handleLocalStorage($finalFilePath, $newFilePath, $uploadDir, $fileSize, 
                 $dimensions['width'], $dimensions['height'], $randomFileName, $user_id, $upload_ip);
         } else if (in_array($storage, $storageTypes)) {
             $handlerFunction = "handle" . strtoupper($storage) . "Upload";
             if (!function_exists($handlerFunction)) {
                 respondAndExit(['result' => 'error', 'code' => 500, 'message' => '不支持的存储方式']);
             }
-            $handlerFunction($finalFilePath, $newFilePath, $datePath, filesize($finalFilePath),
+            $handlerFunction($finalFilePath, $newFilePath, $datePath, $fileSize,
                 $dimensions['width'], $dimensions['height'], $randomFileName, $user_id, $upload_ip);
         }
     } else {
