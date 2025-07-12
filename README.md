@@ -80,6 +80,14 @@ token = "YOUR_TOKEN"
    
 ![Typora配置示例](https://cdn.dusays.com/2022/05/459-2.jpg)
 
+## CDN赞助
+
+本项目的 CDN 加速和安全保护由腾讯 EdgeOne 赞助
+<a href="https://edgeone.ai/?from=github" target="_blank">
+    最佳亚洲 CDN、Edge 和安全解决方案 - 腾讯 EdgeOne
+<img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" width="500" height="100">
+</a>
+
 ## 📝 许可证
 
 [MIT License](LICENSE)
