@@ -3,11 +3,12 @@
     <h1>PixPro</h1>
     <p>一个高效、简洁的图片上传系统，支持多种存储方式，包括本地存储、阿里云OSS、S3存储、又拍云存储，另可通过挂载扩展更多存储方式</p>
     <p align="center">🎮 在线演示：
-      <a href="https://dev.ruom.top" target="_blank">
-        https://dev.ruom.top
+      <a href="https://dev.bsgun.cn" target="_blank">
+        https://dev.bsgun.cn
       </a>
       <p>演示站点更新较频繁，可能与实际效果存在差异</p>
     </p>
+      <p style="color:rgb(247, 138, 138);">本站为公开演示环境，所有上传内容都对访客可见，且可能被他人恶意删除。请勿在此上传任何重要或私密文件，本站不保障文件安全与留存。</p>
 </div>
 
 ## ✨ 特性
@@ -34,7 +35,7 @@
   - exif
   - pcntl (需确保 pcntl_signal 和 pcntl_alarm 函数可用)
 
-## 🔗 TWikoo 集成
+## 🔗 Twikoo 集成
 
 > 兼容了Twikoo的兰空图床格式，所以可以直接使用兰空图床的配置
 
@@ -83,7 +84,8 @@ token = "YOUR_TOKEN"
 ## CDN赞助
 
 本项目 CDN 加速及安全防护由 Tencent EdgeOne 赞助：EdgeOne 提供长期有效的免费套餐，包含不限量的流量和请求，覆盖中国大陆节点，且无任何超额收费，感兴趣的朋友可以去 EdgeOne 官网获取
-<a href="https://edgeone.ai/zh?from=github" target="_blank">
+
+<a href="https://edgeone.ai/zh?from=github" target="_blank" >
     最佳亚洲 CDN、Edge 和安全解决方案 - 腾讯 EdgeOne
 <img src="https://edgeone.ai/media/34fe3a45-492d-4ea4-ae5d-ea1087ca7b4b.png" width="500" height="100">
 </a>
