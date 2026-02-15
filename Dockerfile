@@ -2,7 +2,8 @@ FROM php:8.1-apache
 
 # 设置工作目录
 WORKDIR /var/www/html
-COPY pixpro /var/www/html/
+COPY . /var/www/html/
+
 # 安装系统依赖
 RUN apt-get update && apt-get install -y \
     libmagickwand-dev \
@@ -15,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     && rm -rf /var/lib/apt/lists/*
 
 # 安装 PHP 扩展
-RUN docker-php-ext-install exif pcntl mysqli \
+RUN docker-php-ext-install exif pcntl mysqli fileinfo \
     && pecl install imagick \
     && docker-php-ext-enable imagick \
     && docker-php-ext-configure gd --with-freetype --with-jpeg \
