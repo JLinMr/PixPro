@@ -28,8 +28,8 @@ class ImageDeleter {
                 $ossClient->deleteObject($this->config['oss_bucket'], $ossKey);
             },
             's3' => function($path) {
-                $s3Key = !empty($this->config['s3_custom_url_prefix']) 
-                    ? str_replace($this->config['s3_custom_url_prefix'] . '/', '', $path) 
+                $s3Key = !empty($this->config['s3_cdn_domain']) 
+                    ? str_replace($this->config['s3_cdn_domain'] . '/', '', $path) 
                     : $path;
                 
                 $s3Client = new S3Client([
@@ -58,7 +58,7 @@ class ImageDeleter {
                     $this->config['upyun_password']
                 );
                 $upyun = new \Upyun\Upyun($serviceConfig);
-                $upyunPath = str_replace($this->config['upyun_domain'] . '/', '', $path);
+                $upyunPath = str_replace($this->config['upyun_cdn_domain'] . '/', '', $path);
                 $upyun->delete($upyunPath);
             }
         ];

@@ -8,6 +8,22 @@ use Upyun\Upyun;
 use Upyun\Config;
 
 /**
+ * 生成文件访问URL
+ *
+ * @param array $config 配置数组
+ * @param string $cdnDomain CDN域名配置键名
+ * @param string $defaultDomain 默认域名
+ * @param string $filePath 文件路径
+ * @return string 完整的文件URL
+ */
+function generateFileUrl($config, $cdnDomain, $defaultDomain, $filePath) {
+    if (empty($config[$cdnDomain])) {
+        return $config['protocol'] . $defaultDomain . '/' . $filePath;
+    }
+    return $config['protocol'] . $config[$cdnDomain] . '/' . $filePath;
+}
+
+/**
  * 生成并返回上传响应数据
  *
  * @param string $fileUrl 文件URL
@@ -63,7 +79,9 @@ function handleLocalStorage($finalFilePath, $newFilePath, $uploadDirWithDatePath
     $config = Database::getConfig($mysqli);
 
     logMessage("文件存储在本地: $finalFilePath");
-    $fileUrl = $config['protocol'] . $_SERVER['HTTP_HOST'] . '/' . $uploadDirWithDatePath . basename($finalFilePath);
+    $filePath = $uploadDirWithDatePath . basename($finalFilePath);
+    $fileUrl = generateFileUrl($config, 'local_cdn_domain', $_SERVER['HTTP_HOST'], $filePath);
+    
     insertImageRecord($fileUrl, $finalFilePath, 'local', $compressedSize, $upload_ip, $user_id);
 
     generateUploadResponse($fileUrl, $finalFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
@@ -99,7 +117,7 @@ function handleOSSUpload($finalFilePath, $newFilePath, $datePath, $compressedSiz
         deleteLocalFile($finalFilePath, $newFilePath);
 
         logMessage("文件上传到OSS成功: $ossFilePath");
-        $fileUrl = $config['protocol'] . $config['oss_cdn_domain'] . '/' . $ossFilePath;
+        $fileUrl = generateFileUrl($config, 'oss_cdn_domain', $config['oss_endpoint'], $ossFilePath);
         insertImageRecord($fileUrl, $ossFilePath, 'oss', $compressedSize, $upload_ip, $user_id);
 
         generateUploadResponse($fileUrl, $ossFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
@@ -153,10 +171,10 @@ function handleS3Upload($finalFilePath, $newFilePath, $datePath, $compressedSize
 
         logMessage("文件上传到S3成功: $s3FilePath");
 
-        if (empty($config['s3_custom_url_prefix'])) {
+        if (empty($config['s3_cdn_domain'])) {
             $fileUrl = $result['ObjectURL'];
         } else {
-            $fileUrl = $config['protocol'] . $config['s3_custom_url_prefix'] . '/' . $s3FilePath;
+            $fileUrl = generateFileUrl($config, 's3_cdn_domain', '', $s3FilePath);
         }
 
         insertImageRecord($fileUrl, $s3FilePath, 's3', $compressedSize, $upload_ip, $user_id);
@@ -194,13 +212,12 @@ function handleUpyunUpload($finalFilePath, $newFilePath, $datePath, $compressedS
         $upyun = new \Upyun\Upyun($serviceConfig);
         
         $upyunFilePath = $datePath . '/' . basename($finalFilePath);
-        $fileContent = file_get_contents($finalFilePath);
-        $upyun->write($upyunFilePath, $fileContent);
+        $upyun->writeFile($upyunFilePath, fopen($finalFilePath, 'r'), true);
 
         deleteLocalFile($finalFilePath, $newFilePath);
 
         logMessage("文件上传到又拍云成功: $upyunFilePath");
-        $fileUrl = $config['protocol'] . $config['upyun_domain'] . '/' . $upyunFilePath;
+        $fileUrl = generateFileUrl($config, 'upyun_cdn_domain', '', $upyunFilePath);
         insertImageRecord($fileUrl, $upyunFilePath, 'upyun', $compressedSize, $upload_ip, $user_id);
 
         generateUploadResponse($fileUrl, $upyunFilePath, $finalFilePath, $compressedSize, $compressedWidth, $compressedHeight);
