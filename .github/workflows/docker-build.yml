@@ -1,16 +1,7 @@
 name: Build and Push Docker Image
 
 on:
-  push:
-    branches:
-      - main
-      - dev
-    tags:
-      - 'v*'
-  pull_request:
-    branches:
-      - main
-      - dev
+  workflow_dispatch:
 
 env:
   REGISTRY_IMAGE: jlinmr/pixpro
