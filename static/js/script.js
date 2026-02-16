@@ -3,8 +3,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const scriptTag = document.currentScript || document.querySelector('script[src*="script.js"]');
     const CONFIG = {
         allowedTypes: ['image/jpeg', 'image/png', 'gif', 'image/webp', 'image/svg+xml'],
-        maxFileSize: parseInt(scriptTag.dataset.maxFileSize) || 0,
-        maxUploadsPerDay: parseInt(scriptTag.dataset.maxUploadsPerDay) || 0
+        maxFileSize: parseInt(scriptTag.dataset.maxFileSize) || 0
     };
     initialize(CONFIG);
 });

@@ -2,9 +2,6 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'];
-$baseUrl = $protocol . $host;
 if (file_exists('../.env')) {
     header('Location: /');
     exit();
@@ -124,15 +121,14 @@ function createOrUpdateTableStructure($mysqli) {
 }
 
 function initializeConfigs($mysqli) {
-    global $protocol;
-    
     // 获取当前网站域名
+    $protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://';
     $host = $_SERVER['HTTP_HOST'];
     $siteUrl = $protocol . $host;
     
     $defaultConfigs = [
         ['storage', 'local', '存储方式'],
-        ['protocol', $protocol, 'URL协议'],
+        ['url_prefix', '', '图片代理'],
         ['per_page', '20', '每页显示数量'],
         ['login_restriction', 'false', '登录保护'],
         ['max_file_size', '5242880', '最大文件大小'],
@@ -190,7 +186,9 @@ function saveConfig($mysql) {
     $envContent .= "DB_HOST={$mysql['dbHost']}\n";
     $envContent .= "DB_NAME={$mysql['dbName']}\n";
     $envContent .= "DB_USER={$mysql['dbUser']}\n";
-    $envContent .= "DB_PASS={$mysql['dbPass']}";
+    $envContent .= "DB_PASS={$mysql['dbPass']}\n\n";
+    $envContent .= "# 演示模式（设置为 true 时禁止修改设置）\n";
+    $envContent .= "DEMO_MODE = false";
     
     file_put_contents('../.env', $envContent);
     chmod('../.env', 0600);
@@ -217,34 +215,29 @@ function checkEnvironment() {
     
     // 检查必需的扩展
     $requiredExtensions = [
-        'fileinfo',
-        'exif',
-        'imagick',
-        'pcntl'
+        'imagick' => '必需'
     ];
     
-    foreach ($requiredExtensions as $ext) {
+    // 检查可选的扩展
+    $optionalExtensions = [
+        'exif' => '可选（用于修正JPEG图片方向）'
+    ];
+    
+    foreach ($requiredExtensions as $ext => $desc) {
         $isLoaded = extension_loaded($ext);
         $requirements[strtoupper($ext)] = [
-            'required' => '必需',
+            'required' => $desc,
             'status' => $isLoaded,
             'current' => $isLoaded ? '已安装' : '未安装'
         ];
     }
     
-    // 检查 PCNTL 函数
-    $pcntlFunctions = [
-        'pcntl_signal',
-        'pcntl_alarm'
-    ];
-    
-    foreach ($pcntlFunctions as $func) {
-        $isAvailable = function_exists($func);
-        $requirements[$func] = [
-            'required' => '必需',
-            'status' => $isAvailable,
-            'current' => $isAvailable ? '可用' : '不可用',
-            'description' => '请确保此函数未被禁用'
+    foreach ($optionalExtensions as $ext => $desc) {
+        $isLoaded = extension_loaded($ext);
+        $requirements[strtoupper($ext)] = [
+            'required' => $desc,
+            'status' => true, // 可选扩展不影响安装
+            'current' => $isLoaded ? '已安装' : '未安装'
         ];
     }
     
@@ -301,7 +294,7 @@ if ($step === 0) {
                         <td>
                             <?= $name ?>
                             <?php if (isset($requirement['description'])): ?>
-                                <small style="color: #666; display: block;">
+                                <small style="color: #999; display: block;">
                                     <?= $requirement['description'] ?>
                                 </small>
                             <?php endif; ?>

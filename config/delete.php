@@ -1,6 +1,14 @@
 <?php
+// 清理输出缓冲，防止警告信息混入 JSON 响应
+ob_start();
+
+// 抑制所有错误输出
+error_reporting(0);
+ini_set('display_errors', '0');
+
 require_once '../vendor/autoload.php';
 require_once 'database.php';
+require_once 'storage.php';
 
 use OSS\OssClient;
 use OSS\Core\OssException;
@@ -11,57 +19,10 @@ use Upyun\Upyun;
 class ImageDeleter {
     private $mysqli;
     private $config;
-    private $storageHandlers;
     
     public function __construct($mysqli) {
         $this->mysqli = $mysqli;
         $this->config = Database::getConfig($mysqli);
-        $this->storageHandlers = [
-            'local' => fn($path) => unlink('../' . $path),
-            'oss' => function($path) {
-                $ossKey = parse_url($path, PHP_URL_PATH);
-                $ossClient = new OssClient(
-                    $this->config['oss_access_key_id'],
-                    $this->config['oss_access_key_secret'],
-                    $this->config['oss_endpoint']
-                );
-                $ossClient->deleteObject($this->config['oss_bucket'], $ossKey);
-            },
-            's3' => function($path) {
-                $s3Key = !empty($this->config['s3_cdn_domain']) 
-                    ? str_replace($this->config['s3_cdn_domain'] . '/', '', $path) 
-                    : $path;
-                
-                $s3Client = new S3Client([
-                    'region' => $this->config['s3_region'],
-                    'version' => 'latest',
-                    'endpoint' => $this->config['protocol'] . $this->config['s3_endpoint'],
-                    'credentials' => [
-                        'key' => $this->config['s3_access_key_id'],
-                        'secret' => $this->config['s3_access_key_secret'],
-                    ],
-                    // 'http' => [
-                    //     'verify' => false
-                    // ],
-                    // 'suppress_php_deprecation_warning' => true
-                ]);
-                
-                $s3Client->deleteObject([
-                    'Bucket' => $this->config['s3_bucket'],
-                    'Key' => $s3Key,
-                ]);
-            },
-            'upyun' => function($path) {
-                $serviceConfig = new \Upyun\Config(
-                    $this->config['upyun_bucket'],
-                    $this->config['upyun_operator'],
-                    $this->config['upyun_password']
-                );
-                $upyun = new \Upyun\Upyun($serviceConfig);
-                $upyunPath = str_replace($this->config['upyun_cdn_domain'] . '/', '', $path);
-                $upyun->delete($upyunPath);
-            }
-        ];
     }
     
     public function delete($path) {
@@ -75,13 +36,8 @@ class ImageDeleter {
                 throw new Exception("未找到相应的图片记录");
             }
 
-            if (!isset($this->storageHandlers[$storage])) {
-                throw new Exception("无效的存储类型: {$storage}");
-            }
-
-            // 存储删除操作
-            $handler = $this->storageHandlers[$storage];
-            $handler($path);
+            // 从存储删除文件
+            StorageHelper::delete($storage, $this->config, $path);
             
             // 删除数据库记录
             $this->deleteDatabaseRecord($path);
@@ -116,13 +72,19 @@ class ImageDeleter {
 $database = Database::getInstance();
 $mysqli = $database->getConnection();
 
+// 清理之前的输出
+ob_end_clean();
+
+// 设置 JSON 响应头
+header('Content-Type: application/json; charset=utf-8');
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $path = $_POST['path'] ?? '';
     $deleter = new ImageDeleter($mysqli);
     $result = $deleter->delete($path);
-    echo json_encode($result);
+    echo json_encode($result, JSON_UNESCAPED_UNICODE);
 } else {
-    echo json_encode(['result' => 'error', 'message' => '仅允许 POST 请求。']);
+    echo json_encode(['result' => 'error', 'message' => '仅允许 POST 请求。'], JSON_UNESCAPED_UNICODE);
 }
 
 $mysqli->close();

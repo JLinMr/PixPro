@@ -167,27 +167,6 @@ body {
     color: #e74c3c;
 }
 
-.check-table tr td:last-child {
-    position: relative;
-    padding-right: 40px;
-}
-
-.check-table tr.success td:last-child::after {
-    content: "✓";
-    position: absolute;
-    right: 20px;
-    color: #2ecc71;
-    font-weight: bold;
-}
-
-.check-table tr.error td:last-child::after {
-    content: "✗";
-    position: absolute;
-    right: 20px;
-    color: #e74c3c;
-    font-weight: bold;
-}
-
 .error-message {
     color: #fff;
     margin-top: 15px;

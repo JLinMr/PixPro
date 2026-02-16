@@ -6,10 +6,9 @@
         {
           "key": "local_cdn_domain",
           "name": "CDN域名",
-          "description": "本地存储CDN加速域名",
           "type": "text",
           "default": "",
-          "placeholder": "例如：cdn.example.com（不含https://）"
+          "placeholder": "例如：cdn.example.com（自动添加https://）"
         }
       ]
     },
@@ -19,42 +18,41 @@
         {
           "key": "oss_endpoint",
           "name": "Endpoint",
-          "description": "OSS服务入口",
           "type": "text",
           "default": "",
-          "placeholder": "例如：oss-cn-hangzhou.aliyuncs.com（不含https://）"
+          "placeholder": "例如：oss-cn-hangzhou.aliyuncs.com",
+          "half_width": true
         },
         {
           "key": "oss_bucket",
           "name": "Bucket",
-          "description": "OSS存储空间名称",
           "type": "text",
           "default": "",
-          "placeholder": "OSS Bucket名称"
+          "placeholder": "存储空间名称",
+          "half_width": true
         },
         {
           "key": "oss_access_key_id",
           "name": "AccessKey ID",
-          "description": "阿里云AccessKey ID",
           "type": "password",
           "default": "",
-          "placeholder": "阿里云AccessKey ID"
+          "placeholder": "阿里云AccessKey ID",
+          "half_width": true
         },
         {
           "key": "oss_access_key_secret",
           "name": "AccessKey Secret",
-          "description": "阿里云AccessKey Secret",
           "type": "password",
           "default": "",
-          "placeholder": "阿里云AccessKey Secret"
+          "placeholder": "阿里云AccessKey Secret",
+          "half_width": true
         },
         {
           "key": "oss_cdn_domain",
           "name": "CDN域名",
-          "description": "OSS CDN加速域名",
           "type": "text",
           "default": "",
-          "placeholder": "例如：cdn.example.com（不含https://）"
+          "placeholder": "例如：cdn.example.com（自动添加https://）"
         }
       ]
     },
@@ -62,52 +60,52 @@
       "name": "S3",
       "configs": [
         {
-          "key": "s3_region",
-          "name": "Region",
-          "description": "S3区域",
+          "key": "s3_endpoint",
+          "name": "Endpoint",
           "type": "text",
           "default": "",
-          "placeholder": "例如：us-east-1（AWS区域代码）"
+          "placeholder": "例如：s3.amazonaws.com",
+          "half_width": true
+        },
+        {
+          "key": "s3_region",
+          "name": "Region",
+          "type": "text",
+          "default": "",
+          "placeholder": "例如：us-east-1",
+          "half_width": true
         },
         {
           "key": "s3_bucket",
           "name": "Bucket",
-          "description": "S3存储桶名称",
           "type": "text",
           "default": "",
-          "placeholder": "S3存储桶名称"
-        },
-        {
-          "key": "s3_endpoint",
-          "name": "Endpoint",
-          "description": "S3服务入口",
-          "type": "text",
-          "default": "",
-          "placeholder": "例如：s3.amazonaws.com（AWS）或其他S3兼容服务的endpoint"
+          "placeholder": "存储桶名称",
+          "half_width": true
         },
         {
           "key": "s3_access_key_id",
           "name": "Access Key ID",
-          "description": "S3 Access Key ID",
           "type": "password",
           "default": "",
-          "placeholder": "S3 Access Key ID"
+          "placeholder": "S3 Access Key ID",
+          "half_width": true
         },
         {
           "key": "s3_access_key_secret",
           "name": "Access Key Secret",
-          "description": "S3 Access Key Secret",
           "type": "password",
           "default": "",
-          "placeholder": "S3 Access Key Secret"
+          "placeholder": "S3 Access Key Secret",
+          "half_width": true
         },
         {
           "key": "s3_cdn_domain",
           "name": "CDN域名",
-          "description": "S3自定义访问域名",
           "type": "text",
           "default": "",
-          "placeholder": "例如：cdn.example.com（不含https://）"
+          "placeholder": "例如：cdn.example.com（自动添加https://）",
+          "half_width": true
         }
       ]
     },
@@ -117,34 +115,34 @@
         {
           "key": "upyun_bucket",
           "name": "服务名称",
-          "description": "又拍云服务名称",
           "type": "text",
           "default": "",
-          "placeholder": "您的又拍云服务名称"
+          "placeholder": "又拍云服务名称",
+          "half_width": true
         },
         {
           "key": "upyun_operator",
           "name": "操作员",
-          "description": "又拍云操作员账号",
           "type": "text",
           "default": "",
-          "placeholder": "操作员账号"
+          "placeholder": "操作员账号",
+          "half_width": true
         },
         {
           "key": "upyun_password",
           "name": "操作员密码",
-          "description": "又拍云操作员密码",
           "type": "password",
           "default": "",
-          "placeholder": "操作员密码"
+          "placeholder": "操作员密码",
+          "half_width": true
         },
         {
           "key": "upyun_cdn_domain",
           "name": "CDN域名",
-          "description": "又拍云加速域名",
           "type": "text",
           "default": "",
-          "placeholder": "例如：cdn.example.com（不含https://）"
+          "placeholder": "例如：cdn.example.com（自动添加https://）",
+          "half_width": true
         }
       ]
     }

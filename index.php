@@ -10,16 +10,11 @@ try {
     
     // 获取上传限制配置
     $maxFileSize = 0;
-    $maxUploadsPerDay = 0;
-    $stmt = $mysqli->prepare("SELECT `key`, value FROM configs WHERE `key` IN ('max_file_size', 'max_uploads_per_day')");
+    $stmt = $mysqli->prepare("SELECT value FROM configs WHERE `key` = 'max_file_size'");
     $stmt->execute();
     $result = $stmt->get_result();
-    while ($row = $result->fetch_assoc()) {
-        if ($row['key'] === 'max_file_size') {
-            $maxFileSize = (int)$row['value'];
-        } else if ($row['key'] === 'max_uploads_per_day') {
-            $maxUploadsPerDay = (int)$row['value'];
-        }
+    if ($row = $result->fetch_assoc()) {
+        $maxFileSize = (int)$row['value'];
     }
     
     // 检查是否需要登录限制
@@ -149,6 +144,9 @@ try {
         </div>
     </main>
     <footer>
+        <?php if (($_ENV['DEMO_MODE'] ?? 'false') === 'true'): ?>
+        <div style="padding: 10px;margin-bottom: 10px;border-radius: 10px;font-size: 15px;font-weight: bold;backdrop-filter: blur(10px);-webkit-backdrop-filter: blur(10px);border: 1px solid rgb(255 255 255 / 20%);background: rgb(255 60 60 / 30%);animation: fadeIn 0.5s ease-in-out forwards;">⚠️ 演示站点 - 所有图片公开可见且可能被删除</div>
+        <?php endif; ?>
         <span>富强</span>
         <span>民主</span>
         <span>文明</span>
@@ -168,7 +166,7 @@ try {
             <em class="logotitle blur">本站不保证内容，时效和稳定性，请勿上传包含危害国家安全和民族团结、侵犯他人权益、欺骗性质、色情或暴力的图片。严格遵守国家相关法律法规，尊重版权、著作权等权利；图片内容均由「网友」自行上传，所有图片作用、性质都与本站无关，本站对所有图片合法性概不负责，亦不承担任何法律责任；</em>
         </div>
     </footer>
-    <script type="text/javascript" src="static/js/script.js" defer data-max-file-size="<?php echo $maxFileSize; ?>"data-max-uploads-per-day="<?php echo $maxUploadsPerDay; ?>">
+    <script type="text/javascript" src="static/js/script.js" defer data-max-file-size="<?php echo $maxFileSize; ?>">
     </script>
     <!-- 引入鼠标指针跟随特效 -->
     <script type="text/javascript" src="static/js/cursor.js" defer data-lazy="true"></script>
