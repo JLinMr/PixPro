@@ -1,4 +1,4 @@
-FROM php:8.1-apache
+FROM php:8.1-fpm
 
 # 设置工作目录
 WORKDIR /var/www/html
@@ -7,9 +7,6 @@ COPY . /var/www/html/
 # 安装系统依赖
 RUN apt-get update && apt-get install -y \
     libmagickwand-dev \
-    libzip-dev \
-    unzip \
-    pkg-config \
     libfreetype6-dev \
     libjpeg62-turbo-dev \
     libpng-dev \
@@ -26,11 +23,11 @@ RUN docker-php-ext-install exif pcntl mysqli fileinfo \
 RUN echo "display_errors = Off" >> /usr/local/etc/php/conf.d/docker-custom.ini \
     && echo "error_reporting = E_ALL & ~E_NOTICE" >> /usr/local/etc/php/conf.d/docker-custom.ini
 
-# 开启 Apache Rewrite（如果需要）
-RUN a2enmod rewrite
+# 设置权限
+RUN chown -R www-data:www-data /var/www/html
 
 # 暴露端口
-EXPOSE 80
+EXPOSE 9000
 
-# 默认启动 Apache
-CMD ["apache2-foreground"]
+# 默认启动 PHP-FPM
+CMD ["php-fpm"]
