@@ -1,16 +1,21 @@
-class Ex {
+class CustomCursor {
     constructor() {
         this.pos = { curr: null, prev: null };
+        this.rendering = true;
+        this.rafId = null;
+        this.checkIntervalId = null;
+        this.offset = 8;
+        this.lerpAmount = 0.35;
+        
         this.create();
         this.init();
-        this.rendering = true;
         this.render();
         this.startCheckInterval();
     }
 
-    move(e, t) {
-        this.cursor.style.left = `${e}px`;
-        this.cursor.style.top = `${t}px`;
+    move(x, y) {
+        this.cursor.style.left = `${x}px`;
+        this.cursor.style.top = `${y}px`;
     }
 
     create() {
@@ -23,52 +28,81 @@ class Ex {
     }
 
     init() {
-        document.onmousemove = e => {
-            if (this.pos.curr == null) this.move(e.clientX - 8, e.clientY - 8);
-            this.pos.curr = { x: e.clientX - 8, y: e.clientY - 8 };
+        this.handleMouseMove = (e) => {
+            const x = e.clientX - this.offset;
+            const y = e.clientY - this.offset;
+            
+            if (this.pos.curr === null) this.move(x, y);
+            this.pos.curr = { x, y };
             this.cursor.classList.remove("hidden");
         };
-        document.onmouseenter = () => this.cursor.classList.remove("hidden");
-        document.onmouseleave = () => this.cursor.classList.add("hidden");
-        document.onmousedown = () => this.cursor.classList.add("active");
-        document.onmouseup = () => this.cursor.classList.remove("active");
 
-        setTimeout(() => {
-            document.getElementById('imageInput').addEventListener('change', () => {
-                let attempts = 5;
-                const checkCursor = () => {
+        this.handleMouseEnter = () => this.cursor.classList.remove("hidden");
+        this.handleMouseLeave = () => this.cursor.classList.add("hidden");
+        this.handleMouseDown = () => this.cursor.classList.add("active");
+        this.handleMouseUp = () => this.cursor.classList.remove("active");
+
+        document.addEventListener('mousemove', this.handleMouseMove);
+        document.addEventListener('mouseenter', this.handleMouseEnter);
+        document.addEventListener('mouseleave', this.handleMouseLeave);
+        document.addEventListener('mousedown', this.handleMouseDown);
+        document.addEventListener('mouseup', this.handleMouseUp);
+
+        // 等待 imageInput 元素加载
+        const initImageInput = () => {
+            const imageInput = document.getElementById('imageInput');
+            if (imageInput) {
+                imageInput.addEventListener('change', () => {
                     this.cursor.classList.remove("hidden", "active");
-                    if (attempts-- > 0) setTimeout(checkCursor, 100);
-                };
-                setTimeout(checkCursor, 50);
-            });
-        }, 1000);
-    }
-
-    render() {
-        if (this.rendering) {
-            if (this.pos.prev) {
-                this.pos.prev.x = Math.lerp(this.pos.prev.x, this.pos.curr.x, .35);
-                this.pos.prev.y = Math.lerp(this.pos.prev.y, this.pos.curr.y, .35);
-                this.move(this.pos.prev.x, this.pos.prev.y);
-            } else {
-                this.pos.prev = this.pos.curr;
+                });
             }
-            requestAnimationFrame(() => this.render());
+        };
+
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', initImageInput);
+        } else {
+            setTimeout(initImageInput, 100);
         }
     }
 
+    render() {
+        if (!this.rendering) return;
+
+        if (this.pos.curr) {
+            if (this.pos.prev) {
+                this.pos.prev.x = Math.lerp(this.pos.prev.x, this.pos.curr.x, this.lerpAmount);
+                this.pos.prev.y = Math.lerp(this.pos.prev.y, this.pos.curr.y, this.lerpAmount);
+                this.move(this.pos.prev.x, this.pos.prev.y);
+            } else {
+                this.pos.prev = { ...this.pos.curr };
+            }
+        }
+
+        this.rafId = requestAnimationFrame(() => this.render());
+    }
+
     startCheckInterval() {
-        setInterval(() => {
-            if (this.pos.curr && !this.isMouseInsideViewport()) this.cursor.classList.add("hidden");
-        }, 100);
+        this.checkIntervalId = setInterval(() => {
+            if (this.pos.curr && !this.isMouseInsideViewport()) {
+                this.cursor.classList.add("hidden");
+            }
+        }, 250);
     }
 
     isMouseInsideViewport() {
-        return this.pos.curr.x >= 0 && this.pos.curr.y >= 0 && this.pos.curr.x <= window.innerWidth && this.pos.curr.y <= window.innerHeight;
+        return this.pos.curr.x >= 0 && 
+               this.pos.curr.y >= 0 && 
+               this.pos.curr.x <= window.innerWidth && 
+               this.pos.curr.y <= window.innerHeight;
     }
 
-    pauseRendering() { this.rendering = false; }
+    pauseRendering() {
+        this.rendering = false;
+        if (this.rafId) {
+            cancelAnimationFrame(this.rafId);
+            this.rafId = null;
+        }
+    }
 
     resumeRendering() {
         if (!this.rendering) {
@@ -76,12 +110,33 @@ class Ex {
             this.render();
         }
     }
+
+    destroy() {
+        this.pauseRendering();
+        
+        if (this.checkIntervalId) {
+            clearInterval(this.checkIntervalId);
+            this.checkIntervalId = null;
+        }
+
+        document.removeEventListener('mousemove', this.handleMouseMove);
+        document.removeEventListener('mouseenter', this.handleMouseEnter);
+        document.removeEventListener('mouseleave', this.handleMouseLeave);
+        document.removeEventListener('mousedown', this.handleMouseDown);
+        document.removeEventListener('mouseup', this.handleMouseUp);
+
+        if (this.cursor) {
+            this.cursor.remove();
+            this.cursor = null;
+        }
+    }
 }
 
 Math.lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
 document.addEventListener("DOMContentLoaded", () => {
-    const cursorInstance = new Ex();
+    const cursorInstance = new CustomCursor();
+    
     new IntersectionObserver(entries => {
         entries.forEach(entry => {
             entry.isIntersecting ? cursorInstance.resumeRendering() : cursorInstance.pauseRendering();

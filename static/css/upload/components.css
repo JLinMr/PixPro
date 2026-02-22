@@ -1,0 +1,390 @@
+/* ========================================
+   质量调整区域 (.quality-section)
+   ======================================== */
+.quality-section {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    width: 100%;
+    margin-bottom: 15px;
+    padding: 15px;
+    border-radius: 10px;
+    background: var(--bg-white-10);
+    border: 1px solid var(--border-white-20);
+    box-sizing: border-box;
+}
+
+.quality-section label {
+    display: flex;
+    justify-content: space-between;
+    width: 100%;
+    color: var(--text-light);
+}
+
+/* Range 输入框 (#qualityInput) */
+input[type="range"] {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 100%;
+    height: 10px;
+    background: var(--bg-white-20);
+    outline: none;
+    opacity: 0.7;
+    transition: all 0.3s ease-in-out;
+    border-radius: 5px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    appearance: none;
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+input[type="range"]::-moz-range-thumb {
+    width: 20px;
+    height: 20px;
+    background: var(--primary-color);
+    border-radius: 50%;
+}
+
+input[type="range"]:hover {
+    background: var(--bg-white-40);
+}
+
+/* ========================================
+   复制按钮区域 (.copy-section)
+   ======================================== */
+.copy-section {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.copy-tab-buttons {
+    display: flex;
+    width: 100%;
+    border-radius: 8px;
+    background: transparent;
+    gap: 10px;
+    box-sizing: border-box;
+}
+
+/* 左侧图标列 */
+.copy-icons-column {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+/* 右侧链接显示区域 */
+.copy-links-column {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    min-width: 0;
+}
+
+/* 复制按钮 (.copy-tab-btn) */
+.copy-tab-btn {
+    width: 50px;
+    height: 50px;
+    padding: 0;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-white-20);
+    outline: none;
+    transition: all 0.3s ease-in-out;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.copy-tab-btn:hover:not(:disabled) {
+    background-color: var(--bg-white-15);
+    border-color: #aaa;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.copy-tab-btn:focus {
+    outline: none;
+    border-color: #aaa;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.copy-tab-btn .icon {
+    width: 28px;
+    height: 28px;
+    color: var(--text-light);
+}
+
+.copy-tab-btn:hover:not(:disabled) .icon {
+    transform: scale(1.15);
+}
+
+/* 链接显示框 */
+.copy-link-display {
+    height: 50px;
+    padding: 0 15px;
+    border-radius: 8px;
+    background-color: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-white-20);
+    display: flex;
+    align-items: center;
+    overflow: hidden;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.copy-link-display.disabled {
+    opacity: 0.5;
+    pointer-events: none;
+}
+
+.copy-link-display.disabled .copy-link-text {
+    opacity: 0.6;
+}
+
+.copy-link-text {
+    font-size: 14px;
+    color: var(--text-light);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    user-select: none;
+    width: 100%;
+    pointer-events: none;
+}
+
+.copy-link-display:hover:not(.disabled) {
+    background-color: var(--bg-white-15);
+    border-color: #aaa;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.copy-btn-text {
+    display: none;
+}
+
+/* ========================================
+   进度条 (#progressContainer)
+   ======================================== */
+.progressContainer {
+    position: fixed;
+    width: 100%;
+    background: var(--bg-white-20);
+    border-radius: 10px;
+    overflow: hidden;
+    display: none;
+    right: 0;
+    bottom: 0;
+    font-size: 10px;
+}
+
+.progressBar {
+    height: 12px;
+    background: var(--gradient-progress);
+    text-align: center;
+    color: var(--text-white);
+    font-weight: bold;
+    transition: transform 0.3s ease-in-out;
+    line-height: 12px;
+    border-radius: 10px;
+    transform-origin: left;
+    transform: scaleX(0);
+}
+
+/* ========================================
+   图片信息展示 (#imageInfo)
+   ======================================== */
+.imageInfo {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    padding: 20px;
+    position: relative;
+}
+
+.image-info-block {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.info-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 8px;
+}
+
+.info-header h3 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--text-white);
+}
+
+.info-icon {
+    width: 20px;
+    height: 20px;
+    opacity: 0.7;
+}
+
+.info-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.info-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    background: var(--bg-white-10);
+    border-radius: 8px;
+    transition: background 0.2s ease;
+    height: 35px;
+    box-sizing: border-box;
+}
+
+.info-item:hover {
+    background: var(--bg-white-20);
+}
+
+.info-label {
+    font-size: 13px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.info-value {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-gray);
+}
+
+.compression-stats {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+.stat-badge {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px;
+    background: var(--bg-white-10);
+    border-radius: 10px;
+    border: 1px solid var(--border-white-20);
+    transition: all 0.3s ease;
+}
+
+.stat-badge:hover {
+    background: var(--bg-white-15);
+    border-color: #aaa;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.stat-label {
+    font-size: 12px;
+    color: var(--text-light);
+    font-weight: 500;
+}
+
+.stat-value {
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--primary-color);
+}
+
+@media (max-width: 768px) {
+    .imageInfo {
+        padding: 15px;
+    }
+}
+
+/* ========================================
+   键盘快捷键提示 (.keyboard-hints)
+   ======================================== */
+.keyboard-hints {
+    display: flex;
+    justify-content: center;
+    gap: 20px;
+    padding: 15px;
+    margin-bottom: 20px;
+    border-radius: 10px;
+    flex-wrap: wrap;
+}
+
+.hint-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: var(--text-light);
+}
+
+.hint-item .kbd-group {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.hint-item .plus {
+    color: var(--text-light);
+    font-size: 14px;
+    font-weight: bold;
+    padding: 0 2px;
+}
+
+.hint-item kbd {
+    display: inline-block;
+    padding: 3px 8px;
+    font-size: 11px;
+    font-family: monospace;
+    background: var(--bg-black-30);
+    border: 1px solid var(--border-white-20);
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+    .keyboard-hints {
+        display: none;
+    }
+    
+    .copy-tab-btn {
+        width: 45px;
+        height: 45px;
+    }
+    
+    .copy-tab-btn .icon {
+        width: 24px;
+        height: 24px;
+    }
+    
+    .copy-link-display {
+        height: 45px;
+        padding: 0 12px;
+    }
+}

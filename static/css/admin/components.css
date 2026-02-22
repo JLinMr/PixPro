@@ -1,0 +1,109 @@
+/* ========================================
+   分页 (.pagination)
+   ======================================== */
+.pagination {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+}
+
+.page-link {
+    display: inline-block;
+    border-radius: 5px;
+    width: 30px;
+    height: 30px;
+    margin: 5px;
+    text-align: center;
+    line-height: 30px;
+    color: var(--text-light);
+    text-decoration: none;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.page-link:hover { background: var(--bg-black-30); color: var(--text-white); }
+.page-link.active { background: rgb(88 221 32 / 54%); }
+.ellipsis { pointer-events: none; cursor: default; }
+.prev-page, .next-page { font-size: 24px; line-height: 24px; }
+
+/* 页码输入 */
+#current-total-pages {
+    position: fixed;
+    border-radius: 8px;
+    bottom: 50px;
+    width: 40px;
+    height: 40px;
+    color: var(--text-light);
+    display: grid !important;
+    place-items: center;
+    font-size: 12px;
+    background: var(--bg-black-20);
+}
+
+.page-input {
+    position: fixed;
+    border-radius: 8px;
+    bottom: 50px;
+    width: 40px;
+    height: 40px;
+    color: var(--text-light);
+    padding: 0;
+    font-size: 16px;
+    outline: none;
+    text-align: center;
+    -moz-appearance: textfield;
+}
+
+.page-input::-webkit-inner-spin-button,
+.page-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+/* ========================================
+   侧边栏 (.rightside)
+   ======================================== */
+.rightside {
+    position: fixed;
+    right: 20px;
+    bottom: 40px;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    z-index: 30;
+}
+
+.rightside a {
+    border-radius: 8px;
+    margin-bottom: 10px;
+    display: flex;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+    align-items: center;
+    background: var(--bg-black-20);
+    transition: transform 0.5s, background-color 0.4s;
+}
+
+.rightside a:hover { background: var(--bg-black-30); }
+.rightside a .icon { width: 30px; height: 30px; }
+.rightside a:hover .icon { transform: scale(1.1); }
+
+/* 回到顶部按钮 */
+.top-link {
+    transform: translateX(70px) translateY(-50px);
+    transition: transform 0.4s ease-in-out;
+}
+
+.top-link.visible { transform: translateX(0) translateY(-50px); }
+
+.rightside.shifted .floating-link,
+.rightside.shifted .settings-link,
+.rightside.shifted .select-link,
+.rightside.shifted .logout-link {
+    transform: translateY(-50px);
+}
+
+

@@ -1,0 +1,309 @@
+/* ========================================
+   图片画廊 (.gallery)
+   ======================================== */
+.gallery {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+    gap: 15px;
+    max-width: 1200px;
+    padding: 15px;
+    border-radius: 10px;
+    z-index: 20;
+    min-height: 253px;
+}
+
+/* 空状态 */
+.empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    grid-column: 1 / -1;
+    color: var(--text-light);
+}
+
+.empty-icon {
+    width: 120px;
+    height: 120px;
+    margin-bottom: 20px;
+    position: relative;
+    opacity: 0.8;
+}
+
+.empty-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 80px;
+    height: 60px;
+    background: rgba(238, 238, 238, 0.1);
+    border: 2px solid rgba(238, 238, 238, 0.6);
+    border-radius: 12px;
+    box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+}
+
+.empty-icon::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 30px;
+    border: 2px solid rgba(238, 238, 238, 0.8);
+    border-radius: 8px;
+    background: 
+        linear-gradient(45deg, transparent 40%, rgba(238, 238, 238, 0.4) 40%, rgba(238, 238, 238, 0.4) 60%, transparent 60%),
+        linear-gradient(-45deg, transparent 40%, rgba(238, 238, 238, 0.4) 40%, rgba(238, 238, 238, 0.4) 60%, transparent 60%);
+}
+
+.empty-state p {
+    font-size: 16px;
+    opacity: 0.8;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* ========================================
+   图片项 (.gallery-item)
+   ======================================== */
+.gallery-item {
+    break-inside: avoid;
+    position: relative;
+    width: 100%;
+}
+
+.image-wrapper {
+    position: relative;
+    border-radius: 8px;
+    overflow: hidden;
+    background: var(--bg-white-10);
+    aspect-ratio: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.image-wrapper img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 8px;
+    position: absolute;
+    top: 0;
+    left: 0;
+    z-index: 10;
+}
+
+/* 懒加载 */
+.lazy {
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    z-index: 2;
+}
+.lazy.loaded { opacity: 1; }
+
+/* 占位符 */
+.image-placeholder {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--bg-white-10);
+    z-index: 5;
+}
+
+/* 加载错误 */
+.image-wrapper.load-error {
+    background: rgba(255, 0, 0, 0.1);
+}
+
+.image-wrapper.load-error::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--bg-black-50);
+    z-index: 3;
+}
+
+.image-wrapper.load-error::before {
+    content: '加载失败';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    color: var(--text-white);
+    font-size: 14px;
+    z-index: 4;
+}
+
+/* 图片信息 */
+.image-info {
+    position: absolute;
+    bottom: 10px;
+    left: 5%;
+    width: 90%;
+    opacity: 0;
+    color: var(--text-white);
+    padding: 10px;
+    border-radius: 8px;
+    background: var(--bg-black-50);
+    transform: translateY(10px) scale(0.9);
+    transition: opacity 0.3s, transform 0.3s;
+    pointer-events: none;
+    z-index: 20;
+}
+
+.gallery-item:hover .image-wrapper:not(.load-error) ~ .image-info {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+}
+
+.info-p {
+    font-size: 12px;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+}
+
+/* 操作按钮 */
+.action-buttons {
+    display: flex;
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    gap: 5px;
+    z-index: 30;
+}
+
+.delete-btn, .copy-btn {
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 8px;
+    border: 1px solid var(--border-white-20);
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(5px);
+    transition: background-color 0.3s;
+}
+
+.delete-btn:hover { background: var(--color-red-hover); }
+.copy-btn:hover { background: var(--color-green-hover); }
+
+.delete-btn .icon, .copy-btn .icon {
+    width: 20px;
+    height: 20px;
+    transition: transform 0.4s ease-in-out;
+}
+
+.delete-btn:hover .icon { transform: rotate(180deg); }
+.copy-btn:hover .icon { animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both; }
+
+/* ========================================
+   多选功能 (.multi-select)
+   ======================================== */
+.multi-select-mode .gallery-item {
+    position: relative;
+    transition: transform 0.2s ease;
+}
+
+.multi-select-mode .gallery-item::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 2px solid transparent;
+    border-radius: 8px;
+    transition: all 0.2s ease;
+    z-index: 15;
+}
+
+.multi-select-mode .gallery-item.selected::before {
+    border-color: var(--primary-color);
+    background: rgba(76, 175, 80, 0.3);
+}
+
+.multi-select-toolbar {
+    position: fixed;
+    bottom: 100px;
+    left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    display: flex;
+    gap: 15px;
+    z-index: 1000;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid var(--border-white-30);
+    background: #343434;
+    opacity: 0;
+    visibility: hidden;
+    transition: all 0.3s ease;
+}
+
+.multi-select-toolbar.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+    visibility: visible;
+}
+
+.multi-select-toolbar button {
+    padding: 8px 20px;
+    border: 1px solid var(--border-white-30);
+    border-radius: 8px;
+    background: var(--bg-white-15);
+    color: var(--text-white);
+    font-size: 14px;
+    transition: all 0.2s ease;
+}
+
+.multi-select-toolbar button:hover { background: var(--bg-white-25); }
+.multi-select-toolbar .delete-selected { background: rgba(255, 59, 59, 0.2); }
+.multi-select-toolbar .delete-selected:hover { background: rgba(255, 59, 59, 0.4); }
+
+.selected-count {
+    background: var(--bg-white-15);
+    padding: 8px 20px;
+    border-radius: 8px;
+    color: var(--text-white);
+    font-size: 14px;
+    border: 1px solid var(--border-white-30);
+}
+
+.select-link.active { background: rgb(88 221 32 / 54%); }
+
+/* ========================================
+   响应式设计
+   ======================================== */
+@media screen and (max-width: 768px) {
+    .gallery {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+    
+    .multi-select-toolbar {
+        padding: 8px;
+        gap: 8px;
+        flex-wrap: wrap;
+        justify-content: center;
+        width: 90%;
+    }
+
+    .multi-select-toolbar button {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+
+    .selected-count {
+        padding: 6px 12px;
+        font-size: 12px;
+    }
+}

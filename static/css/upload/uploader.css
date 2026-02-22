@@ -1,0 +1,338 @@
+/* ========================================
+   上传容器 (.upload-container)
+   ======================================== */
+.upload-container {
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+/* ========================================
+   上传区域 (.upload-section)
+   ======================================== */
+.upload-section {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+/* 删除按钮 (#deleteImageButton) */
+.deleteImageButton {
+    display: none;
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+    background: rgba(0, 0, 0, 0.6);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    padding: 0;
+    z-index: 99;
+    transition: all 0.3s ease;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    align-items: center;
+    justify-content: center;
+}
+
+.deleteImageButton:hover {
+    background: rgba(220, 38, 38, 0.8);
+    border-color: rgba(255, 255, 255, 0.4);
+    box-shadow: 0 0 15px rgba(220, 38, 38, 0.6);
+}
+
+.deleteImageButton .icon {
+    width: 18px;
+    height: 18px;
+    color: var(--text-white);
+}
+
+.deleteImageButton:hover .icon {
+    transform: rotate(90deg);
+}
+
+/* 上传框 (#imageUploadBox) */
+.imageUploadBox {
+    width: 100%;
+    height: 200px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: 2px dashed var(--border-dashed);
+    border-radius: 10px;
+    box-sizing: border-box;
+    position: relative;
+    transition: all 0.3s ease-in-out;
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: var(--gradient-glass-light);
+}
+
+.imageUploadBox:hover,
+.imageUploadBox.dragover {
+    border: 2px dashed #aaa;
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+.imageUploadBox .upload-icon {
+    width: 100px;
+    height: 100px;
+    position: absolute;
+    color: var(--text-gray);
+    pointer-events: none;
+}
+
+/* 文件输入框 (#imageInput) */
+#imageInput {
+    opacity: 0;
+    display: none;
+}
+
+/* 图片预览容器 (#imagePreviewContainer) */
+.imagePreviewContainer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease-in-out;
+}
+
+.imagePreviewContainer.active {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* 图片预览 (#imagePreview) */
+.imagePreview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: 10px;
+    opacity: 0;
+    object-fit: cover;
+    transition: opacity 0.3s ease-in-out, transform 0.3s ease-in-out;
+    display: none;
+}
+
+.imagePreview[src*="data:"],
+.imagePreview[src*="http"],
+.imagePreview[src*="blob:"] {
+    opacity: 1;
+    display: block;
+    transform: scale(1);
+}
+
+/* 导航按钮 (#prevButton, #nextButton) */
+.nav-button {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    background: var(--bg-black-50);
+    border: none;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 10;
+    transition: all 0.3s ease-in-out;
+    padding: 0;
+}
+
+.nav-button:hover {
+    background: var(--bg-black-70);
+    transform: translateY(-50%) scale(1.1);
+    box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+
+.nav-button .icon {
+    width: 20px;
+    height: 20px;
+    color: var(--text-white);
+}
+
+.prev-button {
+    left: 10px;
+}
+
+.next-button {
+    right: 10px;
+}
+
+/* 图片计数器 (#imageCounter) */
+.image-counter {
+    position: absolute;
+    bottom: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg-black-60);
+    color: var(--text-white);
+    padding: 5px 15px;
+    border-radius: 15px;
+    font-size: 12px;
+    display: none;
+    backdrop-filter: blur(5px);
+}
+
+.image-counter:not(:empty) {
+    display: block;
+}
+
+/* ========================================
+   缩略图区域 (#thumbnailStrip)
+   ======================================== */
+.thumbnail-strip {
+    width: 100%;
+    max-height: 0;
+    padding: 0 10px;
+    border-radius: 10px;
+    margin-bottom: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+    background: var(--bg-white-10);
+    border: 1px solid var(--border-white-20);
+    opacity: 0;
+    transition: max-height 0.4s ease-in-out, 
+                padding 0.4s ease-in-out, 
+                margin-bottom 0.4s ease-in-out,
+                opacity 0.3s ease-in-out;
+}
+
+.thumbnail-strip.active {
+    max-height: 100px;
+    padding: 10px;
+    margin-bottom: 15px;
+    opacity: 1;
+}
+
+/* 缩略图滚动容器 (#thumbnailScrollContainer) */
+.thumbnail-scroll-container {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-start;
+    animation: slideInUp 0.4s ease-out forwards;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    padding: 0 10px;
+    scrollbar-width: none;
+}
+
+.thumbnail-scroll-container::-webkit-scrollbar {
+    height: 0;
+}
+
+/* 缩略图包装器 (.thumbnail-wrapper) */
+.thumbnail-wrapper {
+    position: relative;
+}
+
+/* 缩略图 (.thumbnail) */
+.thumbnail {
+    width: 60px;
+    height: 60px;
+    border-radius: 5px;
+    overflow: hidden;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    animation: scaleIn 0.3s ease-out backwards;
+}
+
+.thumbnail-wrapper:nth-child(1) .thumbnail { animation-delay: 0.05s; }
+.thumbnail-wrapper:nth-child(2) .thumbnail { animation-delay: 0.1s; }
+.thumbnail-wrapper:nth-child(3) .thumbnail { animation-delay: 0.15s; }
+.thumbnail-wrapper:nth-child(4) .thumbnail { animation-delay: 0.2s; }
+.thumbnail-wrapper:nth-child(5) .thumbnail { animation-delay: 0.25s; }
+.thumbnail-wrapper:nth-child(6) .thumbnail { animation-delay: 0.3s; }
+.thumbnail-wrapper:nth-child(7) .thumbnail { animation-delay: 0.35s; }
+.thumbnail-wrapper:nth-child(8) .thumbnail { animation-delay: 0.4s; }
+.thumbnail-wrapper:nth-child(n+9) .thumbnail { animation-delay: 0.45s; }
+
+.thumbnail img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.thumbnail.active {
+    border-color: var(--primary-color);
+}
+
+.thumbnail:hover {
+    border-color: #aaa;
+}
+
+/* 缩略图状态指示器 (.thumbnail-status) */
+.thumbnail-status {
+    position: absolute;
+    top: 2px;
+    right: 2px;
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    z-index: 1;
+}
+
+.thumbnail-status.uploading {
+    background: var(--warning-color);
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.thumbnail-status.completed {
+    background: var(--success-color);
+}
+
+.thumbnail-status.error {
+    background: var(--error-color);
+}
+
+/* ========================================
+   URL输入区域 (.url-input-section)
+   ======================================== */
+.url-input-section {
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+/* URL输入框 (#pasteOrUrlInput) */
+.pasteOrUrlInput {
+    width: 100%;
+    padding: 12px;
+    font-size: 16px;
+    border-radius: 10px;
+    outline: 0;
+    border: 1px solid var(--border-white-20);
+    transition: all 0.3s ease-in-out;
+    box-sizing: border-box;
+    background: var(--bg-white-10);
+    color: var(--text-white);
+    backdrop-filter: blur(5px);
+}
+
+.pasteOrUrlInput:hover,
+.pasteOrUrlInput:focus {
+    border-color: #aaa;
+    background: var(--bg-white-15);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+}
+
+/* ========================================
+   响应式设计
+   ======================================== */
+@media (max-width: 768px) {
+    .upload-container {
+        padding: 15px;
+    }
+    
+    .thumbnail {
+        width: 50px;
+        height: 50px;
+    }
+}
