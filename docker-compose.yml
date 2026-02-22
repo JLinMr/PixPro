@@ -1,6 +1,6 @@
 services:
   pixpro:
-    image: jlinmr/pixpro:dev
+    image: jlinmr/pixpro:latest
     environment:
       TZ: Asia/Shanghai
     volumes:
