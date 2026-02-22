@@ -11,7 +11,9 @@ require_once '../config/database.php';
 require 'pagination.php';
 
 $db = Database::getInstance();
-$mysqli = $db->getConnection();
+$pdo = $db->getConnection();
+$demoMode = ($_ENV['DEMO_MODE'] ?? 'false') === 'true';
+$isDemoAutoLogin = isset($_SESSION['demo_auto_login']) && $_SESSION['demo_auto_login'];
 
 // 处理登出
 if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
@@ -21,17 +23,17 @@ if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
 }
 
 // 获取配置和分页数据
-$items_per_page = (int)($mysqli->query("SELECT value FROM configs WHERE `key` = 'per_page'")->fetch_assoc()['value'] ?? 20);
-$total_rows = (int)($mysqli->query("SELECT COUNT(id) as total FROM images")->fetch_assoc()['total'] ?? 0);
+$items_per_page = (int)($pdo->query("SELECT value FROM configs WHERE `key` = 'per_page'")->fetchColumn() ?: 20);
+$total_rows = (int)($pdo->query("SELECT COUNT(id) FROM images")->fetchColumn() ?: 0);
+
 $total_pages = max(1, ceil($total_rows / $items_per_page));
 $current_page = min(max(1, $_GET['page'] ?? 1), $total_pages);
 
 // 获取图片数据
 $offset = ($current_page - 1) * $items_per_page;
-$stmt = $mysqli->prepare("SELECT * FROM images ORDER BY id DESC LIMIT ? OFFSET ?");
-$stmt->bind_param("ii", $items_per_page, $offset);
-$stmt->execute();
-$images = $stmt->get_result()->fetch_all(MYSQLI_ASSOC);
+$stmt = $pdo->prepare("SELECT * FROM images ORDER BY id DESC LIMIT ? OFFSET ?");
+$stmt->execute([$items_per_page, $offset]);
+$images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 // 处理AJAX请求
 if (!empty($_SERVER['HTTP_X_REQUESTED_WITH']) && 
@@ -60,42 +62,25 @@ $pagination = renderPagination($current_page, $total_pages);
     <title>管理后台</title>
     <link rel="shortcut icon" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/css/admin.css">
-    <!-- 引入Fancybox 和  vanilla-lazyload-->
     <link rel="stylesheet" href="/static/css/fancybox.min.css">
-    <script src="/static/js/fancybox.umd.min.js" defer></script>
-    <script src="/static/js/lazyload.min.js" defer></script>
-    <!-- 你可以使用第三方CDN进行加速 Fancybox 版本 5.0.36 和 vanilla-lazyload 版本 19.1.3 -->
-    <!-- <link rel="stylesheet" href="https://lib.baomitu.com/fancyapps-ui/5.0.36/fancybox/fancybox.min.css">
-    <script src="https://lib.baomitu.com/fancyapps-ui/5.0.36/fancybox/fancybox.umd.min.js" defer></script>
-    <script src="https://lib.baomitu.com/vanilla-lazyload/19.1.3/lazyload.min.js" defer></script> -->
 </head>
 <body>
     <div id="gallery" class="gallery"><?= $images_html ?></div>
     <div class="rightside">
         <a href="/" class="floating-link" title="返回主页">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-home"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-home"></use></svg>
         </a>
         <a class="select-link" title="多选模式">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-select"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-select"></use></svg>
         </a>
         <a href="#" class="settings-link" title="系统设置">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-Setting"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Setting"></use></svg>
         </a>
         <a href="?logout=true" class="logout-link" title="退出登录">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-logout"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-logout"></use></svg>
         </a>
         <a class="top-link" id="scroll-to-top" title="回到顶部">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-top"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-top"></use></svg>
         </a>
         <span id="current-total-pages"><?= $current_page ?>/<?= $total_pages ?></span>
     </div>
@@ -103,54 +88,51 @@ $pagination = renderPagination($current_page, $total_pages);
     <div id="settings-modal" class="modal">
         <div class="modal-content"></div>
     </div>
-    <script src="/static/js/admin.js" defer></script>
-    <script src="/static/js/settings.js" defer></script>
-    <script src="//at.alicdn.com/t/c/font_4623353_ghucu16d9fu.js"></script>
+    <script src="//at.alicdn.com/t/c/font_4623353_hb4c04qfi4u.js"></script>
+    <script src="/static/js/fancybox.umd.min.js"></script>
+    <script src="/static/js/lazyload.min.js"></script>
+    <script src="/static/js/admin.js"></script>
+    <script src="/static/js/settings.js"></script>
 </body>
 </html>
 <?php
 // 辅助函数
-function formatFileSize($sizeInBytes) {
-    return number_format($sizeInBytes / 1024, 2) . ' KB';
-}
-
 function renderImagesList($images) {
     if (empty($images)) {
-        return '<div class="empty-state">
-            <div class="empty-icon"></div>
-            <p>暂无图片</p>
-        </div>';
+        return '<div class="empty-state"><div class="empty-icon"></div><p>暂无图片</p></div>';
     }
     
-    ob_start();
-    foreach ($images as $image): ?>
-        <div class="gallery-item" id="image-<?= htmlspecialchars($image['id']) ?>">
+    $html = '';
+    foreach ($images as $image) {
+        $id = htmlspecialchars($image['id']);
+        $url = htmlspecialchars($image['url']);
+        $path = htmlspecialchars($image['path']);
+        $size = number_format($image['size'] / 1024, 2);
+        $ip = htmlspecialchars($image['upload_ip']);
+        $time = htmlspecialchars($image['created_at']);
+        
+        $html .= <<<HTML
+        <div class="gallery-item" id="image-{$id}">
             <div class="image-wrapper">
                 <div class="image-placeholder"><div class="spinner"></div></div>
-                <img class="lazy" data-src="<?= htmlspecialchars($image['url']) ?>" 
-                     alt="Image" data-fancybox="gallery">
+                <img class="lazy" src="data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7" data-src="{$url}" data-fancybox="gallery">
             </div>
             <div class="action-buttons">
-                <button class="copy-btn" data-url="<?= htmlspecialchars($image['url']) ?>">
-                    <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-link"></use>
-                    </svg>
+                <button class="copy-btn" data-url="{$url}">
+                    <svg class="icon" aria-hidden="true"><use xlink:href="#icon-link"></use></svg>
                 </button>
-                <button class="delete-btn" 
-                        data-id="<?= htmlspecialchars($image['id']) ?>" 
-                        data-path="<?= htmlspecialchars($image['path']) ?>">
-                    <svg class="icon" aria-hidden="true">
-                        <use xlink:href="#icon-xmark"></use>
-                    </svg>
+                <button class="delete-btn" data-id="{$id}" data-path="{$path}">
+                    <svg class="icon" aria-hidden="true"><use xlink:href="#icon-xmark"></use></svg>
                 </button>
             </div>
             <div class="image-info">
-                <p class="info-p">大小: <span><?= formatFileSize($image['size']) ?></span></p>
-                <p class="info-p">IP: <span><?= htmlspecialchars($image['upload_ip']) ?></span></p>
-                <p class="info-p">时间: <span><?= htmlspecialchars($image['created_at']) ?></span></p>
+                <p class="info-p">大小: <span>{$size} KB</span></p>
+                <p class="info-p">IP: <span>{$ip}</span></p>
+                <p class="info-p">时间: <span>{$time}</span></p>
             </div>
         </div>
-    <?php endforeach;
-    return ob_get_clean();
+HTML;
+    }
+    return $html;
 }
 ?>
