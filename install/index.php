@@ -2,137 +2,73 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-$protocol = isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] != 'off' ? 'https://' : 'http://';
-$host = $_SERVER['HTTP_HOST'];
-$baseUrl = $protocol . $host;
 if (file_exists('../.env')) {
     header('Location: /');
-    exit();
+    exit;
 }
 
-$step = isset($_GET['step']) ? intval($_GET['step']) : 0;
+$step = isset($_GET['step']) ? (int)$_GET['step'] : 0;
 $error = '';
-$adminUserExists = false;
-$adminUsername = '';
 
-if ($_SERVER['REQUEST_METHOD'] === 'POST') {
-    handlePostRequest($step);
-}
-
-function handlePostRequest($step) {
-    global $error, $adminUserExists, $adminUsername;
-
-    if ($step === 1) {
-        $mysql = [
-            'dbHost' => $_POST['mysql_dbHost'],
-            'dbName' => $_POST['mysql_dbName'],
-            'dbUser' => $_POST['mysql_dbUser'],
-            'dbPass' => $_POST['mysql_dbPass'],
-        ];
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 1) {
+    try {
+        $pdo = new PDO('sqlite:../database.db');
+        $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->beginTransaction();
         
-        try {
-            $mysqli = new mysqli($mysql['dbHost'], $mysql['dbUser'], $mysql['dbPass'], $mysql['dbName']);
-            if ($mysqli->connect_error) {
-                throw new Exception($mysqli->connect_error);
-            }
-
-            $mysqli->begin_transaction();
-            try {
-                // 创建表结构
-                createOrUpdateTableStructure($mysqli);
-                
-                // 创建管理员账户
-                handleAdminUser($mysqli);
-                
-                // 初始化系统配置
-                initializeConfigs($mysqli);
-                
-                // 保存数据库配置
-                saveConfig($mysql);
-                
-                $mysqli->commit();
-                
-                header('Location: /'); 
-                exit;
-            } catch (Exception $e) {
-                $mysqli->rollback();
-                throw $e;
-            }
-        } catch (Exception $e) {
-            $error = $e->getMessage();
-            if (strpos($error, 'Access denied') !== false) {
-                $error = '数据库连接失败：用户名或密码错误';
-            } elseif (strpos($error, 'Unknown database') !== false) {
-                $error = '数据库连接失败：数据库不存在';
-            } elseif (strpos($error, 'Connection refused') !== false) {
-                $error = '数据库连接失败：无法连接到数据库服务器，请检查主机地址是否正确';
-            } elseif (strpos($error, 'Can\'t connect to MySQL server') !== false) {
-                $error = '数据库连接失败：无法连接到MySQL服务器，请检查服务器是否启动';
-            } else {
-                $error = '数据库连接失败：' . $error;
-            }
-        }
+        createTableStructure($pdo);
+        handleAdminUser($pdo);
+        initializeConfigs($pdo);
+        saveConfig();
+        
+        $pdo->commit();
+        header('Location: /');
+        exit;
+    } catch (Exception $e) {
+        if (isset($pdo)) $pdo->rollback();
+        $error = '安装失败：' . $e->getMessage();
     }
 }
 
-function createOrUpdateTableStructure($mysqli) {
-    // 创建 images 表
-    $createImagesTableSQL = "
-        CREATE TABLE IF NOT EXISTS images (
-            id INT AUTO_INCREMENT PRIMARY KEY COMMENT '主键ID',
-            user_id INT UNSIGNED NULL COMMENT '用户ID',
-            url VARCHAR(255) NOT NULL COMMENT '图片URL',
-            path VARCHAR(255) NOT NULL COMMENT '图片存储路径',
-            storage VARCHAR(50) NOT NULL COMMENT '存储方式',
-            size INT UNSIGNED NOT NULL COMMENT '图片大小(字节)',
-            upload_ip VARCHAR(45) NOT NULL COMMENT '上传者IP地址',
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP COMMENT '创建时间'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='图片信息表';
-    ";
-    
-    // 创建 users 表
-    $createUsersTableSQL = "
-        CREATE TABLE IF NOT EXISTS users (
-            id INT AUTO_INCREMENT PRIMARY KEY COMMENT '用户 ID',
-            username VARCHAR(255) NOT NULL UNIQUE COMMENT '用户名',
-            password VARCHAR(255) NOT NULL COMMENT '密码',
-            token VARCHAR(32) NOT NULL UNIQUE COMMENT 'API Token'
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='用户表';
-    ";
-    
-    // 创建 configs 表
-    $createConfigsTableSQL = "
-        CREATE TABLE IF NOT EXISTS configs (
-            id INT AUTO_INCREMENT PRIMARY KEY,
+function createTableStructure($pdo) {
+    $tables = [
+        "CREATE TABLE IF NOT EXISTS images (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NULL,
+            url VARCHAR(255) NOT NULL,
+            path VARCHAR(255) NOT NULL,
+            storage VARCHAR(50) NOT NULL,
+            size INTEGER NOT NULL,
+            upload_ip VARCHAR(45) NOT NULL,
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )",
+        "CREATE TABLE IF NOT EXISTS users (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            username VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            token VARCHAR(32) NOT NULL UNIQUE
+        )",
+        "CREATE TABLE IF NOT EXISTS configs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
             `key` VARCHAR(50) NOT NULL UNIQUE,
             value TEXT,
             description VARCHAR(255),
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP
-        ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COMMENT='系统配置表';
-    ";
-
-    if ($mysqli->query($createImagesTableSQL) === FALSE) {
-        throw new Exception('创建 images 表失败: ' . $mysqli->error);
-    }
-    if ($mysqli->query($createUsersTableSQL) === FALSE) {
-        throw new Exception('创建 users 表失败: ' . $mysqli->error);
-    }
-    if ($mysqli->query($createConfigsTableSQL) === FALSE) {
-        throw new Exception('创建 configs 表失败: ' . $mysqli->error);
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )"
+    ];
+    
+    foreach ($tables as $sql) {
+        $pdo->exec($sql);
     }
 }
 
-function initializeConfigs($mysqli) {
-    global $protocol;
+function initializeConfigs($pdo) {
+    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
+    $siteUrl = $protocol . $_SERVER['HTTP_HOST'];
     
-    // 获取当前网站域名
-    $host = $_SERVER['HTTP_HOST'];
-    $siteUrl = $protocol . $host;
-    
-    $defaultConfigs = [
+    $configs = [
         ['storage', 'local', '存储方式'],
-        ['protocol', $protocol, 'URL协议'],
+        ['url_prefix', '', '图片代理'],
         ['per_page', '20', '每页显示数量'],
         ['login_restriction', 'false', '登录保护'],
         ['max_file_size', '5242880', '最大文件大小'],
@@ -141,110 +77,65 @@ function initializeConfigs($mysqli) {
         ['site_domain', $siteUrl, '网站域名']
     ];
 
-    $stmt = $mysqli->prepare("REPLACE INTO configs (`key`, value, description) VALUES (?, ?, ?)");
-    foreach ($defaultConfigs as $config) {
-        $stmt->bind_param("sss", $config[0], $config[1], $config[2]);
-        $stmt->execute();
+    $stmt = $pdo->prepare("REPLACE INTO configs (`key`, value, description) VALUES (?, ?, ?)");
+    foreach ($configs as $config) {
+        $stmt->execute($config);
     }
 }
 
-function generateRandomToken() {
-    return bin2hex(random_bytes(16));
-}
+function handleAdminUser($pdo) {
+    $username = $_POST['adminUser'];
+    $password = password_hash($_POST['adminPass'], PASSWORD_DEFAULT);
+    $token = bin2hex(random_bytes(16));
 
-function handleAdminUser($mysqli) {
-    global $adminUserExists, $adminUsername;
+    $stmt = $pdo->prepare("SELECT id FROM users WHERE username = ?");
+    $stmt->execute([$username]);
 
-    $username = $_POST['mysql_adminUser'];
-    $password = password_hash($_POST['mysql_adminPass'], PASSWORD_DEFAULT);
-    $token = generateRandomToken();
-
-    $checkUserSQL = "SELECT id, username FROM users WHERE username = ?";
-    $stmt = $mysqli->prepare($checkUserSQL);
-    $stmt->bind_param("s", $username);
-    $stmt->execute();
-    $result = $stmt->get_result();
-
-    if ($result->num_rows > 0) {
-        $adminUserExists = true;
-        $adminUsername = $username;
-
-        $updateAdminSQL = "UPDATE users SET password = ?, token = ? WHERE username = ?";
-        $stmt = $mysqli->prepare($updateAdminSQL);
-        $stmt->bind_param("sss", $password, $token, $username);
-        if (!$stmt->execute()) {
-            throw new Exception('更新管理员用户失败: ' . $stmt->error);
-        }
+    if ($stmt->fetch()) {
+        $pdo->prepare("UPDATE users SET password = ?, token = ? WHERE username = ?")
+            ->execute([$password, $token, $username]);
     } else {
-        $insertAdminSQL = "INSERT INTO users (username, password, token) VALUES (?, ?, ?)";
-        $stmt = $mysqli->prepare($insertAdminSQL);
-        $stmt->bind_param("sss", $username, $password, $token);
-        if (!$stmt->execute()) {
-            throw new Exception('插入管理员用户失败: ' . $stmt->error);
-        }
+        $pdo->prepare("INSERT INTO users (username, password, token) VALUES (?, ?, ?)")
+            ->execute([$username, $password, $token]);
     }
 }
 
-function saveConfig($mysql) {
-    $envContent = "# 数据库配置\n";
-    $envContent .= "DB_HOST={$mysql['dbHost']}\n";
-    $envContent .= "DB_NAME={$mysql['dbName']}\n";
-    $envContent .= "DB_USER={$mysql['dbUser']}\n";
-    $envContent .= "DB_PASS={$mysql['dbPass']}";
+function saveConfig() {
+    $content = <<<ENV
+# 演示模式配置
+# 开启后：首页和设置页面会显示演示站点提示、禁止保存设置修改、所有图片公开可见且可能被删除
+DEMO_MODE = false
+
+# 密码重置功能（默认关闭）
+# 使用方法：
+# 1. 将下方的 false 改为 true
+# 2. 访问登录页面，点击「忘记密码」重置密码
+# 3. 重置完成后立即改回 false
+# 警告：开启后任何人都可以重置管理员密码！
+ALLOW_PASSWORD_RESET = false
+ENV;
     
-    file_put_contents('../.env', $envContent);
+    file_put_contents('../.env', $content);
     chmod('../.env', 0600);
 }
 
 function checkEnvironment() {
+    $checks = [
+        ['PHP 版本', '≥ 7.0', phpversion(), version_compare(phpversion(), '7.0.0', '>=')],
+        ['SQLite', 'PDO SQLite扩展', null, 'pdo_sqlite'],
+        ['IMAGICK', '必需', null, 'imagick'],
+        ['EXIF', '可选', null, 'exif', true]
+    ];
+    
     $requirements = [];
-    
-    // 检查 PHP 版本
-    $phpVersion = phpversion();
-    $requirements['PHP 版本'] = [
-        'required' => '≥ 7.0',
-        'status' => version_compare($phpVersion, '7.0.0', '>='),
-        'current' => $phpVersion
-    ];
-    
-    // 检查 MySQL
-    $mysqlInstalled = extension_loaded('mysqli');
-    $requirements['MySQL'] = [
-        'required' => '≥ 5.6',
-        'status' => $mysqlInstalled,
-        'current' => $mysqlInstalled ? '已安装' : '未安装'
-    ];
-    
-    // 检查必需的扩展
-    $requiredExtensions = [
-        'fileinfo',
-        'exif',
-        'imagick',
-        'pcntl'
-    ];
-    
-    foreach ($requiredExtensions as $ext) {
-        $isLoaded = extension_loaded($ext);
-        $requirements[strtoupper($ext)] = [
-            'required' => '必需',
-            'status' => $isLoaded,
-            'current' => $isLoaded ? '已安装' : '未安装'
-        ];
-    }
-    
-    // 检查 PCNTL 函数
-    $pcntlFunctions = [
-        'pcntl_signal',
-        'pcntl_alarm'
-    ];
-    
-    foreach ($pcntlFunctions as $func) {
-        $isAvailable = function_exists($func);
-        $requirements[$func] = [
-            'required' => '必需',
-            'status' => $isAvailable,
-            'current' => $isAvailable ? '可用' : '不可用',
-            'description' => '请确保此函数未被禁用'
+    foreach ($checks as $check) {
+        $isExtension = isset($check[3]) && is_string($check[3]);
+        $loaded = $isExtension ? extension_loaded($check[3]) : $check[3];
+        
+        $requirements[$check[0]] = [
+            'required' => $check[1],
+            'current' => $check[2] ?? ($loaded ? '已安装' : '未安装'),
+            'status' => $check[4] ?? $loaded
         ];
     }
     
@@ -253,17 +144,9 @@ function checkEnvironment() {
 
 if ($step === 0) {
     $requirements = checkEnvironment();
-    $canProceed = true;
-    foreach ($requirements as $requirement) {
-        if (!$requirement['status']) {
-            $canProceed = false;
-            break;
-        }
-    }
+    $canProceed = !in_array(false, array_column($requirements, 'status'), true);
 }
-
 ?>
-
 <!DOCTYPE html>
 <html lang="zh-CN">
 <head>
@@ -271,19 +154,7 @@ if ($step === 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.svg">
-    <link rel="stylesheet" type="text/css" href="../install/install.css">
-    <script>
-    function showNotification(message, className = 'msg-green') {
-        const notification = document.createElement('div');
-        notification.className = `msg ${className}`;
-        notification.textContent = message;
-        document.body.appendChild(notification);
-        setTimeout(() => {
-            notification.classList.add('msg-right');
-            setTimeout(() => notification.remove(), 800);
-        }, 1500);
-    }
-    </script>
+    <link rel="stylesheet" href="install.css">
 </head>
 <body>
     <div class="container">
@@ -296,70 +167,60 @@ if ($step === 0) {
                     <th>要求</th>
                     <th>当前状态</th>
                 </tr>
-                <?php foreach ($requirements as $name => $requirement): ?>
-                    <tr class="<?= $requirement['status'] ? 'success' : 'error' ?>">
-                        <td>
-                            <?= $name ?>
-                            <?php if (isset($requirement['description'])): ?>
-                                <small style="color: #666; display: block;">
-                                    <?= $requirement['description'] ?>
-                                </small>
-                            <?php endif; ?>
-                        </td>
-                        <td><?= $requirement['required'] ?></td>
-                        <td><?= $requirement['current'] ?></td>
+                <?php foreach ($requirements as $name => $req): ?>
+                    <tr class="<?= $req['status'] ? 'success' : 'error' ?>">
+                        <td><?= $name ?></td>
+                        <td><?= $req['required'] ?></td>
+                        <td><?= $req['current'] ?></td>
                     </tr>
                 <?php endforeach; ?>
             </table>
             
-            <?php if ($canProceed): ?>
-                <div class="form-group">
-                    <input type="button" value="下一步" onclick="window.location.href='?step=1'">
-                </div>
-            <?php else: ?>
-                <div class="error-message">
-                    请解决上述问题后继续安装
-                    <a href="?step=1" class="force-install">强制安装</a>
-                </div>
-            <?php endif; ?>
+            <div class="form-group">
+                <?php if ($canProceed): ?>
+                    <input type="button" value="下一步" onclick="location.href='?step=1'">
+                <?php else: ?>
+                    <div class="error-message">
+                        请解决上述问题后继续安装
+                        <a href="?step=1" class="force-install">强制安装</a>
+                    </div>
+                <?php endif; ?>
+            </div>
         <?php else: ?>
             <form method="POST">
-                <?php if ($error): ?>
-                    <script>
-                        document.addEventListener('DOMContentLoaded', function() {
-                            showNotification('<?= htmlspecialchars($error, ENT_QUOTES, 'UTF-8') ?>', 'msg-red');
-                        });
-                    </script>
-                <?php endif; ?>
-                <div class="form-group">
-                    <label for="mysql_dbHost">主机地址</label>
-                    <input type="text" id="mysql_dbHost" name="mysql_dbHost" value="127.0.0.1" required>
+                <div class="info-message">
+                    <p>使用 SQLite 数据库，无需配置数据库连接</p>
+                    <p>数据库文件将保存在: database.db</p>
                 </div>
-                <div class="form-group">
-                    <label for="mysql_dbName">数据库名</label>
-                    <input type="text" id="mysql_dbName" name="mysql_dbName" required>
-                </div>
-                <div class="form-group">
-                    <label for="mysql_dbUser">用户名</label>
-                    <input type="text" id="mysql_dbUser" name="mysql_dbUser" required>
-                </div>
-                <div class="form-group">
-                    <label for="mysql_dbPass">密码</label>
-                    <input type="password" id="mysql_dbPass" name="mysql_dbPass" required>
-                </div>
-                <div class="form-group">
-                    <label for="mysql_adminUser">管理员账号</label>
-                    <input type="text" id="mysql_adminUser" name="mysql_adminUser" value="<?= $adminUsername ?>" required>
-                </div>
-                <div class="form-group">
-                    <label for="mysql_adminPass">管理员密码</label>
-                    <input type="password" id="mysql_adminPass" name="mysql_adminPass" required>
-                </div>
+                <?php 
+                $fields = [
+                    ['adminUser', '管理员账号', 'text'],
+                    ['adminPass', '管理员密码', 'password']
+                ];
+                foreach ($fields as [$id, $label, $type]): ?>
+                    <div class="form-group">
+                        <label for="<?= $id ?>"><?= $label ?></label>
+                        <input type="<?= $type ?>" id="<?= $id ?>" name="<?= $id ?>" required>
+                    </div>
+                <?php endforeach; ?>
                 <div class="form-group">
                     <input type="submit" value="开始安装">
                 </div>
             </form>
         <?php endif; ?>
     </div>
+    
+    <?php if ($error): ?>
+    <script>
+        const div = document.createElement('div');
+        div.className = 'msg msg-red';
+        div.textContent = <?= json_encode($error) ?>;
+        document.body.appendChild(div);
+        setTimeout(() => {
+            div.classList.add('msg-right');
+            setTimeout(() => div.remove(), 800);
+        }, 1500);
+    </script>
+    <?php endif; ?>
 </body>
 </html>
