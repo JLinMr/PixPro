@@ -1,4 +1,4 @@
-FROM php:8.1-fpm
+FROM php:8.1-apache
 
 # 设置工作目录
 WORKDIR /var/www/html
@@ -27,8 +27,11 @@ RUN echo "display_errors = Off" >> /usr/local/etc/php/conf.d/docker-custom.ini \
 # 设置权限
 RUN chown -R www-data:www-data /var/www/html
 
-# 暴露端口
-EXPOSE 9000
+# 配置 Apache
+RUN a2enmod rewrite
 
-# 默认启动 PHP-FPM
-CMD ["php-fpm"]
+# 暴露端口
+EXPOSE 80
+
+# 默认启动 Apache
+CMD ["apache2-foreground"]

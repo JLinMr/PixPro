@@ -4,10 +4,7 @@ services:
     environment:
       TZ: Asia/Shanghai
     volumes:
-      - pixpro-data:/var/www/html
+      - ./:/var/www/html
     ports:
       - "6767:80"
     restart: unless-stopped
-
-volumes:
-  pixpro-data:
