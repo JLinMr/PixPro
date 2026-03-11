@@ -74,7 +74,7 @@ function isUploadAllowed($maxUploadsPerDay) {
     if ($maxUploadsPerDay <= 0) return true;
     
     $uploadDir = 'i/.upload_limits/';
-    if (!is_dir($uploadDir)) mkdir($uploadDir, 0777, true);
+    if (!is_dir($uploadDir)) mkdir($uploadDir, 0755, true);
     
     $clientIp = getClientIp();
     $currentDate = date('Y-m-d');
