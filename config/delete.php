@@ -10,6 +10,15 @@ require_once '../vendor/autoload.php';
 require_once 'database.php';
 require_once 'storage.php';
 
+// 权限验证
+session_start();
+if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
+    ob_end_clean();
+    header('Content-Type: application/json; charset=utf-8');
+    echo json_encode(['result' => 'error', 'message' => '未登录，无权限执行删除操作'], JSON_UNESCAPED_UNICODE);
+    exit;
+}
+
 use OSS\OssClient;
 use OSS\Core\OssException;
 use Aws\S3\S3Client;
