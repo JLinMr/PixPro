@@ -1,15 +1,6 @@
-﻿/* ========================================
-   Admin 样式主文件
-   ======================================== */
-
-/* 基础样式：变量、全局样式、通用组件（消息通知、确认对话框） */
-@import url('admin/base.css');
-
-/* 图片画廊相关样式 */
+@import url('core.css');
+@import url('admin/layout.css');
+@import url('admin/fancybox.css');
 @import url('admin/gallery.css');
-
-/* 页面组件：分页、侧边栏 */
 @import url('admin/components.css');
-
-/* 设置面板模态框 */
-@import url('admin/modal.css');
+@import url('admin/settings.css');

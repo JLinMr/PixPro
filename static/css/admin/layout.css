@@ -1,0 +1,28 @@
+/* Fancybox 光标覆盖 + 后台布局 */
+body.page-admin {
+    padding: 20px 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+body.page-admin,
+body.page-admin .fancybox__viewport.is-draggable {
+    cursor: url(/static/images/alternate.png) 16 16, auto !important;
+}
+
+body.page-admin a,
+body.page-admin button,
+body.page-admin input,
+body.page-admin img,
+body.page-admin .f-button,
+body.page-admin .fancybox__viewport.is-dragging {
+    cursor: url(/static/images/link.png) 16 16, pointer !important;
+}
+
+body.page-admin p,
+body.page-admin span,
+body.page-admin h2,
+body.page-admin label {
+    cursor: url(/static/images/text.png) 16 16, text !important;
+}
