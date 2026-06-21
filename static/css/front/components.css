@@ -8,9 +8,7 @@
     width: 100%;
     margin-bottom: 15px;
     padding: 15px;
-    border-radius: 10px;
-    background: var(--bg-white-10);
-    border: 1px solid var(--border-white-20);
+    border-radius: 12px;
     box-sizing: border-box;
 }
 
@@ -22,7 +20,8 @@
 }
 
 /* Range 输入框 (#qualityInput) */
-input[type="range"] {
+input[type="range"],
+#qualityInput {
     -webkit-appearance: none;
     appearance: none;
     width: 100%;
@@ -32,6 +31,7 @@ input[type="range"] {
     opacity: 0.7;
     transition: all 0.3s ease-in-out;
     border-radius: 5px;
+    cursor: url(/static/images/link.png) 16 16, pointer;
 }
 
 input[type="range"]::-webkit-slider-thumb {
@@ -65,13 +65,12 @@ input[type="range"]:hover {
 .copy-tab-buttons {
     display: flex;
     width: 100%;
-    border-radius: 8px;
+    border-radius: 12px;
     background: transparent;
     gap: 10px;
     box-sizing: border-box;
 }
 
-/* 左侧图标列 */
 .copy-icons-column {
     display: flex;
     flex-direction: column;
@@ -79,7 +78,6 @@ input[type="range"]:hover {
     flex-shrink: 0;
 }
 
-/* 右侧链接显示区域 */
 .copy-links-column {
     flex: 1;
     display: flex;
@@ -88,67 +86,53 @@ input[type="range"]:hover {
     min-width: 0;
 }
 
-/* 复制按钮 (.copy-tab-btn) */
+.copy-tab-btn:disabled {
+    cursor: url(/static/images/alternate.png) 16 16, auto;
+}
+
 .copy-tab-btn {
     width: 50px;
     height: 50px;
     padding: 0;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-white-20);
+    border-radius: 10px;
     outline: none;
-    transition: all 0.3s ease-in-out;
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
 }
 
-.copy-tab-btn:hover:not(:disabled) {
-    background-color: var(--bg-white-15);
-    border-color: #aaa;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
-}
-
-.copy-tab-btn:focus {
-    outline: none;
-    border-color: #aaa;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
-}
-
 .copy-tab-btn .icon {
     width: 28px;
     height: 28px;
     color: var(--text-light);
+    filter: drop-shadow(0 1px 2px rgb(0 0 0 / 20%));
+}
+
+.copy-tab-btn:active:not(:disabled) {
+    transform: scale(0.96);
+    box-shadow: inset 0 1px 4px rgb(0 0 0 / 15%), var(--glass-shadow-light);
 }
 
 .copy-tab-btn:hover:not(:disabled) .icon {
     transform: scale(1.15);
+    color: var(--text-white);
 }
 
-/* 链接显示框 */
 .copy-link-display {
     height: 50px;
     padding: 0 15px;
-    border-radius: 8px;
-    background-color: rgba(255, 255, 255, 0.05);
-    border: 1px solid var(--border-white-20);
+    border-radius: 10px;
     display: flex;
     align-items: center;
     overflow: hidden;
     position: relative;
-    transition: all 0.3s ease-in-out;
     box-sizing: border-box;
     min-width: 0;
 }
 
-.copy-link-display.disabled {
-    opacity: 0.5;
-    pointer-events: none;
-}
-
 .copy-link-display.disabled .copy-link-text {
-    opacity: 0.6;
+    opacity: 0.7;
 }
 
 .copy-link-text {
@@ -160,12 +144,12 @@ input[type="range"]:hover {
     user-select: none;
     width: 100%;
     pointer-events: none;
+    text-shadow: 0 1px 2px rgb(0 0 0 / 15%);
 }
 
-.copy-link-display:hover:not(.disabled) {
-    background-color: var(--bg-white-15);
-    border-color: #aaa;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
+.copy-link-display:active:not(.disabled) {
+    transform: scale(0.995);
+    box-shadow: inset 0 1px 4px rgb(0 0 0 / 12%), var(--glass-shadow-light);
 }
 
 .copy-btn-text {
@@ -252,15 +236,9 @@ input[type="range"]:hover {
     justify-content: space-between;
     align-items: center;
     padding: 8px 12px;
-    background: var(--bg-white-10);
     border-radius: 8px;
-    transition: background 0.2s ease;
     height: 35px;
     box-sizing: border-box;
-}
-
-.info-item:hover {
-    background: var(--bg-white-20);
 }
 
 .info-label {
@@ -289,16 +267,7 @@ input[type="range"]:hover {
     align-items: center;
     gap: 4px;
     padding: 12px;
-    background: var(--bg-white-10);
     border-radius: 10px;
-    border: 1px solid var(--border-white-20);
-    transition: all 0.3s ease;
-}
-
-.stat-badge:hover {
-    background: var(--bg-white-15);
-    border-color: #aaa;
-    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.2);
 }
 
 .stat-label {

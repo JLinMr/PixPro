@@ -1,0 +1,561 @@
+:root {
+    --accent-color: #f45873;
+
+    --color-success: 0, 126, 0;
+    --color-warning: 234, 179, 8;
+    --color-danger: 166, 19, 19;
+
+    --bg-white-10: rgb(255 255 255 / 10%);
+    --bg-white-15: rgb(255 255 255 / 15%);
+    --bg-white-20: rgb(255 255 255 / 20%);
+    --bg-white-25: rgb(255 255 255 / 25%);
+    --bg-white-40: rgb(255 255 255 / 40%);
+    --bg-black-20: rgba(25, 25, 25, 0.2);
+    --bg-black-30: rgba(0, 0, 0, 0.3);
+    --bg-black-50: rgba(0, 0, 0, 0.5);
+    --bg-black-60: rgba(0, 0, 0, 0.6);
+    --bg-black-70: rgba(0, 0, 0, 0.7);
+
+    --border-white-20: rgba(255, 255, 255, 0.2);
+    --border-white-30: rgba(255, 255, 255, 0.3);
+    --border-white-40: rgba(255, 255, 255, 0.4);
+    --border-dashed: #ccc;
+
+    --text-white: #fff;
+    --text-light: #eee;
+    --text-gray: #ccc;
+    --text-muted: #a5a5a5;
+    --text-placeholder: #555;
+
+    --link-color: #54a2c2;
+    --link-hover: pink;
+
+    --color-red-hover: rgba(255, 0, 0, 0.7);
+    --color-green-hover: rgba(10, 141, 16, 0.7);
+    --gradient-progress: linear-gradient(90deg, rgb(244 128 246 / 40%) 0, rgb(115 255 241 / 60%) 50%, rgb(115 255 241 / 80%) 100%);
+
+    --glass-blur: blur(20px) saturate(180%);
+    --glass-blur-light: blur(12px) saturate(160%);
+    --glass-blur-strong: blur(16px) saturate(170%);
+    --glass-bg: linear-gradient(135deg, rgb(255 255 255 / 28%) 0%, rgb(255 255 255 / 6%) 45%, rgb(220 230 255 / 10%) 100%);
+    --glass-bg-light: linear-gradient(135deg, rgb(255 255 255 / 14%) 0%, rgb(255 255 255 / 3%) 50%, rgb(255 255 255 / 8%) 100%);
+    --glass-bg-dark: linear-gradient(135deg, rgb(0 0 0 / 55%) 0%, rgb(0 0 0 / 35%) 45%, rgb(20 20 50 / 45%) 100%);
+    --glass-border: rgb(255 255 255 / 35%);
+    --glass-shadow: 0 8px 32px rgb(0 0 0 / 12%), inset 0 1px 0 rgb(255 255 255 / 50%), inset 0 -1px 0 rgb(255 255 255 / 8%);
+    --glass-shadow-light: 0 4px 16px rgb(0 0 0 / 8%), inset 0 1px 0 rgb(255 255 255 / 35%);
+    --glass-shadow-dark: var(--glass-shadow), 0 8px 32px rgb(0 0 0 / 40%);
+    --glass-bg-hover: linear-gradient(135deg, rgb(255 255 255 / 22%) 0%, rgb(255 255 255 / 8%) 50%, rgb(255 255 255 / 14%) 100%);
+    --glass-blur-disabled: blur(8px) saturate(120%);
+}
+
+* {
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+    box-sizing: border-box;
+    padding: 0;
+    margin: 0;
+}
+
+a {
+    transition: all 0.3s ease-in-out;
+    text-decoration: none;
+}
+
+::-webkit-input-placeholder,
+::placeholder {
+    color: var(--text-placeholder);
+}
+
+::-webkit-scrollbar {
+    width: 0;
+}
+
+.icon {
+    width: 24px;
+    height: 24px;
+    vertical-align: -0.15em;
+    fill: currentColor;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes fadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+@keyframes fadeInTop {
+    from { opacity: 0; transform: translateY(-100%); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes fadeOutRight {
+    from { opacity: 1; transform: translateX(0); }
+    to { opacity: 0; transform: translateX(100%); }
+}
+
+@keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+}
+
+@keyframes shake {
+    10%, 90% { transform: translate3d(-1px, 0, 0); }
+    20%, 80% { transform: translate3d(2px, 0, 0); }
+    30%, 50%, 70% { transform: translate3d(-2px, 0, 0); }
+    40%, 60% { transform: translate3d(2px, 0, 0); }
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes modalFadeOut {
+    from { opacity: 1; transform: translateY(0); }
+    to { opacity: 0; transform: translateY(-20px); }
+}
+
+@keyframes backdropFadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes backdropFadeOut {
+    from { opacity: 1; }
+    to { opacity: 0; }
+}
+
+.glass {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-subtle {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-light);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow);
+}
+
+.glass-panel,
+.glass-btn,
+.glass-counter,
+.glass-input,
+.msg {
+    backdrop-filter: var(--glass-blur-light);
+    -webkit-backdrop-filter: var(--glass-blur-light);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-light);
+}
+
+.glass-panel {
+    background: var(--glass-bg-light);
+    transition: all 0.3s ease-in-out;
+}
+
+.glass-panel:hover:not(:disabled):not(.disabled) {
+    background: var(--glass-bg-hover);
+    border-color: rgb(255 255 255 / 45%);
+    box-shadow: var(--glass-shadow-light), 0 0 0 2px rgb(255 255 255 / 15%);
+}
+
+.glass-panel.disabled,
+.glass-panel:disabled {
+    opacity: 0.45;
+    pointer-events: none;
+    backdrop-filter: var(--glass-blur-disabled);
+    -webkit-backdrop-filter: var(--glass-blur-disabled);
+}
+
+.glass-btn {
+    transition: all 0.3s ease;
+}
+
+.glass-btn:hover {
+    border-color: rgb(255 255 255 / 45%);
+    box-shadow: var(--glass-shadow-light), 0 0 0 2px rgb(255 255 255 / 15%);
+}
+
+.glass-input {
+    background: rgb(255 255 255 / 10%);
+    transition: all 0.3s ease;
+}
+
+.glass-input:hover,
+.glass-input:focus {
+    background: rgb(255 255 255 / 15%);
+    border-color: rgb(255 255 255 / 45%);
+    box-shadow: var(--glass-shadow-light), 0 0 0 2px rgb(255 255 255 / 15%);
+    outline: none;
+}
+
+input[type="number"] {
+    -moz-appearance: textfield;
+    appearance: textfield;
+}
+
+input[type="number"]::-webkit-inner-spin-button,
+input[type="number"]::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.glass-overlay {
+    backdrop-filter: var(--glass-blur-strong);
+    -webkit-backdrop-filter: var(--glass-blur-strong);
+}
+
+.glass-dialog {
+    backdrop-filter: var(--glass-blur);
+    -webkit-backdrop-filter: var(--glass-blur);
+    background: var(--glass-bg-dark);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--glass-shadow-dark);
+}
+
+.glass-in {
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+body {
+    background: url(/static/images/bg.webp) center center / cover no-repeat fixed;
+    -webkit-tap-highlight-color: transparent;
+    color: var(--text-light);
+}
+
+html {
+    cursor: url(/static/images/alternate.png) 16 16, auto;
+}
+
+a,
+button,
+input[type="button"],
+input[type="submit"],
+input[type="reset"] {
+    cursor: url(/static/images/link.png) 16 16, pointer;
+}
+
+p,
+span,
+h2,
+label {
+    cursor: url(/static/images/text.png) 16 16, text;
+}
+
+.glass-input,
+textarea,
+.modal input,
+.modal textarea,
+.settings-modal input,
+.settings-modal textarea {
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+    user-select: text;
+}
+
+.form-group {
+    margin-bottom: 1.25rem;
+}
+
+.form-group:last-child {
+    margin-bottom: 0;
+}
+
+.form-group label,
+label.block-label {
+    display: block;
+    margin-bottom: 0.5rem;
+    font-size: 0.875rem;
+}
+
+.form-row {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+}
+
+.form-group-half {
+    flex: 1;
+    min-width: calc(50% - 8px);
+}
+
+.label-description {
+    font-size: 12px;
+    color: rgb(255 255 255 / 60%);
+    font-weight: normal;
+    margin-left: 10px;
+}
+
+.radio-group {
+    display: flex;
+    gap: 20px;
+    flex-wrap: wrap;
+    padding: 5px 0;
+}
+
+.radio-group label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    cursor: pointer;
+    border-radius: 6px;
+    transition: all 0.3s ease;
+    color: var(--text-light);
+}
+
+.radio-group input[type="radio"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgb(255 255 255 / 30%);
+    border-radius: 50%;
+    position: relative;
+    transition: all 0.3s ease;
+    margin: 0;
+}
+
+.radio-group input[type="radio"]:checked {
+    border-color: #ccc;
+}
+
+.radio-group input[type="radio"]::before {
+    content: '';
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background: #ccc;
+    border-radius: 50%;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    transition: transform 0.2s ease;
+}
+
+.radio-group input[type="radio"]:checked::before {
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.password-wrapper,
+.password-input-wrapper {
+    position: relative;
+}
+
+.password-wrapper .glass-input,
+.password-input-wrapper .glass-input {
+    width: 100%;
+    padding-right: 2.75rem;
+}
+
+.toggle-password {
+    position: absolute;
+    right: 0.5rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 28px;
+    height: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 6px;
+    background: transparent;
+    opacity: 0.6;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.toggle-password:hover {
+    opacity: 1;
+    background: var(--bg-white-10);
+    transform: translateY(-50%) scale(1.05);
+}
+
+.toggle-password .icon {
+    width: 18px;
+    height: 18px;
+}
+
+@media (max-width: 768px) {
+    .form-row {
+        flex-direction: column;
+        gap: 0;
+    }
+
+    .form-group-half {
+        min-width: 100%;
+    }
+}
+
+.toast-stack {
+    position: fixed;
+    top: 20px;
+    right: 15px;
+    z-index: 9999;
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 10px;
+    max-width: calc(100vw - 30px);
+    pointer-events: none;
+}
+
+.toast-item {
+    position: relative;
+    flex-shrink: 0;
+    width: max-content;
+    max-width: calc(100vw - 30px);
+    padding: 12px 16px;
+    border-radius: 8px;
+    color: var(--text-white);
+    line-height: 1.45;
+    white-space: nowrap;
+    word-break: normal;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    cursor: pointer;
+    pointer-events: auto;
+    box-sizing: border-box;
+    animation: fadeInTop 0.6s ease forwards;
+}
+
+.toast-item.is-leaving {
+    animation: fadeOutRight 0.8s ease forwards;
+    pointer-events: none;
+}
+
+.msg {
+    padding: 15px;
+    border-radius: 8px;
+    color: var(--text-white);
+}
+
+.msg-green {
+    background: rgba(var(--color-success), 0.7);
+}
+
+.msg-red {
+    background: rgba(var(--color-danger), 0.7);
+}
+
+.spinner {
+    width: 30px;
+    height: 30px;
+    border: 2px solid #bbb;
+    border-top: 2px solid #0099ff;
+    border-radius: 50%;
+    margin: auto;
+    animation: spin 1s linear infinite;
+}
+
+.custom-confirm {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%) scale(0.9);
+    padding: 30px;
+    border-radius: 20px;
+    z-index: 9999;
+    opacity: 0;
+    transition: opacity 0.4s cubic-bezier(0.4, 0, 0.2, 1),
+                transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    min-width: 400px;
+    max-width: 500px;
+    pointer-events: auto;
+}
+
+.custom-confirm.visible {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1);
+}
+
+.confirm-message {
+    padding: 10px 0 20px;
+    font-size: 20px;
+    line-height: 1.6;
+    color: var(--text-white);
+    text-align: center;
+}
+
+.confirm-message .title {
+    font-size: 20px;
+    font-weight: bold;
+    margin-bottom: 15px;
+}
+
+.confirm-message .content,
+.confirm-message .footer {
+    color: var(--text-light);
+    font-size: 16px;
+    line-height: 1.8;
+    margin-bottom: 15px;
+}
+
+.confirm-buttons {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+}
+
+.confirm-buttons button {
+    border-radius: 12px;
+    padding: 12px 32px;
+    font-size: 15px;
+    font-weight: 500;
+}
+
+.confirm-buttons .glass-btn.btn-success {
+    color: var(--text-white);
+    background: rgba(var(--color-success), 0.25);
+}
+
+.confirm-buttons .glass-btn.btn-success:hover {
+    background: rgba(var(--color-success), 0.4);
+}
+
+.confirm-buttons .glass-btn.btn-warning {
+    color: var(--text-white);
+    background: rgba(var(--color-warning), 0.25);
+}
+
+.confirm-buttons .glass-btn.btn-warning:hover {
+    background: rgba(var(--color-warning), 0.4);
+}
+
+.confirm-buttons .glass-btn.btn-danger {
+    color: var(--text-white);
+    background: rgba(var(--color-danger), 0.25);
+}
+
+.confirm-buttons .glass-btn.btn-danger:hover {
+    background: rgba(var(--color-danger), 0.4);
+}
+
+.confirm-buttons .glass-btn.btn-cancel {
+    color: var(--text-light);
+    background: rgb(255 255 255 / 8%);
+}
+
+.confirm-buttons .glass-btn.btn-cancel:hover {
+    background: rgb(255 255 255 / 14%);
+}
+
+@media (max-width: 768px) {
+    .custom-confirm {
+        min-width: 90%;
+        padding: 20px;
+    }
+}

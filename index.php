@@ -1,26 +1,16 @@
 <?php
 session_start();
 
-require_once 'config/database.php';
+require_once 'includes/bootstrap.php';
 
 try {
     $db = Database::getInstance();
     $pdo = $db->getConnection();
     $config = Database::getConfig($pdo);
-    
-    // 获取上传限制配置
-    $maxFileSize = 0;
-    $stmt = $pdo->prepare("SELECT value FROM configs WHERE `key` = 'max_file_size'");
-    $stmt->execute();
-    if ($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
-        $maxFileSize = (int)$row['value'];
-    }
+    $maxFileSize = (int)($config['max_file_size'] ?? 0);
     
     // 检查是否需要登录限制
-    if ($config && 
-        isset($config['login_restriction']) && 
-        filter_var($config['login_restriction'], FILTER_VALIDATE_BOOLEAN) && 
-        (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin'])) {
+    if (filter_var($config['login_restriction'] ?? 'false', FILTER_VALIDATE_BOOLEAN) && empty($_SESSION['loggedin'])) {
         header('Location: /admin');
         exit();
     }
@@ -40,104 +30,88 @@ try {
     <link rel="stylesheet" type="text/css" href="static/css/styles.css">
 </head>
 <body>
-    <header class="blur">
+    <header class="glass glass-in">
         <a href="https://www.bsgun.cn/" target="_blank" title="主页" class="header-link">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-home"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-home"></use></svg>
         </a>
         <a href="https://blog.bsgun.cn/" target="_blank" title="博客" class="header-link">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-Blog"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Blog"></use></svg>
         </a>
         <a href="https://github.com/JLinMr/PixPro/" target="_blank" title="Github" class="header-link">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-Github"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Github"></use></svg>
         </a>
         <a href="/admin/" target="_blank" title="后台" class="header-link">
-            <svg class="icon" aria-hidden="true">
-                <use xlink:href="#icon-Setting"></use>
-            </svg>
+            <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Setting"></use></svg>
         </a>
     </header>
     <main>
-        <div class="upload-container blur">
-            <form id="uploadForm" enctype="multipart/form-data">
+        <div class="upload-container glass glass-in">
+            <form id="uploadForm" enctype="multipart/form-data" method="post" action="#" onsubmit="return false;">
                 <!-- 上传框区域 -->
                 <div class="upload-section">
-                    <button id="deleteImageButton" class="deleteImageButton">
-                        <svg class="icon" aria-hidden="true">
-                            <use xlink:href="#icon-xmark"></use>
-                        </svg>
+                    <button type="button" id="deleteImageButton" class="deleteImageButton glass-btn">
+                        <svg class="icon" aria-hidden="true"><use xlink:href="#icon-xmark"></use></svg>
                     </button>
-                    <div id="imageUploadBox" class="imageUploadBox" onclick="document.getElementById('imageInput').click();">
-                        <svg class="icon upload-icon" aria-hidden="true">
-                            <use xlink:href="#icon-up"></use>
-                        </svg>
-                        <input type="file" id="imageInput" name="image[]" accept="image/png, image/jpeg, image/webp, image/svg+xml, image/gif" multiple>
+                    <div id="imageUploadBox" class="imageUploadBox glass-subtle" onclick="document.getElementById('imageInput').click();">
+                        <svg class="icon upload-icon" aria-hidden="true"><use xlink:href="#icon-up"></use></svg>
+                        <input type="file" id="imageInput" accept="image/png, image/jpeg, image/webp, image/gif" multiple>
                         <div id="imagePreviewContainer" class="imagePreviewContainer">
-                            <button id="prevButton" class="nav-button prev-button">
-                                <svg class="icon" aria-hidden="true">
-                                    <use xlink:href="#icon-Left-arrow"></use>
-                                </svg>
+                            <button type="button" id="prevButton" class="nav-button prev-button glass-btn">
+                                <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Left-arrow"></use></svg>
                             </button>
                             <img id="imagePreview" class="imagePreview" src="" alt="">
-                            <button id="nextButton" class="nav-button next-button">
-                                <svg class="icon" aria-hidden="true">
-                                    <use xlink:href="#icon-Right-arrow"></use>
-                                </svg>
+                            <button type="button" id="nextButton" class="nav-button next-button glass-btn">
+                                <svg class="icon" aria-hidden="true"><use xlink:href="#icon-Right-arrow"></use></svg>
                             </button>
-                            <div id="imageCounter" class="image-counter"></div>
+                            <div id="imageCounter" class="image-counter glass-counter"></div>
                         </div>
                     </div>
                 </div>
 
                 <!-- 缩略图区域 -->
-                <div id="thumbnailStrip" class="thumbnail-strip">
+                <div id="thumbnailStrip" class="thumbnail-strip glass-panel">
                     <div id="thumbnailScrollContainer" class="thumbnail-scroll-container"></div>
                 </div>
 
                 <!-- 网络图片上传输入框 -->
                 <div class="url-input-section">
-                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput" placeholder="输入图片网络链接自动上传，或使用Ctrl+V粘贴图片" title="注意：部分网站设置了防盗链，可能无法直接下载">
+                    <input type="text" id="pasteOrUrlInput" class="pasteOrUrlInput glass-input" placeholder="输入图片网络链接自动上传，或使用Ctrl+V粘贴图片" title="注意：部分网站设置了防盗链，可能无法直接下载">
                 </div>
 
                 <!-- 压缩比率调整 -->
-                <div class="quality-section">
+                <div class="quality-section glass-panel">
                     <label for="qualityInput">图片清晰度 60-100<output id="qualityOutput" class="qualityOutput">60</output></label>
-                    <input type="range" id="qualityInput" name="quality" min="60" max="100" value="60" step="1">
+                    <input type="range" id="qualityInput" min="60" max="100" value="60" step="1">
                 </div>
 
                 <!-- 复制按钮区域 -->
                 <div class="copy-section">
                     <div class="copy-tab-buttons">
                         <div class="copy-icons-column">
-                            <button class="copy-tab-btn" data-type="url" title="复制图片链接">
+                            <button type="button" class="copy-tab-btn glass-panel" data-type="url" title="复制图片链接" disabled>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-imageUrl"></use>
                                 </svg>
                             </button>
-                            <button class="copy-tab-btn" data-type="markdown" title="复制Markdown代码">
+                            <button type="button" class="copy-tab-btn glass-panel" data-type="markdown" title="复制Markdown代码" disabled>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-markdownUrl"></use>
                                 </svg>
                             </button>
-                            <button class="copy-tab-btn" data-type="html" title="复制HTML代码">
+                            <button type="button" class="copy-tab-btn glass-panel" data-type="html" title="复制HTML代码" disabled>
                                 <svg class="icon" aria-hidden="true">
                                     <use xlink:href="#icon-htmlUrl"></use>
                                 </svg>
                             </button>
                         </div>
                         <div class="copy-links-column">
-                            <div class="copy-link-display disabled" data-type="url">
+                            <div class="copy-link-display glass-panel disabled" data-type="url">
                                 <span class="copy-link-text" id="urlLinkText"></span>
                             </div>
-                            <div class="copy-link-display disabled" data-type="markdown">
+                            <div class="copy-link-display glass-panel disabled" data-type="markdown">
                                 <span class="copy-link-text" id="markdownLinkText"></span>
                             </div>
-                            <div class="copy-link-display disabled" data-type="html">
+                            <div class="copy-link-display glass-panel disabled" data-type="html">
                                 <span class="copy-link-text" id="htmlLinkText"></span>
                             </div>
                         </div>
@@ -151,7 +125,7 @@ try {
         </div>
 
         <!-- 图片信息展示 -->
-        <div id="imageInfo" class="imageInfo blur">
+        <div id="imageInfo" class="imageInfo glass glass-in">
             <div class="image-info-block">
                 <div class="info-header">
                     <svg class="icon info-icon" aria-hidden="true">
@@ -160,11 +134,11 @@ try {
                     <h3>原始图片</h3>
                 </div>
                 <div class="info-grid">
-                    <div class="info-item">
+                    <div class="info-item glass-panel">
                         <span class="info-label">尺寸</span>
                         <span class="info-value" id="originalWidth"></span>
                     </div>
-                    <div class="info-item">
+                    <div class="info-item glass-panel">
                         <span class="info-label">大小</span>
                         <span class="info-value" id="originalSize"></span>
                     </div>
@@ -178,31 +152,28 @@ try {
                     <h3>压缩后</h3>
                 </div>
                 <div class="info-grid">
-                    <div class="info-item">
+                    <div class="info-item glass-panel">
                         <span class="info-label">尺寸</span>
                         <span class="info-value" id="compressedWidth"></span>
                     </div>
-                    <div class="info-item">
+                    <div class="info-item glass-panel">
                         <span class="info-label">大小</span>
                         <span class="info-value" id="compressedSize"></span>
                     </div>
                 </div>
             </div>
             <div class="compression-stats">
-                <div class="stat-badge">
+                <div class="stat-badge glass-panel">
                     <span class="stat-label">压缩率</span>
                     <span class="stat-value" id="compressionRatio">-</span>
                 </div>
-                <div class="stat-badge">
+                <div class="stat-badge glass-panel">
                     <span class="stat-label">节省空间</span>
                     <span class="stat-value" id="savedSpace">-</span>
                 </div>
             </div>
         </div>
-        <!-- 隐藏的元素用于兼容 -->
-        <span id="originalHeight" style="display:none;"></span>
-        <span id="compressedHeight" style="display:none;"></span>
-        <div class="keyboard-hints blur">
+        <div class="keyboard-hints glass glass-in">
             <div class="hint-item">
                 <div class="kbd-group">
                     <kbd>←</kbd><kbd>→</kbd>
@@ -237,7 +208,7 @@ try {
     </main>
     <footer>
         <?php if (($_ENV['DEMO_MODE'] ?? 'false') === 'true'): ?>
-        <div style="padding: 10px;margin-bottom: 10px;border-radius: 10px;font-size: 15px;font-weight: bold;backdrop-filter: blur(10px);-webkit-backdrop-filter: blur(10px);border: 1px solid rgb(255 255 255 / 20%);background: rgb(255 60 60 / 30%);animation: fadeIn 0.5s ease-in-out forwards;">⚠️ 演示站点 - 所有图片公开可见且可能被删除</div>
+        <div class="demo-warning glass glass-in" style="padding: 10px;margin-bottom: 10px;border-radius: 10px;font-size: 15px;font-weight: bold;background: rgb(255 60 60 / 30%);">⚠️ 演示站点 - 所有图片公开可见且可能被删除</div>
         <?php endif; ?>
         <span>富强</span>
         <span>民主</span>
@@ -255,13 +226,12 @@ try {
             <span>© 2024</span><a href="https://bsgun.cn" target="_blank">梦爱吃鱼</a>
             <span>本站程序发布在</span><a href="https://github.com/JLinMr/PixPro/" target="_blank">Github</a>
             <button class="logo-btn">站点声明</button>
-            <em class="logotitle blur">本站不保证内容，时效和稳定性，请勿上传包含危害国家安全和民族团结、侵犯他人权益、欺骗性质、色情或暴力的图片。严格遵守国家相关法律法规，尊重版权、著作权等权利；图片内容均由「网友」自行上传，所有图片作用、性质都与本站无关，本站对所有图片合法性概不负责，亦不承担任何法律责任；</em>
+            <em class="logotitle glass glass-in">本站不保证内容，时效和稳定性，请勿上传包含危害国家安全和民族团结、侵犯他人权益、欺骗性质、色情或暴力的图片。严格遵守国家相关法律法规，尊重版权、著作权等权利；图片内容均由「网友」自行上传，所有图片作用、性质都与本站无关，本站对所有图片合法性概不负责，亦不承担任何法律责任；</em>
         </div>
     </footer>
     <script type="module" src="static/js/main.js" data-max-file-size="<?php echo $maxFileSize; ?>">
     </script>
-    <!-- 引入鼠标指针跟随特效 -->
-    <script type="text/javascript" src="static/js/cursor.js" defer data-lazy="true"></script>
+    <script type="text/javascript" src="static/js/front/cursor.js" defer></script>
     <script src="//at.alicdn.com/t/c/font_4623353_hb4c04qfi4u.js"></script>
 </body>
 </html>

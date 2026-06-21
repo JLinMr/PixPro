@@ -29,8 +29,6 @@
     padding: 0;
     z-index: 99;
     transition: all 0.3s ease;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
     align-items: center;
     justify-content: center;
 }
@@ -63,9 +61,6 @@
     box-sizing: border-box;
     position: relative;
     transition: all 0.3s ease-in-out;
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: var(--gradient-glass-light);
 }
 
 .imageUploadBox:hover,
@@ -177,7 +172,6 @@
     border-radius: 15px;
     font-size: 12px;
     display: none;
-    backdrop-filter: blur(5px);
 }
 
 .image-counter:not(:empty) {
@@ -191,12 +185,10 @@
     width: 100%;
     max-height: 0;
     padding: 0 10px;
-    border-radius: 10px;
+    border-radius: 12px;
     margin-bottom: 0;
     overflow: hidden;
     box-sizing: border-box;
-    background: var(--bg-white-10);
-    border: 1px solid var(--border-white-20);
     opacity: 0;
     transition: max-height 0.4s ease-in-out, 
                 padding 0.4s ease-in-out, 
@@ -311,9 +303,7 @@
     border: 1px solid var(--border-white-20);
     transition: all 0.3s ease-in-out;
     box-sizing: border-box;
-    background: var(--bg-white-10);
     color: var(--text-white);
-    backdrop-filter: blur(5px);
 }
 
 .pasteOrUrlInput:hover,

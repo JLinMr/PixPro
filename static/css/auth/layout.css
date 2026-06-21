@@ -1,0 +1,57 @@
+body {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.auth-card {
+    width: min(540px, 90vw);
+    padding: 2rem;
+    border-radius: 16px;
+}
+
+.auth-card--narrow {
+    width: min(400px, 90vw);
+}
+
+h2 {
+    margin-bottom: 1.5rem;
+    text-align: center;
+    font-size: 1.75rem;
+    font-weight: 600;
+}
+
+.auth-card .glass-input {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.875rem;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.auth-card .glass-input::placeholder {
+    color: rgb(255 255 255 / 50%);
+}
+
+.auth-card .glass-btn {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #fff;
+    border-radius: 8px;
+    background: rgb(255 255 255 / 25%);
+}
+
+.auth-card .glass-btn:hover {
+    background: rgb(255 255 255 / 35%);
+}
+
+@media (max-width: 640px) {
+    .auth-card {
+        padding: 1.5rem;
+    }
+}

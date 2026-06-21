@@ -1,0 +1,130 @@
+/* 前台上传页：导航、主内容、页脚 */
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px 12px 10px;
+}
+
+#imageUploadBox,
+.copy-link-display:not(.disabled) {
+    cursor: url(/static/images/link.png) 16 16, pointer;
+}
+
+#pasteOrUrlInput {
+    cursor: url(/static/images/text.png) 16 16, text;
+}
+
+header {
+    display: flex;
+    border-radius: 10px;
+    margin-bottom: 20px;
+}
+
+header .icon {
+    width: 30px;
+    height: 30px;
+}
+
+header .header-link {
+    padding: 15px;
+    border-radius: 10px;
+    transition: background-color 0.3s ease-in-out, color 0.3s ease-in-out;
+}
+
+header .header-link:hover {
+    background: var(--bg-white-20);
+}
+
+header a:hover .icon {
+    transform: scale(1.2);
+}
+
+main {
+    width: 100%;
+    max-width: 540px;
+}
+
+footer {
+    color: var(--text-gray);
+    text-align: center;
+    font-size: 12px;
+}
+
+footer span {
+    margin: 0 5px;
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.icp {
+    margin-top: 10px;
+}
+
+.icp a {
+    font-weight: 800;
+    color: var(--link-color);
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.icp a:hover {
+    color: var(--link-hover);
+}
+
+.logo-btn {
+    margin: 0 12px;
+    color: var(--accent-color);
+    font-size: 12px;
+    font-weight: bold;
+    padding: 0;
+    outline: 0;
+    border: none;
+    background: 0 0;
+    animation: fadeIn 0.5s ease-in-out forwards;
+}
+
+.logotitle {
+    position: fixed;
+    top: 0;
+    right: -100%;
+    width: 300px;
+    font-size: 14px;
+    line-height: 1.5;
+    padding: 15px;
+    margin: 15px;
+    transition: all .5s ease-in-out;
+    color: var(--text-light);
+    border-radius: 15px;
+}
+
+.logo-btn:focus ~ em {
+    right: 0;
+}
+
+#cursor {
+    position: fixed;
+    width: 16px;
+    height: 16px;
+    background: var(--text-white);
+    border-radius: 25px;
+    opacity: .25;
+    z-index: 10086;
+    pointer-events: none;
+    transition: .2s ease-in-out;
+    transition-property: background, opacity, transform;
+}
+
+#cursor.hidden {
+    opacity: 0;
+}
+
+#cursor.active {
+    opacity: .5;
+    transform: scale(.5);
+}
+
+@media (max-width: 768px) {
+    #cursor {
+        display: none;
+    }
+}

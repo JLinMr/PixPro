@@ -1,12 +1,4 @@
-/* ========================================
-   前台上传页面样式主文件
-   ======================================== */
-
-/* 基础样式：变量、全局样式、通用组件（导航栏、消息通知、页脚、鼠标指针） */
-@import url('upload/base.css');
-
-/* 上传功能：上传区域、预览、缩略图、URL输入 */
-@import url('upload/uploader.css');
-
-/* 页面组件：质量调整、复制按钮、进度条、图片信息、键盘提示 */
-@import url('upload/components.css');
+@import url('core.css');
+@import url('front/layout.css');
+@import url('front/uploader.css');
+@import url('front/components.css');

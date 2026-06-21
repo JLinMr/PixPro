@@ -2,7 +2,9 @@
 error_reporting(E_ALL);
 ini_set('display_errors', 0);
 
-if (file_exists('../.env')) {
+require_once __DIR__ . '/../includes/database.php';
+
+if (file_exists(PIXPRO_ROOT . '/.env')) {
     header('Location: /');
     exit;
 }
@@ -12,13 +14,14 @@ $error = '';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 1) {
     try {
-        $pdo = new PDO('sqlite:../database.db');
+        $pdo = new PDO('sqlite:' . PIXPRO_ROOT . '/database.db');
         $pdo->setAttribute(PDO::ATTR_ERRMODE, PDO::ERRMODE_EXCEPTION);
+        $pdo->exec('PRAGMA foreign_keys = ON');
         $pdo->beginTransaction();
         
-        createTableStructure($pdo);
+        createPixProTables($pdo);
         handleAdminUser($pdo);
-        initializeConfigs($pdo);
+        initializeDefaultConfigs($pdo);
         saveConfig();
         
         $pdo->commit();
@@ -30,43 +33,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && $step === 1) {
     }
 }
 
-function createTableStructure($pdo) {
-    $tables = [
-        "CREATE TABLE IF NOT EXISTS images (
+function createPixProTables(PDO $pdo) {
+    $pdo->exec(
+        'CREATE TABLE users (
             id INTEGER PRIMARY KEY AUTOINCREMENT,
-            user_id INTEGER NULL,
+            username VARCHAR(255) NOT NULL UNIQUE,
+            password VARCHAR(255) NOT NULL,
+            token VARCHAR(32) NOT NULL UNIQUE
+        )'
+    );
+    $pdo->exec(
+        'CREATE TABLE configs (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            `key` VARCHAR(50) NOT NULL UNIQUE,
+            value TEXT,
+            description VARCHAR(255),
+            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
+        )'
+    );
+    $pdo->exec(
+        'CREATE TABLE images (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            user_id INTEGER NULL REFERENCES users(id) ON DELETE SET NULL,
             url VARCHAR(255) NOT NULL,
             path VARCHAR(255) NOT NULL,
             storage VARCHAR(50) NOT NULL,
             size INTEGER NOT NULL,
             upload_ip VARCHAR(45) NOT NULL,
             created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )",
-        "CREATE TABLE IF NOT EXISTS users (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            username VARCHAR(255) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL,
-            token VARCHAR(32) NOT NULL UNIQUE
-        )",
-        "CREATE TABLE IF NOT EXISTS configs (
-            id INTEGER PRIMARY KEY AUTOINCREMENT,
-            `key` VARCHAR(50) NOT NULL UNIQUE,
-            value TEXT,
-            description VARCHAR(255),
-            created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-        )"
-    ];
-    
-    foreach ($tables as $sql) {
+        )'
+    );
+    foreach ([
+        'CREATE INDEX idx_images_user_created ON images(user_id, created_at)',
+        'CREATE INDEX idx_images_ip_created ON images(upload_ip, created_at)',
+        'CREATE INDEX idx_images_path ON images(path)',
+        'CREATE INDEX idx_images_id_desc ON images(id DESC)',
+    ] as $sql) {
         $pdo->exec($sql);
     }
 }
 
-function initializeConfigs($pdo) {
-    $protocol = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') ? 'https://' : 'http://';
-    $siteUrl = $protocol . $_SERVER['HTTP_HOST'];
-    
-    $configs = [
+function initializeDefaultConfigs(PDO $pdo) {
+    $stmt = $pdo->prepare('INSERT INTO configs (`key`, value, description) VALUES (?, ?, ?)');
+    foreach ([
         ['storage', 'local', '存储方式'],
         ['url_prefix', '', '图片代理'],
         ['per_page', '20', '每页显示数量'],
@@ -74,11 +83,8 @@ function initializeConfigs($pdo) {
         ['max_file_size', '5242880', '最大文件大小'],
         ['max_uploads_per_day', '50', '每日上传限制'],
         ['output_format', 'webp', '输出图片格式'],
-        ['site_domain', $siteUrl, '网站域名']
-    ];
-
-    $stmt = $pdo->prepare("REPLACE INTO configs (`key`, value, description) VALUES (?, ?, ?)");
-    foreach ($configs as $config) {
+        ['image_count', '0', '图片总数缓存'],
+    ] as $config) {
         $stmt->execute($config);
     }
 }
@@ -115,8 +121,8 @@ DEMO_MODE = false
 ALLOW_PASSWORD_RESET = false
 ENV;
     
-    file_put_contents('../.env', $content);
-    chmod('../.env', 0600);
+    file_put_contents(PIXPRO_ROOT . '/.env', $content);
+    chmod(PIXPRO_ROOT . '/.env', 0600);
 }
 
 function checkEnvironment() {
@@ -154,10 +160,10 @@ if ($step === 0) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>网站安装</title>
     <link rel="shortcut icon" href="../static/favicon.svg">
-    <link rel="stylesheet" href="install.css">
+    <link rel="stylesheet" href="/static/css/auth/install.css">
 </head>
 <body>
-    <div class="container">
+    <div class="auth-card glass">
         <h2>网站安装向导</h2>
         
         <?php if ($step === 0): ?>
@@ -178,7 +184,7 @@ if ($step === 0) {
             
             <div class="form-group">
                 <?php if ($canProceed): ?>
-                    <input type="button" value="下一步" onclick="location.href='?step=1'">
+                    <button type="button" class="glass-btn" onclick="location.href='?step=1'">下一步</button>
                 <?php else: ?>
                     <div class="error-message">
                         请解决上述问题后继续安装
@@ -200,26 +206,20 @@ if ($step === 0) {
                 foreach ($fields as [$id, $label, $type]): ?>
                     <div class="form-group">
                         <label for="<?= $id ?>"><?= $label ?></label>
-                        <input type="<?= $type ?>" id="<?= $id ?>" name="<?= $id ?>" required>
+                        <input type="<?= $type ?>" class="glass-input" id="<?= $id ?>" name="<?= $id ?>" required>
                     </div>
                 <?php endforeach; ?>
                 <div class="form-group">
-                    <input type="submit" value="开始安装">
+                    <button type="submit" class="glass-btn">开始安装</button>
                 </div>
             </form>
         <?php endif; ?>
     </div>
     
     <?php if ($error): ?>
-    <script>
-        const div = document.createElement('div');
-        div.className = 'msg msg-red';
-        div.textContent = <?= json_encode($error) ?>;
-        document.body.appendChild(div);
-        setTimeout(() => {
-            div.classList.add('msg-right');
-            setTimeout(() => div.remove(), 800);
-        }, 1500);
+    <script type="module">
+        import { toast } from '../static/js/core/ui.js';
+        toast(<?= json_encode($error) ?>, 'error');
     </script>
     <?php endif; ?>
 </body>

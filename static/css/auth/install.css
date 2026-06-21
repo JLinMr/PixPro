@@ -1,0 +1,82 @@
+@import url('../core.css');
+@import url('layout.css');
+
+.check-table {
+    width: 100%;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    margin-bottom: 1.5rem;
+    background: rgb(0 0 0 / 20%);
+    box-shadow: 0 0 0 3px rgb(255 255 255 / 10%);
+}
+
+.check-table th,
+.check-table td {
+    padding: 0.875rem 1rem;
+    text-align: left;
+    font-size: 0.875rem;
+    border-bottom: 1px solid rgb(255 255 255 / 10%);
+}
+
+.check-table th {
+    background: rgb(255 255 255 / 15%);
+}
+
+.check-table tr:last-child td {
+    border-bottom: none;
+}
+
+.check-table .success {
+    color: #4ade80;
+}
+
+.check-table .error {
+    color: #f87171;
+}
+
+.info-message {
+    padding: 0.75rem;
+    margin-bottom: 1.5rem;
+    border-radius: 8px;
+    font-size: 0.875rem;
+    background: rgb(0 0 0 / 20%);
+    border: 1px solid rgb(255 255 255 / 20%);
+}
+
+.info-message p {
+    margin: 0.5rem 0;
+}
+
+.error-message {
+    padding: 0.5rem;
+    border-radius: 8px;
+    background: rgb(220 38 38 / 15%);
+    border: 1px solid rgb(220 38 38 / 30%);
+    text-align: center;
+    font-size: 0.875rem;
+}
+
+.force-install {
+    display: inline-block;
+    padding: 0.5rem 1rem;
+    background: rgb(220 38 38 / 25%);
+    color: #fff;
+    text-decoration: none;
+    border-radius: 6px;
+    border: 1px solid rgb(220 38 38 / 40%);
+    font-size: 0.875rem;
+    transition: all 0.3s ease;
+}
+
+.force-install:hover {
+    background: rgb(220 38 38 / 50%);
+}
+
+@media (max-width: 640px) {
+    .check-table th,
+    .check-table td {
+        padding: 0.75rem;
+        font-size: 0.8125rem;
+    }
+}

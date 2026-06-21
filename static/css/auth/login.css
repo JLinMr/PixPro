@@ -1,0 +1,58 @@
+.auth-card .glass-btn.btn-demo {
+    background: rgb(255 193 7 / 25%);
+    border-color: rgb(255 193 7 / 40%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.auth-card .glass-btn.btn-demo:hover {
+    background: rgb(255 193 7 / 35%);
+    border-color: rgb(255 193 7 / 50%);
+}
+
+.toggle-form {
+    margin-top: 1rem;
+    text-align: center;
+    font-size: 0.875rem;
+    color: rgb(255 255 255 / 80%);
+}
+
+.toggle-form a {
+    color: #fff;
+    text-decoration: none;
+    font-weight: 500;
+    transition: opacity 0.3s ease;
+}
+
+.toggle-form a:hover {
+    opacity: 0.8;
+}
+
+.form-container {
+    display: none;
+}
+
+.form-container.active {
+    display: block;
+}
+
+.security-warning {
+    margin-bottom: 1.5rem;
+    padding: 1rem;
+    background: rgb(239 68 68 / 15%);
+    border: 1px solid rgb(239 68 68 / 30%);
+    border-radius: 8px;
+    font-size: 0.875rem;
+    line-height: 1.5;
+}
+
+.security-warning strong {
+    display: block;
+    margin-bottom: 0.5rem;
+    color: #fca5a5;
+}
+
+label {
+    font-weight: 500;
+}

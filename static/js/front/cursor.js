@@ -22,7 +22,7 @@ class CustomCursor {
         if (!this.cursor) {
             this.cursor = document.createElement("div");
             this.cursor.id = "cursor";
-            this.cursor.classList.add("xs-hidden", "hidden");
+            this.cursor.classList.add('hidden');
             document.body.append(this.cursor);
         }
     }
@@ -48,7 +48,6 @@ class CustomCursor {
         document.addEventListener('mousedown', this.handleMouseDown);
         document.addEventListener('mouseup', this.handleMouseUp);
 
-        // 等待 imageInput 元素加载
         const initImageInput = () => {
             const imageInput = document.getElementById('imageInput');
             if (imageInput) {
@@ -110,36 +109,19 @@ class CustomCursor {
             this.render();
         }
     }
-
-    destroy() {
-        this.pauseRendering();
-        
-        if (this.checkIntervalId) {
-            clearInterval(this.checkIntervalId);
-            this.checkIntervalId = null;
-        }
-
-        document.removeEventListener('mousemove', this.handleMouseMove);
-        document.removeEventListener('mouseenter', this.handleMouseEnter);
-        document.removeEventListener('mouseleave', this.handleMouseLeave);
-        document.removeEventListener('mousedown', this.handleMouseDown);
-        document.removeEventListener('mouseup', this.handleMouseUp);
-
-        if (this.cursor) {
-            this.cursor.remove();
-            this.cursor = null;
-        }
-    }
 }
 
 Math.lerp = (start, end, amt) => (1 - amt) * start + amt * end;
 
-document.addEventListener("DOMContentLoaded", () => {
-    const cursorInstance = new CustomCursor();
-    
-    new IntersectionObserver(entries => {
-        entries.forEach(entry => {
-            entry.isIntersecting ? cursorInstance.resumeRendering() : cursorInstance.pauseRendering();
-        });
-    }).observe(document.body);
-});
+if (window.matchMedia('(hover: hover) and (pointer: fine)').matches) {
+    document.addEventListener('DOMContentLoaded', () => {
+        const cursorInstance = new CustomCursor();
+
+        new IntersectionObserver((entries) => {
+            entries.forEach((entry) => {
+                if (entry.isIntersecting) cursorInstance.resumeRendering();
+                else cursorInstance.pauseRendering();
+            });
+        }).observe(document.body);
+    });
+}
