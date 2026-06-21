@@ -274,7 +274,7 @@ if ($step === 0) {
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>数据库迁移</title>
-    <link rel="shortcut icon" href="static/favicon.svg">
+    <link rel="shortcut icon" href="/static/favicon.svg">
     <link rel="stylesheet" href="/static/css/auth/install.css">
 </head>
 <body>
@@ -304,7 +304,7 @@ if ($step === 0) {
             
             <div class="form-group">
                 <?php if ($canProceed): ?>
-                    <input type="button" value="下一步" onclick="location.href='?step=1'">
+                    <button type="button" class="glass-btn" onclick="location.href='?step=1'">下一步</button>
                 <?php else: ?>
                     <div class="error-message">
                         请解决上述问题后继续迁移
@@ -326,9 +326,9 @@ if ($step === 0) {
                     <p><strong>请确保已备份重要数据！</strong></p>
                 </div>
                 
-                <div class="form-group" style="display: flex; gap: 10px;">
-                    <input type="button" value="取消" onclick="location.href='/'" style="flex: 1;">
-                    <input type="submit" value="确认迁移" style="flex: 1;">
+                <div class="form-group form-actions">
+                    <button type="button" class="glass-btn" onclick="location.href='/'">取消</button>
+                    <button type="submit" class="glass-btn">确认迁移</button>
                 </div>
             </form>
             
@@ -372,7 +372,7 @@ if ($step === 0) {
             </div>
             
             <div class="form-group">
-                <input type="button" value="返回首页" onclick="location.href='/'">
+                <button type="button" class="glass-btn" onclick="location.href='/'">返回首页</button>
             </div>
         <?php endif; ?>
         

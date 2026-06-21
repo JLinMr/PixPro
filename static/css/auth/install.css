@@ -73,6 +73,16 @@
     background: rgb(220 38 38 / 50%);
 }
 
+.form-actions {
+    display: flex;
+    gap: 10px;
+}
+
+.form-actions .glass-btn {
+    flex: 1;
+    margin-top: 0;
+}
+
 @media (max-width: 640px) {
     .check-table th,
     .check-table td {

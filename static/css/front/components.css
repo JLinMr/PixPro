@@ -19,6 +19,12 @@
     color: var(--text-light);
 }
 
+.qualityOutput,
+#qualityOutput {
+    color: var(--primary-color);
+    font-weight: 600;
+}
+
 /* Range 输入框 (#qualityInput) */
 input[type="range"],
 #qualityInput {
@@ -32,6 +38,7 @@ input[type="range"],
     transition: all 0.3s ease-in-out;
     border-radius: 5px;
     cursor: url(/static/images/link.png) 16 16, pointer;
+    accent-color: var(--primary-color);
 }
 
 input[type="range"]::-webkit-slider-thumb {

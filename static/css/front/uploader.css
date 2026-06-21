@@ -255,6 +255,7 @@
 
 .thumbnail.active {
     border-color: var(--primary-color);
+    box-shadow: 0 0 8px rgb(76 175 80 / 45%);
 }
 
 .thumbnail:hover {

@@ -1,6 +1,11 @@
 :root {
     --accent-color: #f45873;
 
+    --primary-color: #4caf50;
+    --success-color: #4caf50;
+    --warning-color: #ffa500;
+    --error-color: #f44336;
+
     --color-success: 0, 126, 0;
     --color-warning: 234, 179, 8;
     --color-danger: 166, 19, 19;
