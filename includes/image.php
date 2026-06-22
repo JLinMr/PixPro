@@ -119,7 +119,7 @@ function processImageCompression($fileMimeType, $newFilePath, $newFilePathWithou
                 'gd_create_failed' => '无法创建图像资源',
                 'unsupported_mime_type' => '不支持的图片格式',
             ];
-            jsonExit(['result' => 'error', 'code' => 500, 'message' => $errorMessages[$convertResult] ?? '图片转换失败']);
+            jsonExit(['status' => false, 'message' => $errorMessages[$convertResult] ?? '图片转换失败', 'data' => []]);
         }
     }
 
@@ -220,11 +220,11 @@ function validateFile($file) {
     [$mimeType, $extension] = detectMimeType($file);
 
     if ($mimeType === 'image/svg+xml' || in_array($extension, ['svg', 'svgz'], true)) {
-        jsonExit(['result' => 'error', 'code' => 406, 'message' => '不支持 SVG 格式']);
+        jsonExit(['status' => false, 'message' => '不支持 SVG 格式', 'data' => []]);
     }
 
     if (!in_array($mimeType, $allowedTypes)) {
-        jsonExit(['result' => 'error', 'code' => 406, 'message' => '不支持的文件类型']);
+        jsonExit(['status' => false, 'message' => '不支持的文件类型', 'data' => []]);
     }
 
     $isValidImage = ($mimeType === 'application/octet-stream')
@@ -232,7 +232,7 @@ function validateFile($file) {
         : getimagesize($file['tmp_name']) !== false;
 
     if (!$isValidImage) {
-        jsonExit(['result' => 'error', 'code' => 406, 'message' => '文件不是有效的图片']);
+        jsonExit(['status' => false, 'message' => '文件不是有效的图片', 'data' => []]);
     }
 
     return [$mimeType, $extension];
@@ -244,13 +244,13 @@ function handleUploadedFile($file) {
     $config = Database::getConfig($pdo);
     $storage = $config['storage'];
     $user_id = resolveUploadUserId($pdo);
-    $quality = intval($_POST['quality'] ?? 60);
+    $quality = max(1, min(100, intval($_POST['quality'] ?? 60)));
 
     [$mimeType, $extension] = validateFile($file);
 
     $datePath = 'i/' . date('Y/m/d');
     if (!is_dir($datePath) && !mkdir($datePath, 0755, true)) {
-        jsonExit(['result' => 'error', 'code' => 500, 'message' => '无法创建上传目录']);
+        jsonExit(['status' => false, 'message' => '无法创建上传目录', 'data' => []]);
     }
 
     $randomFileName = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -258,7 +258,7 @@ function handleUploadedFile($file) {
     $newFilePath = $datePath . '/' . $randomFileName . '.' . $ext;
 
     if (!move_uploaded_file($file['tmp_name'], $newFilePath)) {
-        jsonExit(['result' => 'error', 'code' => 500, 'message' => '文件上传失败']);
+        jsonExit(['status' => false, 'message' => '文件上传失败', 'data' => []]);
     }
 
     ini_set('memory_limit', '1024M');
@@ -308,6 +308,6 @@ function handleUploadedFile($file) {
         $errorMsg = $e->getMessage();
         logMessage("上传失败 | IP: {$clientIp} | 存储: {$storage} | 错误: {$errorMsg}");
 
-        generateUploadResponse('', '', '', 0, 0, 0, "文件上传到{$storage}失败: " . $errorMsg, true);
+        generateUploadResponse('', '', '', 0, 0, 0, '上传失败，请稍后重试', true);
     }
 }

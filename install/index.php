@@ -9,6 +9,11 @@ if (file_exists(PIXPRO_ROOT . '/.env')) {
     exit;
 }
 
+if (file_exists(PIXPRO_ROOT . '/database.db')) {
+    http_response_code(403);
+    exit('检测到 PixPro 似乎已安装。请恢复 .env 文件，或手动移除 database.db 后再重新安装。');
+}
+
 $step = isset($_GET['step']) ? (int)$_GET['step'] : 0;
 $error = '';
 

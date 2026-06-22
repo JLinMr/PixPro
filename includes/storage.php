@@ -115,7 +115,7 @@ class StorageHelper {
                 'secret' => $config['s3_access_key_secret'],
             ],
             'suppress_php_deprecation_warning' => true,
-            'http' => ['verify' => false],
+            'http' => ['verify' => true],
         ]);
     }
 

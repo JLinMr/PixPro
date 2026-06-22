@@ -19,7 +19,7 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES)) {
-        jsonExit(['result' => 'error', 'code' => 204, 'message' => '无文件上传']);
+        jsonExit(['status' => false, 'message' => '无文件上传', 'data' => []]);
     }
 
     $uploadCheck = isUploadAllowed(
@@ -29,13 +29,13 @@ try {
         getClientIp()
     );
     if ($uploadCheck !== true) {
-        jsonExit(['result' => 'error', 'message' => $uploadCheck]);
+        jsonExit(['status' => false, 'message' => $uploadCheck, 'data' => []]);
     }
 
     $maxFileSize = getConfigInt($pdo, 'max_file_size');
     foreach ($_FILES as $file) {
         if ($file['size'] > $maxFileSize) {
-            jsonExit(['result' => 'error', 'message' => '文件大小超过限制，最大允许 ' . ($maxFileSize / (1024 * 1024)) . 'MB']);
+            jsonExit(['status' => false, 'message' => '文件大小超过限制，最大允许 ' . ($maxFileSize / (1024 * 1024)) . 'MB', 'data' => []]);
         }
     }
 
@@ -46,5 +46,5 @@ try {
     }
 } catch (Exception $e) {
     logMessage('错误: ' . $e->getMessage());
-    jsonExit(['result' => 'error', 'code' => 500, 'message' => '发生错误: ' . $e->getMessage()]);
+    jsonExit(['status' => false, 'message' => '请求失败，请稍后重试', 'data' => []]);
 }

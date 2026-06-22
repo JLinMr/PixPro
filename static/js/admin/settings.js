@@ -7,10 +7,16 @@ const STORAGE_TEST_REQUIRED = {
     upyun: ['upyun_bucket', 'upyun_operator', 'upyun_password']
 };
 
-const ajaxHeaders = { 'X-Requested-With': 'XMLHttpRequest' };
+const ajaxHeaders = {
+    'X-Requested-With': 'XMLHttpRequest',
+    'X-CSRF-Token': window.PIXPRO_CSRF_TOKEN || ''
+};
 const CLOSE_OUTSIDE_MARGIN = 300; // 遮罩点击关闭的安全区域
 
 async function postSettings(body) {
+    if (body instanceof FormData && window.PIXPRO_CSRF_TOKEN) {
+        body.set('csrf_token', window.PIXPRO_CSRF_TOKEN);
+    }
     const response = await fetch('settings.php', { method: 'POST', headers: ajaxHeaders, body });
     return response.json();
 }

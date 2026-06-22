@@ -272,6 +272,8 @@ $pdo = $db->getConnection();
 $demoMode = ($_ENV['DEMO_MODE'] ?? 'false') === 'true';
 
 if (!empty($_POST['action'])) {
+    validateCsrfToken();
+
     try {
         switch ($_POST['action']) {
             case 'test_storage':
@@ -291,10 +293,10 @@ if (!empty($_POST['action'])) {
                     StorageHelper::testConnection($storageType, $config);
                     jsonExit(['success' => true, 'message' => '存储连接测试成功']);
                 } catch (Exception $e) {
+                    error_log('存储连接测试失败: ' . ($e->getMessage() ?: '未知错误'));
                     jsonExit([
                         'success' => false,
-                        'message' => '存储连接失败，请检查配置',
-                        'error' => $e->getMessage()
+                        'message' => '存储连接失败，请检查配置'
                     ]);
                 }
                 break;
@@ -343,11 +345,14 @@ if (!empty($_POST['action'])) {
                 throw new Exception('未知操作');
         }
     } catch (Exception $e) {
-        jsonExit(['success' => false, 'message' => $e->getMessage()], 500);
+        error_log('设置操作失败: ' . ($e->getMessage() ?: '未知错误'));
+        jsonExit(['success' => false, 'message' => '操作失败，请稍后重试'], 500);
     }
 }
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    validateCsrfToken();
+
     if ($demoMode) {
         jsonExit(['success' => false, 'message' => '演示模式下禁止修改设置']);
     }
@@ -390,7 +395,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         jsonExit(['success' => true, 'message' => '设置已更新']);
     } catch (Exception $e) {
         $pdo->rollback();
-        jsonExit(['success' => false, 'message' => '更新失败: ' . $e->getMessage()]);
+        error_log('设置更新失败: ' . ($e->getMessage() ?: '未知错误'));
+        jsonExit(['success' => false, 'message' => '更新失败，请稍后重试']);
     }
 }
 

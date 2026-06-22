@@ -38,8 +38,14 @@ const api = {
     async deleteOne(path) {
         const res = await fetch('../delete.php', {
             method: 'POST',
-            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-            body: `path=${encodeURIComponent(path)}`
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'X-CSRF-Token': window.PIXPRO_CSRF_TOKEN || ''
+            },
+            body: new URLSearchParams({
+                path,
+                csrf_token: window.PIXPRO_CSRF_TOKEN || ''
+            })
         });
         const data = await res.json();
         if (data.result !== 'success') throw new Error();

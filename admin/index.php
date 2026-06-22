@@ -8,12 +8,14 @@ if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
 }
 
 require_once '../includes/bootstrap.php';
+require_once '../includes/http.php';
 require_once 'settings.php';
 require 'pagination.php';
 
 $db = Database::getInstance();
 $pdo = $db->getConnection();
 $demoMode = ($_ENV['DEMO_MODE'] ?? 'false') === 'true';
+$csrfToken = ensureCsrfToken();
 
 if (isset($_GET['logout']) && $_GET['logout'] === 'true') {
     session_destroy();
@@ -34,7 +36,6 @@ $images = $stmt->fetchAll(PDO::FETCH_ASSOC);
 $isAjax = strtolower($_SERVER['HTTP_X_REQUESTED_WITH'] ?? '') === 'xmlhttprequest';
 
 if ($isAjax) {
-    require_once '../includes/http.php';
     jsonExit([
         'success' => true,
         'html' => renderImagesList($images),
@@ -81,6 +82,7 @@ $pagination = renderPagination($current_page, $total_pages);
     <script src="//at.alicdn.com/t/c/font_4623353_hb4c04qfi4u.js"></script>
     <script src="/static/js/fancybox.umd.min.js"></script>
     <script src="/static/js/lazyload.min.js"></script>
+    <script>window.PIXPRO_CSRF_TOKEN = <?= json_encode($csrfToken) ?>;</script>
     <script type="module" src="/static/js/admin.js"></script>
 </body>
 </html>

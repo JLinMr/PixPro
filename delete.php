@@ -6,11 +6,13 @@ require_once __DIR__ . '/includes/storage.php';
 require_once __DIR__ . '/includes/http.php';
 
 if (empty($_SESSION['loggedin'])) {
-    jsonExit(['result' => 'error', 'message' => '未登录，无权限执行删除操作'], 403);
+    jsonExit(['status' => false, 'message' => '未登录，无权限执行删除操作', 'data' => []], 403);
 }
 
 if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    jsonExit(['result' => 'error', 'message' => '仅允许 POST 请求。'], 405);
+    jsonExit(['status' => false, 'message' => '仅允许 POST 请求。', 'data' => []], 405);
 }
+
+validateCsrfToken();
 
 jsonExit((new ImageDeleter(Database::getInstance()->getConnection()))->delete($_POST['path'] ?? ''));

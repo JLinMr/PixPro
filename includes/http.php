@@ -11,6 +11,25 @@ function jsonExit(array $data, int $code = 200): void {
     exit;
 }
 
+function ensureCsrfToken(): string {
+    if (session_status() !== PHP_SESSION_ACTIVE) {
+        session_start();
+    }
+
+    if (empty($_SESSION['csrf_token'])) {
+        $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
+    }
+
+    return $_SESSION['csrf_token'];
+}
+
+function validateCsrfToken(): void {
+    $token = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($token) || !hash_equals(ensureCsrfToken(), $token)) {
+        jsonExit(['success' => false, 'message' => 'CSRF token 无效'], 403);
+    }
+}
+
 function logMessage($message) {
     file_put_contents(
         PIXPRO_ROOT . '/上传日志.txt',
@@ -66,11 +85,11 @@ function validateUploadAccess($pdo) {
         if (getUserIdByToken($pdo, $token)) {
             return;
         }
-        jsonExit(['result' => 'error', 'code' => 403, 'message' => 'Token 验证失败']);
+        jsonExit(['status' => false, 'message' => 'Token 验证失败', 'data' => []]);
     }
 
     if ($loginRestriction && empty($_SESSION['loggedin'])) {
-        jsonExit(['result' => 'error', 'code' => 403, 'message' => '请先登录后再上传']);
+        jsonExit(['status' => false, 'message' => '请先登录后再上传', 'data' => []]);
     }
 }
 
@@ -81,7 +100,16 @@ function setCorsHeaders() {
 }
 
 function getClientIp() {
-    $ip = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_CLIENT_IP'] ?? $_SERVER['REMOTE_ADDR'];
+    $ip = $_SERVER['REMOTE_ADDR'] ?? '';
+    $trustedProxies = array_filter(array_map('trim', explode(',', $_ENV['TRUSTED_PROXIES'] ?? '')));
+
+    if ($trustedProxies && in_array($ip, $trustedProxies, true)) {
+        $forwarded = $_SERVER['HTTP_X_FORWARDED_FOR'] ?? $_SERVER['HTTP_CLIENT_IP'] ?? '';
+        if ($forwarded !== '') {
+            $ip = $forwarded;
+        }
+    }
+
     return trim(explode(',', $ip)[0]);
 }
 
@@ -128,17 +156,18 @@ function generateFileUrl($storage, $config, $filePath, $s3Result = null) {
 }
 
 function generateUploadResponse($fileUrl, $filePath, $finalFilePath, $size, $width, $height, $message = '', $isError = false) {
+    $fileName = basename($finalFilePath);
     jsonExit($isError ? [
-        'result' => 'error',
-        'code' => 500,
+        'status' => false,
         'message' => $message,
+        'data' => [],
     ] : [
-        'result' => 'success',
-        'code' => 200,
-        'name' => basename($finalFilePath),
+        'status' => true,
+        'message' => '',
+        'name' => $fileName,
         'data' => [
             'url' => $fileUrl,
-            'name' => basename($finalFilePath),
+            'name' => $fileName,
             'width' => $width,
             'height' => $height,
             'size' => $size,

@@ -301,8 +301,8 @@ export class ImageHandler {
             return this.failUpload('上传失败', imageIndex);
         }
 
-        if (xhr.status !== 200 || response.result !== 'success') {
-            return this.failUpload(response.message || response.error || '上传失败', imageIndex);
+        if (xhr.status !== 200 || response.status !== true) {
+            return this.failUpload(response.message || '上传失败', imageIndex);
         }
 
         if (!response.data?.url) {
