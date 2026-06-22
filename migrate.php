@@ -135,8 +135,13 @@ $env = file_exists($envFile) ? loadEnv($envFile) : [];
 $hasMysqlConfig = !empty($env['DB_HOST']) && !empty($env['DB_NAME']);
 
 if (!$hasMysqlConfig) {
+    if (file_exists(PIXPRO_ROOT . '/database.db')) {
+        header('Location: /');
+        exit;
+    }
+
     http_response_code(403);
-    die('迁移不可用：未检测到 MySQL 配置，系统可能已完成迁移。');
+    die('迁移不可用：未检测到 MySQL 配置。');
 }
 
 if (!isset($_SESSION['loggedin']) || !$_SESSION['loggedin']) {
