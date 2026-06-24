@@ -277,11 +277,17 @@
     visibility: visible;
 }
 
-.multi-select-toolbar .glass-btn {
+.multi-select-toolbar .glass-btn,
+.multi-select-toolbar .selected-count {
     padding: 8px 20px;
     border-radius: 8px;
     color: var(--text-white);
     font-size: 14px;
+    line-height: 1.4;
+    white-space: nowrap;
+}
+
+.multi-select-toolbar .glass-btn {
     background: rgb(255 255 255 / 8%);
 }
 
@@ -295,13 +301,6 @@
 
 .multi-select-toolbar .delete-selected:hover {
     background: rgb(255 59 59 / 40%);
-}
-
-.selected-count {
-    padding: 8px 20px;
-    border-radius: 8px;
-    color: var(--text-white);
-    font-size: 14px;
 }
 
 .rightside a.select-link.active {
@@ -326,12 +325,8 @@
         width: 90%;
     }
 
-    .multi-select-toolbar button {
-        padding: 6px 12px;
-        font-size: 12px;
-    }
-
-    .selected-count {
+    .multi-select-toolbar .glass-btn,
+    .multi-select-toolbar .selected-count {
         padding: 6px 12px;
         font-size: 12px;
     }
