@@ -38,6 +38,15 @@ function logMessage($message) {
     );
 }
 
+function uploadFailExit(string $message, int $code = 200, string $detail = ''): void {
+    $log = '上传失败 | IP: ' . getClientIp() . ' | 原因: ' . $message;
+    if ($detail !== '') {
+        $log .= ' | 详情: ' . $detail;
+    }
+    logMessage($log);
+    jsonExit(['status' => false, 'message' => $message, 'data' => []], $code);
+}
+
 function getConfigInt($pdo, $key, $default = 0) {
     $value = Database::getConfig($pdo, $key);
     return $value !== null ? (int)$value : $default;
@@ -77,19 +86,24 @@ function getUserIdByToken($pdo, $token) {
 }
 
 function validateUploadAccess($pdo) {
-    $config = Database::getConfig($pdo);
-    $loginRestriction = filter_var($config['login_restriction'] ?? 'false', FILTER_VALIDATE_BOOLEAN);
     $token = getRequestToken();
 
     if ($token !== '') {
         if (getUserIdByToken($pdo, $token)) {
             return;
         }
-        jsonExit(['status' => false, 'message' => 'Token 验证失败', 'data' => []]);
+        uploadFailExit('Token 验证失败');
     }
 
-    if ($loginRestriction && empty($_SESSION['loggedin'])) {
-        jsonExit(['status' => false, 'message' => '请先登录后再上传', 'data' => []]);
+    // 已登录用户通过 Web 前台上传
+    if (!empty($_SESSION['loggedin'])) {
+        return;
+    }
+
+    // 未登录的 Web 前台上传需携带 CSRF，外部 API 调用必须提供 Token
+    $csrfToken = $_POST['csrf_token'] ?? $_SERVER['HTTP_X_CSRF_TOKEN'] ?? '';
+    if (!is_string($csrfToken) || !hash_equals(ensureCsrfToken(), $csrfToken)) {
+        uploadFailExit('请提供有效的 API Token', 403);
     }
 }
 

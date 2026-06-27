@@ -2,13 +2,15 @@
 session_start();
 
 require_once 'includes/bootstrap.php';
+require_once 'includes/http.php';
 
 try {
     $db = Database::getInstance();
     $pdo = $db->getConnection();
     $config = Database::getConfig($pdo);
     $maxFileSize = (int)($config['max_file_size'] ?? 0);
-    
+    $csrfToken = ensureCsrfToken();
+
     // 检查是否需要登录限制
     if (filter_var($config['login_restriction'] ?? 'false', FILTER_VALIDATE_BOOLEAN) && empty($_SESSION['loggedin'])) {
         header('Location: /admin');
@@ -229,6 +231,7 @@ try {
             <em class="logotitle glass glass-in">本站不保证内容，时效和稳定性，请勿上传包含危害国家安全和民族团结、侵犯他人权益、欺骗性质、色情或暴力的图片。严格遵守国家相关法律法规，尊重版权、著作权等权利；图片内容均由「网友」自行上传，所有图片作用、性质都与本站无关，本站对所有图片合法性概不负责，亦不承担任何法律责任；</em>
         </div>
     </footer>
+    <script>window.PIXPRO_CSRF_TOKEN = <?= json_encode($csrfToken, JSON_UNESCAPED_UNICODE) ?>;</script>
     <script type="module" src="static/js/main.js" data-max-file-size="<?php echo $maxFileSize; ?>">
     </script>
     <script type="text/javascript" src="static/js/front/cursor.js" defer></script>

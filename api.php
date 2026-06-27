@@ -19,7 +19,7 @@ try {
     }
 
     if ($_SERVER['REQUEST_METHOD'] !== 'POST' || empty($_FILES)) {
-        jsonExit(['status' => false, 'message' => '无文件上传', 'data' => []]);
+        uploadFailExit('无文件上传');
     }
 
     $uploadCheck = isUploadAllowed(
@@ -29,13 +29,13 @@ try {
         getClientIp()
     );
     if ($uploadCheck !== true) {
-        jsonExit(['status' => false, 'message' => $uploadCheck, 'data' => []]);
+        uploadFailExit($uploadCheck);
     }
 
     $maxFileSize = getConfigInt($pdo, 'max_file_size');
     foreach ($_FILES as $file) {
         if ($file['size'] > $maxFileSize) {
-            jsonExit(['status' => false, 'message' => '文件大小超过限制，最大允许 ' . ($maxFileSize / (1024 * 1024)) . 'MB', 'data' => []]);
+            uploadFailExit('文件大小超过限制，最大允许 ' . ($maxFileSize / (1024 * 1024)) . 'MB');
         }
     }
 
@@ -45,6 +45,5 @@ try {
         handleUploadedFile($file);
     }
 } catch (Exception $e) {
-    logMessage('错误: ' . $e->getMessage());
-    jsonExit(['status' => false, 'message' => '请求失败，请稍后重试', 'data' => []]);
+    uploadFailExit('请求失败，请稍后重试', 200, $e->getMessage());
 }

@@ -103,23 +103,32 @@ function processImageCompression($fileMimeType, $newFilePath, $newFilePathWithou
     $finalFilePath = $newFilePath;
 
     if ($fileMimeType !== 'image/webp' && $outputFormat === 'webp') {
-        $convertResult = convertImageToWebp($newFilePath, $newFilePathWithoutExt . '.webp', $quality);
+        $webpPath = $newFilePathWithoutExt . '.webp';
+        $convertResult = convertImageToWebp($newFilePath, $webpPath, $quality);
 
-        if ($convertResult === true) {
-            $webpPath = $newFilePathWithoutExt . '.webp';
-            if (file_exists($webpPath) && filesize($webpPath) > 0) {
-                $finalFilePath = $webpPath;
+        if ($convertResult === true && file_exists($webpPath) && filesize($webpPath) > 0) {
+            $finalFilePath = $webpPath;
+            unlink($newFilePath);
+        } else {
+            if (file_exists($webpPath)) {
+                unlink($webpPath);
+            }
+            if (file_exists($newFilePath)) {
                 unlink($newFilePath);
             }
-        } elseif (is_string($convertResult)) {
-            $errorMessages = [
-                'imagick_not_installed' => 'Imagick扩展未安装，无法处理PNG图片',
-                'gd_not_installed' => 'GD扩展未安装',
-                'gd_no_webp_support' => 'GD扩展不支持webp格式',
-                'gd_create_failed' => '无法创建图像资源',
-                'unsupported_mime_type' => '不支持的图片格式',
-            ];
-            jsonExit(['status' => false, 'message' => $errorMessages[$convertResult] ?? '图片转换失败', 'data' => []]);
+
+            if (is_string($convertResult)) {
+                $errorMessages = [
+                    'imagick_not_installed' => 'Imagick扩展未安装，无法处理PNG图片',
+                    'gd_not_installed' => 'GD扩展未安装',
+                    'gd_no_webp_support' => 'GD扩展不支持webp格式',
+                    'gd_create_failed' => '无法创建图像资源',
+                    'unsupported_mime_type' => '不支持的图片格式',
+                ];
+                uploadFailExit($errorMessages[$convertResult] ?? '图片转换失败');
+            }
+
+            uploadFailExit('图片转换失败');
         }
     }
 
@@ -220,11 +229,11 @@ function validateFile($file) {
     [$mimeType, $extension] = detectMimeType($file);
 
     if ($mimeType === 'image/svg+xml' || in_array($extension, ['svg', 'svgz'], true)) {
-        jsonExit(['status' => false, 'message' => '不支持 SVG 格式', 'data' => []]);
+        uploadFailExit('不支持 SVG 格式');
     }
 
     if (!in_array($mimeType, $allowedTypes)) {
-        jsonExit(['status' => false, 'message' => '不支持的文件类型', 'data' => []]);
+        uploadFailExit('不支持的文件类型');
     }
 
     $isValidImage = ($mimeType === 'application/octet-stream')
@@ -232,7 +241,7 @@ function validateFile($file) {
         : getimagesize($file['tmp_name']) !== false;
 
     if (!$isValidImage) {
-        jsonExit(['status' => false, 'message' => '文件不是有效的图片', 'data' => []]);
+        uploadFailExit('文件不是有效的图片');
     }
 
     return [$mimeType, $extension];
@@ -250,7 +259,7 @@ function handleUploadedFile($file) {
 
     $datePath = 'i/' . date('Y/m/d');
     if (!is_dir($datePath) && !mkdir($datePath, 0755, true)) {
-        jsonExit(['status' => false, 'message' => '无法创建上传目录', 'data' => []]);
+        uploadFailExit('无法创建上传目录');
     }
 
     $randomFileName = str_pad(mt_rand(0, 999999), 6, '0', STR_PAD_LEFT);
@@ -258,7 +267,7 @@ function handleUploadedFile($file) {
     $newFilePath = $datePath . '/' . $randomFileName . '.' . $ext;
 
     if (!move_uploaded_file($file['tmp_name'], $newFilePath)) {
-        jsonExit(['status' => false, 'message' => '文件上传失败', 'data' => []]);
+        uploadFailExit('文件上传失败');
     }
 
     ini_set('memory_limit', '1024M');
@@ -304,10 +313,6 @@ function handleUploadedFile($file) {
 
         generateUploadResponse($fileUrl, $storagePath, $finalFilePath, $fileSize, $dimensions['width'], $dimensions['height']);
     } catch (Exception $e) {
-        $clientIp = getClientIp();
-        $errorMsg = $e->getMessage();
-        logMessage("上传失败 | IP: {$clientIp} | 存储: {$storage} | 错误: {$errorMsg}");
-
-        generateUploadResponse('', '', '', 0, 0, 0, '上传失败，请稍后重试', true);
+        uploadFailExit('上传失败，请稍后重试', 200, "存储: {$storage} | " . $e->getMessage());
     }
 }

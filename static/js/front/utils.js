@@ -20,6 +20,9 @@ export function uploadImage(file, quality, imageIndex, onProgress, onComplete) {
     const formData = new FormData();
     formData.append('image', file);
     formData.append('quality', quality);
+    if (window.PIXPRO_CSRF_TOKEN) {
+        formData.append('csrf_token', window.PIXPRO_CSRF_TOKEN);
+    }
 
     const xhr = new XMLHttpRequest();
     xhr.open('POST', 'api.php', true);
